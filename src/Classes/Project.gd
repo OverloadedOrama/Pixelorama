@@ -752,6 +752,7 @@ func remove_layers(indices: Array) -> void:
 	Global.canvas.selection.transform_content_confirm()
 	selected_cels.clear()
 	for i in indices.size():
+		layers[indices[i] - i].on_remove()
 		# With each removed index, future indices need to be lowered, so subtract by i
 		layers.remove(indices[i] - i)
 		for frame in frames:

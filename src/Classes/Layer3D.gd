@@ -45,5 +45,9 @@ func new_empty_cel() -> BaseCel:
 	return Cel3D.new(viewport)
 
 
+func on_remove() -> void:
+	viewport.queue_free()
+
+
 func instantiate_layer_button() -> Node:
 	return Global.pixel_layer_button_node.instance()
