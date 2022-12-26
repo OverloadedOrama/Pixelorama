@@ -580,7 +580,11 @@ func _get_undo_data() -> Dictionary:
 				continue
 			cels.append(cel)
 	for cel in cels:
+<<<<<<< HEAD
 		if not cel is PixelCel:
+=======
+		if cel is GroupCel or cel is Cel3D:
+>>>>>>> d3905dd8 (Add basic 3D layers and cels)
 			continue
 		var image: Image = cel.image
 		image.unlock()

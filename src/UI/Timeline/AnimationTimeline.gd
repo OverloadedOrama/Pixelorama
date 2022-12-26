@@ -17,6 +17,7 @@ var frame_button_node = preload("res://src/UI/Timeline/FrameButton.tscn")
 onready var old_scroll: int = 0  # The previous scroll state of $ScrollContainer
 onready var tag_spacer = find_node("TagSpacer")
 onready var start_spacer = find_node("StartSpacer")
+onready var add_layer_list: MenuButton = $"%AddLayerList"
 
 onready var timeline_scroll: ScrollContainer = find_node("TimelineScroll")
 onready var frame_scroll_container: Control = find_node("FrameScrollContainer")
@@ -30,6 +31,7 @@ onready var drag_highlight: ColorRect = find_node("DragHighlight")
 
 
 func _ready() -> void:
+	add_layer_list.get_popup().connect("id_pressed", self, "add_layer")
 	frame_scroll_bar.connect("value_changed", self, "_frame_scroll_changed")
 	Global.animation_timer.wait_time = 1 / Global.current_project.fps
 	fps_spinbox.value = Global.current_project.fps
@@ -566,6 +568,8 @@ func add_layer(type: int) -> void:
 			l = PixelLayer.new(project)
 		Global.LayerTypes.GROUP:
 			l = GroupLayer.new(project)
+		Global.LayerTypes.THREE_D:
+			l = Layer3D.new(project)
 
 	var cels := []
 	for f in project.frames:
