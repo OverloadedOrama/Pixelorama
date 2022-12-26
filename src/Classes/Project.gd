@@ -674,6 +674,7 @@ func remove_frames(indices: Array) -> void:  # indices should be in ascending or
 		# For each linked cel in the frame, update its layer's cel_link_sets
 		for l in layers.size():
 			var cel: BaseCel = frames[indices[i] - i].cels[l]
+			cel.on_remove()
 			if cel.link_set != null:
 				cel.link_set["cels"].erase(cel)
 				if cel.link_set["cels"].empty():
@@ -752,10 +753,10 @@ func remove_layers(indices: Array) -> void:
 	Global.canvas.selection.transform_content_confirm()
 	selected_cels.clear()
 	for i in indices.size():
-		layers[indices[i] - i].on_remove()
 		# With each removed index, future indices need to be lowered, so subtract by i
 		layers.remove(indices[i] - i)
 		for frame in frames:
+			frame.cels[indices[i] - i].on_remove()
 			frame.cels.remove(indices[i] - i)
 		Global.animation_timeline.project_layer_removed(indices[i] - i)
 	# Update the layer indices and layer/cel buttons:

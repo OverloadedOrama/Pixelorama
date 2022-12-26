@@ -180,9 +180,5 @@ func accepts_child(_layer: BaseLayer) -> bool:
 	return false
 
 
-func on_remove() -> void:
-	pass
-
-
 func instantiate_layer_button() -> Node:
 	return null
