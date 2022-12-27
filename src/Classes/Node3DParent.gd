@@ -9,6 +9,8 @@ func _input(event: InputEvent) -> void:
 		if event.button_index == BUTTON_LEFT and event.pressed == true:
 			if is_instance_valid(hovering):
 				hovering.select()
+				if is_instance_valid(selected) and hovering != selected:
+					selected.unselect()
 				selected = hovering
 			else:
 				if is_instance_valid(selected):
@@ -22,10 +24,12 @@ func _input(event: InputEvent) -> void:
 	var space_state := get_world().direct_space_state
 	var selection := space_state.intersect_ray(ray_from, ray_to)
 	if selection.empty():
-		if hovering:
+		if is_instance_valid(hovering):
 			hovering.unhover()
 			hovering = null
 	else:
+		if is_instance_valid(hovering):
+			hovering.unhover()
 		hovering = selection["collider"].get_parent()
 		hovering.hover()
 #		print(hovering)

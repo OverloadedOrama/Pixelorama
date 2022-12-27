@@ -20,12 +20,12 @@ func _ready() -> void:
 
 func select() -> void:
 	selected = true
-	Global.canvas.get_node("BoundingBoxes3D").get_points(camera, self, Color.blue)
+	Global.canvas.get_node("BoundingBoxes3D").get_points(camera, self)
 
 
 func unselect() -> void:
 	selected = false
-	Global.canvas.get_node("BoundingBoxes3D").clear_points()
+	Global.canvas.get_node("BoundingBoxes3D").clear_points(self)
 
 
 func hover() -> void:
@@ -34,7 +34,7 @@ func hover() -> void:
 	hovered = true
 	if selected:
 		return
-	Global.canvas.get_node("BoundingBoxes3D").get_points(camera, self, Color.cyan)
+	Global.canvas.get_node("BoundingBoxes3D").get_points(camera, self)
 
 
 func unhover() -> void:
@@ -43,4 +43,4 @@ func unhover() -> void:
 	hovered = false
 	if selected:
 		return
-	Global.canvas.get_node("BoundingBoxes3D").clear_points()
+	Global.canvas.get_node("BoundingBoxes3D").clear_points(self)
