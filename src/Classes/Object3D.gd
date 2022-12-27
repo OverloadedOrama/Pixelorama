@@ -1,7 +1,8 @@
 class_name Object3D
-extends Spatial
+extends MeshInstance
 
 var selected := false
+var hovered := false
 var box_shape: BoxShape
 var camera: Camera
 
@@ -28,12 +29,18 @@ func unselect() -> void:
 
 
 func hover() -> void:
+	if hovered:
+		return
+	hovered = true
 	if selected:
 		return
 	Global.canvas.get_node("BoundingBoxes3D").get_points(camera, self, Color.cyan)
 
 
 func unhover() -> void:
+	if not hovered:
+		return
+	hovered = false
 	if selected:
 		return
 	Global.canvas.get_node("BoundingBoxes3D").clear_points()

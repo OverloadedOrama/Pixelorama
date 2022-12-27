@@ -134,7 +134,7 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://src/UI/Timeline/LayerButton.gd"
 }, {
-"base": "Spatial",
+"base": "MeshInstance",
 "class": "Object3D",
 "language": "GDScript",
 "path": "res://src/Classes/Object3D.gd"
