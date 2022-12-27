@@ -1,16 +1,19 @@
 class_name Cel3D
 extends BaseCel
 
+var object_3d_script := preload("res://src/Classes/Object3D.gd")
 var viewport: Viewport
+var camera: Camera
 
 
 func _init(size: Vector2) -> void:
 	opacity = 1.0
 	viewport = Viewport.new()
 	var spatial := Spatial.new()
-	var camera := Camera.new()
+	camera = Camera.new()
 	var light := DirectionalLight.new()
 	var cube := CSGBox.new()
+	cube.set_script(object_3d_script)
 	camera.current = true
 	light.rotate_y(-PI/4)
 	cube.translation = Vector3(0, 0, -3)
