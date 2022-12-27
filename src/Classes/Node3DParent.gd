@@ -1,12 +1,19 @@
 extends Spatial
 
-var hovering: Spatial = null
+var hovering: Object3D = null
+var selected: Object3D = null
 
 
 func _input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and is_instance_valid(hovering):
+	if event is InputEventMouseButton:
 		if event.button_index == BUTTON_LEFT and event.pressed == true:
-			hovering.select()
+			if is_instance_valid(hovering):
+				hovering.select()
+				selected = hovering
+			else:
+				if is_instance_valid(selected):
+					selected.unselect()
+					selected = null
 #	print(event.position)
 	var mouse_pos: Vector2 = event.position
 	var camera := get_viewport().get_camera()
@@ -15,8 +22,11 @@ func _input(event: InputEvent) -> void:
 	var space_state := get_world().direct_space_state
 	var selection := space_state.intersect_ray(ray_from, ray_to)
 	if selection.empty():
-		hovering = null
+		if hovering:
+			hovering.unhover()
+			hovering = null
 	else:
 		hovering = selection["collider"].get_parent()
-		print(hovering)
+		hovering.hover()
+#		print(hovering)
 #	print(selection)

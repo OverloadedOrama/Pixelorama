@@ -5,11 +5,17 @@ var node_3d_parent := preload("res://src/Classes/Node3DParent.gd")
 var object_3d_script := preload("res://src/Classes/Object3D.gd")
 var viewport: Viewport
 var camera: Camera
+var objects := []
 
 
 func _init(size: Vector2) -> void:
 	opacity = 1.0
 	viewport = Viewport.new()
+	viewport.size = size
+	viewport.own_world = true
+	viewport.transparent_bg = true
+	viewport.render_target_v_flip = true
+
 	var node_3d := Spatial.new()
 	node_3d.set_script(node_3d_parent)
 	camera = Camera.new()
@@ -25,11 +31,9 @@ func _init(size: Vector2) -> void:
 	node_3d.add_child(cube)
 	viewport.add_child(node_3d)
 	Global.canvas.add_child(viewport)
-	viewport.size = size
-	viewport.own_world = true
-	viewport.transparent_bg = true
-	viewport.render_target_v_flip = true
 	image_texture = viewport.get_texture()
+	objects.append(light)
+	objects.append(cube)
 
 
 func get_image() -> Image:
