@@ -44,3 +44,8 @@ func unhover() -> void:
 	if selected:
 		return
 	Global.canvas.get_node("BoundingBoxes3D").clear_points(self)
+
+
+func move(position: Vector3) -> void:
+	translation = position
+	select()
