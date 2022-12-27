@@ -1,5 +1,6 @@
 extends Spatial
 
+var cel
 var hovering: Object3D = null
 var selected: Object3D = null
 var dragging := false
@@ -8,6 +9,12 @@ onready var camera := get_viewport().get_camera()
 
 
 func _input(event: InputEvent) -> void:
+	var found_cel := false
+	for frame_layer in Global.current_project.selected_cels:
+		if cel == Global.current_project.frames[frame_layer[0]].cels[frame_layer[1]]:
+			found_cel = true
+	if not found_cel:
+		return
 	if event is InputEventMouseButton:
 		if event.button_index == BUTTON_LEFT and event.pressed == true:
 			if is_instance_valid(hovering):

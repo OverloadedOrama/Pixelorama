@@ -17,6 +17,7 @@ func _init(size: Vector2) -> void:
 
 	var node_3d := Spatial.new()
 	node_3d.set_script(node_3d_parent)
+	node_3d.cel = self
 	camera = Camera.new()
 	var light := DirectionalLight.new()
 	var cube := Object3D.new()
