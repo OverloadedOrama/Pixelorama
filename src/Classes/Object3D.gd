@@ -57,3 +57,13 @@ func unhover() -> void:
 func move(position: Vector3) -> void:
 	translation += position
 	select()
+
+
+func change_rotation(position: Vector3) -> void:
+	rotation += position
+	select()
+
+
+func change_scale(position: Vector3) -> void:
+	scale += position
+	select()
