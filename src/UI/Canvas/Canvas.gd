@@ -87,7 +87,7 @@ func _input(event: InputEvent) -> void:
 	current_pixel = tmp_transform.basis_xform(tmp_position) + tmp_transform.origin
 
 	for child in get_children():
-		if child is Viewport and event is InputEventMouse:
+		if child is Viewport and event is InputEventMouse and Global.has_focus:
 			var modified_event := event.duplicate()
 			modified_event.position = current_pixel.floor()
 			child.input(modified_event)

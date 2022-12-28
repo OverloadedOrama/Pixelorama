@@ -47,5 +47,5 @@ func unhover() -> void:
 
 
 func move(position: Vector3) -> void:
-	translation = position
+	translation += position
 	select()

@@ -4,6 +4,7 @@ var cel
 var hovering: Object3D = null
 var selected: Object3D = null
 var dragging := false
+var prev_mouse_pos := Vector2.ZERO
 
 onready var camera := get_viewport().get_camera()
 
@@ -15,6 +16,7 @@ func _input(event: InputEvent) -> void:
 			found_cel = true
 	if not found_cel:
 		return
+	var mouse_pos: Vector2 = event.position
 	if event is InputEventMouseButton:
 		if event.button_index == BUTTON_LEFT and event.pressed == true:
 			if is_instance_valid(hovering):
@@ -25,6 +27,7 @@ func _input(event: InputEvent) -> void:
 						selected.unselect()
 				selected = hovering
 				dragging = true
+				prev_mouse_pos = mouse_pos
 			else:
 				# We're not hovering, which means we're unselecting
 				if is_instance_valid(selected):
@@ -32,8 +35,6 @@ func _input(event: InputEvent) -> void:
 					selected = null
 		elif event.button_index == BUTTON_LEFT and event.pressed == false:
 			dragging = false
-#	print(event.position)
-	var mouse_pos: Vector2 = event.position
 
 	var ray_from := camera.project_ray_origin(mouse_pos)
 	var ray_to := ray_from + camera.project_ray_normal(mouse_pos) * 20
@@ -41,8 +42,10 @@ func _input(event: InputEvent) -> void:
 	var selection := space_state.intersect_ray(ray_from, ray_to)
 
 	if dragging and event is InputEventMouseMotion:
+		var prev_projected := camera.project_position(prev_mouse_pos, camera.translation.z)
 		var projected := camera.project_position(mouse_pos, camera.translation.z)
-		selected.move(projected)
+		selected.move(projected - prev_projected)
+		prev_mouse_pos = mouse_pos
 
 	# Hover logic
 	if selection.empty():
