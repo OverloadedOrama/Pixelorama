@@ -44,7 +44,14 @@ func _input(event: InputEvent) -> void:
 	if dragging and event is InputEventMouseMotion:
 		var prev_projected := camera.project_position(prev_mouse_pos, camera.translation.z)
 		var projected := camera.project_position(mouse_pos, camera.translation.z)
-		selected.move(projected - prev_projected)
+		if selected.applying_gizmos == Object3D.Gizmos.X_TRANS:
+			selected.move(Vector3(projected.x - prev_projected.x, 0, 0))
+		elif selected.applying_gizmos == Object3D.Gizmos.Y_TRANS:
+			selected.move(Vector3(0, projected.y - prev_projected.y, 0))
+		elif selected.applying_gizmos == Object3D.Gizmos.Z_TRANS:
+			selected.move(Vector3(0, 0, projected.x - prev_projected.x))
+		else:
+			selected.move(projected - prev_projected)
 		prev_mouse_pos = mouse_pos
 
 	# Hover logic

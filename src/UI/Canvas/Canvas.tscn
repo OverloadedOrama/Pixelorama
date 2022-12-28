@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=2]
+[gd_scene load_steps=17 format=2]
 
 [ext_resource path="res://src/UI/Canvas/Canvas.gd" type="Script" id=1]
 [ext_resource path="res://src/UI/Canvas/Grid.gd" type="Script" id=2]
@@ -12,6 +12,7 @@
 [ext_resource path="res://src/Shaders/AutoInvertColors.shader" type="Shader" id=10]
 [ext_resource path="res://src/UI/Canvas/BoundingBoxes3D.gd" type="Script" id=11]
 [ext_resource path="res://src/UI/Canvas/OnionSkinning.gd" type="Script" id=12]
+[ext_resource path="res://assets/graphics/gizmos/gizmo_arrow.png" type="Texture" id=13]
 
 [sub_resource type="CanvasItemMaterial" id=1]
 blend_mode = 4
@@ -76,3 +77,53 @@ script = ExtResource( 12 )
 
 [node name="BoundingBoxes3D" type="Node2D" parent="."]
 script = ExtResource( 11 )
+
+[node name="Gizmos" type="Control" parent="BoundingBoxes3D"]
+visible = false
+
+[node name="XArrow" type="TextureButton" parent="BoundingBoxes3D/Gizmos"]
+modulate = Color( 0.956863, 0.2, 0.317647, 1 )
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+margin_left = -4.5
+margin_top = -16.0
+margin_right = 4.5
+rect_rotation = 135.0
+rect_pivot_offset = Vector2( 4, 16 )
+mouse_default_cursor_shape = 2
+texture_normal = ExtResource( 13 )
+expand = true
+stretch_mode = 4
+
+[node name="YArrow" type="TextureButton" parent="BoundingBoxes3D/Gizmos"]
+modulate = Color( 0.529412, 0.839216, 0.00784314, 1 )
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+margin_left = -4.5
+margin_top = -16.0
+margin_right = 4.5
+rect_pivot_offset = Vector2( 4, 16 )
+mouse_default_cursor_shape = 2
+texture_normal = ExtResource( 13 )
+expand = true
+stretch_mode = 4
+
+[node name="ZArrow" type="TextureButton" parent="BoundingBoxes3D/Gizmos"]
+modulate = Color( 0.156863, 0.54902, 0.956863, 1 )
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+margin_left = -4.5
+margin_top = -16.0
+margin_right = 4.5
+rect_rotation = 225.0
+rect_pivot_offset = Vector2( 4, 16 )
+mouse_default_cursor_shape = 2
+texture_normal = ExtResource( 13 )
+expand = true
+stretch_mode = 4

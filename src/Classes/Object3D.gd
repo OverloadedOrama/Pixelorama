@@ -1,10 +1,18 @@
 class_name Object3D
 extends MeshInstance
 
+enum Gizmos {
+	NONE,
+	X_TRANS,
+	Y_TRANS,
+	Z_TRANS,
+}
+
 var selected := false
 var hovered := false
 var box_shape: BoxShape
 var camera: Camera
+var applying_gizmos := 0
 
 
 func _ready() -> void:
