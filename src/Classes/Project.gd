@@ -93,6 +93,10 @@ func remove() -> void:
 		ri.queue_free()
 	for guide in guides:
 		guide.queue_free()
+	for frame in frames:
+		for l in layers.size():
+			var cel: BaseCel = frame.cels[l]
+			cel.on_remove()
 	# Prevents memory leak (due to the layers' project reference stopping ref counting from freeing)
 	layers.clear()
 	Global.projects.erase(self)
