@@ -1,0 +1,15 @@
+[remap]
+
+importer="bitmap"
+type="BitMap"
+path="res://.import/gizmo_arrow_bitmap.png-1bb3240b86bea98e5099b503cb672991.res"
+
+[deps]
+
+source_file="res://assets/graphics/gizmos/gizmo_arrow_bitmap.png"
+dest_files=[ "res://.import/gizmo_arrow_bitmap.png-1bb3240b86bea98e5099b503cb672991.res" ]
+
+[params]
+
+create_from=0
+threshold=0.5

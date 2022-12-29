@@ -1,0 +1,15 @@
+[remap]
+
+importer="bitmap"
+type="BitMap"
+path="res://.import/gizmo_arc_bitmap.png-e47a15f8f67bab494410216ff364f153.res"
+
+[deps]
+
+source_file="res://assets/graphics/gizmos/gizmo_arc_bitmap.png"
+dest_files=[ "res://.import/gizmo_arc_bitmap.png-e47a15f8f67bab494410216ff364f153.res" ]
+
+[params]
+
+create_from=0
+threshold=0.5
