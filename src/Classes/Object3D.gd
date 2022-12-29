@@ -64,6 +64,9 @@ func move(position: Vector3) -> void:
 
 func change_rotation(position: Vector3) -> void:
 	rotation += position
+	rotation.x = wrapf(rotation.x, -PI, PI)
+	rotation.y = wrapf(rotation.y, -PI, PI)
+	rotation.z = wrapf(rotation.z, -PI, PI)
 	select()
 
 
