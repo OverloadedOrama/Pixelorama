@@ -6,6 +6,9 @@ enum Gizmos {
 	X_TRANS,
 	Y_TRANS,
 	Z_TRANS,
+	X_ROT,
+	Y_ROT,
+	Z_ROT,
 }
 
 var selected := false

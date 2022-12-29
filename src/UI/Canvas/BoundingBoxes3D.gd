@@ -44,6 +44,35 @@ func _draw() -> void:
 			continue
 		if object.selected:
 			draw_multiline(points, selected_color, 1.0, true)
+			var right :Vector3= object.translation+Vector3.RIGHT.rotated(Vector3.BACK, object.rotation.z).rotated(Vector3.UP, object.rotation.y)
+			var up :Vector3= object.translation+Vector3.UP.rotated(Vector3.BACK, object.rotation.z).rotated(Vector3.RIGHT, object.rotation.x)
+			var back :Vector3= object.translation+Vector3.BACK.rotated(Vector3.UP, object.rotation.y).rotated(Vector3.RIGHT, object.rotation.x)
+			var proj_right :Vector2= object.camera.unproject_position(right)
+			var proj_up :Vector2= object.camera.unproject_position(up)
+			var proj_back :Vector2= object.camera.unproject_position(back)
+			var proj_right_diff := proj_right - gizmos.rect_position
+			var proj_up_diff := proj_up - gizmos.rect_position
+			var proj_back_diff := proj_back - gizmos.rect_position
+#			print((object.camera.unproject_position(right)- gizmos.rect_position).angle())
+
+			$Gizmos/XArrow.rect_scale.x = (proj_right_diff).length() / 15
+			$Gizmos/XArrow.rect_scale.y = (proj_right_diff).length() / 15
+			$Gizmos/XArrow.rect_rotation = rad2deg((proj_right_diff).angle()) + 90
+
+			$Gizmos/YArrow.rect_scale.x = (proj_up_diff).length() / 15
+			$Gizmos/YArrow.rect_scale.y = (proj_up_diff).length() / 15
+			$Gizmos/YArrow.rect_rotation = rad2deg((proj_up_diff).angle()) + 90
+
+			$Gizmos/ZArrow.rect_scale.x = (proj_back_diff).length() / 15
+			$Gizmos/ZArrow.rect_scale.y = (proj_back_diff).length() / 15
+			$Gizmos/ZArrow.rect_rotation = rad2deg((proj_back_diff).angle()) + 90
+#			$Gizmos/YArrow.rect_scale = object.camera.unproject_position(up) - gizmos.rect_position
+#			$Gizmos/ZArrow.rect_scale = object.camera.unproject_position(back) - gizmos.rect_position
+
+			draw_line(gizmos.rect_position, proj_right, Color.red)
+			draw_line(gizmos.rect_position, proj_up, Color.green)
+			draw_line(gizmos.rect_position, proj_back, Color.blue)
+#			draw_line(gizmos.rect_position, object.camera.unproject_position(Vector3.FORWARD), Color.green)
 		elif object.hovered:
 			draw_multiline(points, hovered_color, 1.0, true)
 

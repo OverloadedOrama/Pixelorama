@@ -50,6 +50,12 @@ func _input(event: InputEvent) -> void:
 			selected.move(Vector3(0, projected.y - prev_projected.y, 0))
 		elif selected.applying_gizmos == Object3D.Gizmos.Z_TRANS:
 			selected.move(Vector3(0, 0, projected.x - prev_projected.x))
+		elif selected.applying_gizmos == Object3D.Gizmos.X_ROT:
+			selected.change_rotation(Vector3(projected.x - prev_projected.x, 0, 0))
+		elif selected.applying_gizmos == Object3D.Gizmos.Y_ROT:
+			selected.change_rotation(Vector3(0, projected.y - prev_projected.y, 0))
+		elif selected.applying_gizmos == Object3D.Gizmos.Z_ROT:
+			selected.change_rotation(Vector3(0, 0, projected.x - prev_projected.x))
 		else:
 			selected.move(projected - prev_projected)
 		prev_mouse_pos = mouse_pos
