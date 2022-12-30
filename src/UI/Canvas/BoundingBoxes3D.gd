@@ -44,10 +44,8 @@ func _draw() -> void:
 			continue
 		if object.selected:
 			draw_multiline(points, selected_color, 1.0, true)
-			var pixel_diff: float = (object.camera.unproject_position(Vector3.RIGHT) - object.camera.unproject_position(Vector3.ZERO)).length()
-#			var right :Vector3= object.translation+Vector3.RIGHT.rotated(Vector3.BACK, object.rotation.z).rotated(Vector3.UP, object.rotation.y)
-#			var up :Vector3= object.translation+Vector3.UP.rotated(Vector3.BACK, object.rotation.z).rotated(Vector3.RIGHT, object.rotation.x)
-#			var back :Vector3= object.translation+Vector3.BACK.rotated(Vector3.UP, object.rotation.y).rotated(Vector3.RIGHT, object.rotation.x)
+#			var pixel_diff: float = (object.camera.unproject_position(Vector3.RIGHT) - object.camera.unproject_position(Vector3.ZERO)).length()
+
 			var right :Vector3= object.translation + object.transform.basis.x
 			var up :Vector3= object.translation + object.transform.basis.y
 			var back :Vector3= object.translation + object.transform.basis.z
@@ -59,119 +57,58 @@ func _draw() -> void:
 			var proj_right_diff := proj_right - gizmos.rect_position
 			var proj_up_diff := proj_up - gizmos.rect_position
 			var proj_back_diff := proj_back - gizmos.rect_position
-#			print((object.camera.unproject_position(right)- gizmos.rect_position).angle())
 
-			$Gizmos/XArrow.rect_scale.x = (proj_right_diff).length() / pixel_diff
-#			print(object.transform.basis.x)
-#			print((proj_right_diff).length())
-#			print((proj_right.x - gizmos.rect_position.x))
-#			print((proj_right.y - gizmos.rect_position.y))
-			$Gizmos/XArrow.rect_scale.y = (proj_right_diff).length() / pixel_diff
-			$Gizmos/XArrow.rect_rotation = rad2deg((proj_right_diff).angle()) + 90
-
-			$Gizmos/YArrow.rect_scale.x = (proj_up_diff).length() / pixel_diff
-			$Gizmos/YArrow.rect_scale.y = (proj_up_diff).length() / pixel_diff
-			$Gizmos/YArrow.rect_rotation = rad2deg((proj_up_diff).angle()) + 90
-
-			$Gizmos/ZArrow.rect_scale.x = (proj_back_diff).length() / pixel_diff
-			$Gizmos/ZArrow.rect_scale.y = (proj_back_diff).length() / pixel_diff
-			$Gizmos/ZArrow.rect_rotation = rad2deg(proj_back_diff.angle()) + 90
-
-#			_scale_gizmo($Gizmos/XRot, Vector2($Gizmos/ZArrow.rect_scale.x, $Gizmos/YArrow.rect_scale.y))
-#			_scale_gizmo($Gizmos/YRot, Vector2($Gizmos/XArrow.rect_scale.x, $Gizmos/ZArrow.rect_scale.y))
-#			_scale_gizmo($Gizmos/ZRot, Vector2($Gizmos/XArrow.rect_scale.x, $Gizmos/YArrow.rect_scale.y))
-
-#			$Gizmos/XRot.rect_rotation = rad2deg(-object.rotation.x)
-#			$Gizmos/YRot.rect_rotation = rad2deg(-object.rotation.y) + 180
-#			$Gizmos/ZRot.rect_rotation = rad2deg(-object.rotation.z) + 90
-#			$Gizmos/ZRot.rect_rotation = $Gizmos/XArrow.rect_rotation
-
-#			_scale_gizmo($Gizmos/XRot, Vector2.ONE - $Gizmos/XArrow.rect_scale)
-#			_scale_gizmo($Gizmos/YRot, Vector2.ONE - $Gizmos/YArrow.rect_scale)
-#			_scale_gizmo($Gizmos/ZRot, Vector2.ONE - $Gizmos/ZArrow.rect_scale)
-
-#			_scale_gizmo($Gizmos/XRot, Vector2(object.transform.basis.x.dot(object.camera.transform.basis.x), object.transform.basis.x.dot(object.camera.transform.basis.x)))
-#			_scale_gizmo($Gizmos/YRot, Vector2(object.transform.basis.y.dot(object.camera.transform.basis.y), object.transform.basis.y.dot(object.camera.transform.basis.y)))
-#			_scale_gizmo($Gizmos/ZRot, Vector2(object.transform.basis.z.dot(object.camera.transform.basis.z), object.transform.basis.z.dot(object.camera.transform.basis.z)))
-
-#			_scale_gizmo($Gizmos/XRot, Vector2(cos(object.rotation.x), sin(object.rotation.x)))
-#			_scale_gizmo($Gizmos/YRot, Vector2(cos(object.rotation.y), sin(object.rotation.y)))
-#			_scale_gizmo($Gizmos/ZRot, Vector2(cos(object.rotation.z), sin(object.rotation.z)))
-
-#			_scale_gizmo($Gizmos/XRot, Vector2(proj_back_diff.length() * proj_back_diff.sign().x, proj_up_diff.length() * proj_up_diff.sign().y) / 15)
-#			_scale_gizmo($Gizmos/YRot, Vector2(proj_back_diff.length() * proj_back_diff.sign().x, proj_right_diff.length() * proj_right_diff.sign().y) / 15)
-#			_scale_gizmo($Gizmos/ZRot, Vector2(proj_right_diff.length() * proj_right_diff.sign().x, proj_up_diff.length() * proj_up_diff.sign().y) / 15)
-
-			var z_transform := Transform2D(object.transform)
-			z_transform.origin = $Gizmos.rect_position
-#			z_transform = z_transform.rotated(-TAU)
-#			z_transform = z_transform.inverse()
-#			print(z_transform)
-#			$Gizmos/ZRot.rect_rotation = -rad2deg(z_transform.get_rotation()) + 90
-#			$Gizmos/ZRot.rect_scale = z_transform.get_scale()
-#			draw_set_transform($Gizmos.rect_position, -z_transform.get_rotation(), z_transform.get_scale())
-#			var xx = ($Gizmos/XArrow.rect_position + (Vector2($Gizmos/XArrow.rect_size.x/2, 0) * $Gizmos/XArrow.rect_scale)).rotated(deg2rad($Gizmos/XArrow.rect_rotation))
-#			var yy = ($Gizmos/YArrow.rect_position + (Vector2($Gizmos/YArrow.rect_size.x/2, 0) * $Gizmos/YArrow.rect_scale)).rotated(deg2rad($Gizmos/YArrow.rect_rotation))
-#			draw_set_transform($Gizmos.rect_position, 0, $Gizmos.rect_scale)
-#			draw_line(xx, yy, Color.blue)
-#			draw_set_transform_matrix(z_transform)
-#			draw_circle(Vector2.ZERO, 4, Color.blue)
-#			draw_arc(Vector2.ZERO, 8, 3*PI/2, TAU, 8, Color.blue)
-#			draw_set_transform_matrix(Transform2D())
-
-#			var y_transform := Transform2D(Vector2(object.transform.basis.x.x, object.transform.basis.x.z), Vector2(object.transform.basis.z.x, object.transform.basis.z.z), Vector2.ZERO)
-#			var y_transform := Transform2D(object.transform)
-#			y_transform.y = y_transform.y * Vector2.RIGHT
-#			print(y_transform)
-#			$Gizmos/YRot.rect_rotation = -rad2deg(y_transform.get_rotation())
-#			$Gizmos/YRot.rect_scale = y_transform.get_scale()
-
-#			var x_transform := Transform2D(Vector2(object.transform.basis.y.y, object.transform.basis.y.z), Vector2(object.transform.basis.z.y, object.transform.basis.z.z), Vector2.ZERO)
-#			var x_transform := Transform2D(object.transform)
-#			x_transform.x = x_transform.x * Vector2.DOWN
-#			print(x_transform)
-#			$Gizmos/XRot.rect_rotation = -rad2deg(x_transform.get_rotation())
-#			$Gizmos/XRot.rect_scale = x_transform.get_scale()
-
-#			var scl := 1 if abs(object.rotation.y) <= PI / 2 else -1
-#			$Gizmos/ZRot.rect_scale.x = (proj_up_diff).length() / 15
-#			$Gizmos/ZRot.rect_scale.y = (proj_right_diff).length()*scl / 15
-#			$Gizmos/ZRot.rect_scale = Vector2(sin(proj_up.x), cos(proj_right.y))
-#			$Gizmos/ZRot.rect_scale.y = (proj_right_diff).length() / 15
-
-#			print((proj_up_diff).length() * proj_up_diff.sign().x / 15)
-#			print((proj_right_diff).length() * proj_right_diff.sign().x / 15)
-#			print(rad2deg((-object.rotation.z)) + 90)
+#			$Gizmos/XArrow.rect_scale.x = (proj_right_diff).length() / pixel_diff
+#			$Gizmos/XArrow.rect_scale.y = (proj_right_diff).length() / pixel_diff
+#			$Gizmos/XArrow.rect_rotation = rad2deg((proj_right_diff).angle()) + 90
+#
+#			$Gizmos/YArrow.rect_scale.x = (proj_up_diff).length() / pixel_diff
+#			$Gizmos/YArrow.rect_scale.y = (proj_up_diff).length() / pixel_diff
+#			$Gizmos/YArrow.rect_rotation = rad2deg((proj_up_diff).angle()) + 90
+#
+#			$Gizmos/ZArrow.rect_scale.x = (proj_back_diff).length() / pixel_diff
+#			$Gizmos/ZArrow.rect_scale.y = (proj_back_diff).length() / pixel_diff
+#			$Gizmos/ZArrow.rect_rotation = rad2deg(proj_back_diff.angle()) + 90
+#			var z_transform := Transform2D(object.transform)
+#			z_transform.origin = $Gizmos.rect_position
 
 			var width := 1.1
 			draw_line(gizmos.rect_position, proj_right, Color.red)
 			draw_line(gizmos.rect_position, proj_up, Color.green)
 			draw_line(gizmos.rect_position, proj_back, Color.blue)
+#			var p := PoolVector2Array()
+#			p.append(proj_right - Vector2.ONE * width)
+#			p.append(proj_right)
+#			p.append(proj_right + Vector2.ONE * width)
+#			p.append(proj_up + Vector2.ONE * width)
+#			p.append(proj_up)
+#			p.append(proj_up - Vector2.ONE * width)
+#			p.append(proj_right - Vector2.ONE * width)
 
-#			var curve2d := Curve2D.new()
-#			curve2d.bake_interval = 1
-#			var start := proj_right
-#			var end := proj_up
-#			var control := Vector2(start.x, end.y)
-#			curve2d.add_point(start, -(end-start), end - start)
-#			curve2d.add_point(end, end * Vector2.UP, end * Vector2.DOWN)
-#			curve2d.add_point(start, Vector2.ZERO, control)
-#			curve2d.add_point(end, control, Vector2.ZERO)
-#			curve2d.add_point(start)
-#			curve2d.add_point(control)
-#			curve2d.add_point(end)
-#			var baked := curve2d.get_baked_points()
-#			print($"../Path2D".curve.get_point_position(0), " ", $"../Path2D".curve.get_point_in(0), " ", $"../Path2D".curve.get_point_out(0))
-#			print($"../Path2D".curve.get_point_position(1), " ", $"../Path2D".curve.get_point_in(1), " ", $"../Path2D".curve.get_point_out(1))
-#			print(baked.size())
-#			draw_set_transform($Gizmos.rect_position, 0, Vector2.ONE)
-#			draw_polyline(baked, Color.blue, 2.0)
-#			draw_set_transform_matrix(Transform2D())
-#			print(proj_right_diff, " ", proj_up_diff)
-#			draw_set_transform($Gizmos.rect_position, 0, Vector2(proj_right_diff.length(), proj_up_diff.length()) / pixel_diff)
-#			draw_arc(Vector2.ZERO, pixel_diff, proj_right_diff.angle(), proj_up_diff.angle(), 8, Color.blue, 2.0)
-#			draw_set_transform_matrix(Transform2D())
-#			draw_line(gizmos.rect_position, object.camera.unproject_position(Vector3.FORWARD), Color.green)
+#			draw_line(proj_right, proj_up, Color.blue, width)
+#			draw_line(proj_right, proj_back, Color.green, width)
+#			draw_line(proj_back, proj_up, Color.red, width)
+#			draw_polyline(p, Color.orange)
+
+			var curve2d := Curve2D.new()
+			curve2d.bake_interval = 3.5
+			var start := proj_right_diff
+			var end := proj_up_diff
+#			var control := (end.linear_interpolate(start, 0.5) - gizmos.rect_position).limit_length(8)
+			var control := (end.linear_interpolate(start, 0.5))
+			print(control.length())
+			start = start.normalized() * control.length()
+			end = end.normalized() * control.length()
+			control = control.normalized() * sqrt(pow(start.length()/4, 2) * 2)
+			print(start.length(), " ", end.length())
+			curve2d.add_point(start, Vector2.ZERO, control)
+			curve2d.add_point(end, control)
+			var baked := curve2d.get_baked_points()
+			draw_set_transform($Gizmos.rect_position, 0, Vector2.ONE)
+			draw_polyline(baked, Color.blue, 1.1)
+			draw_line(Vector2.ZERO, start, Color.orange)
+			draw_line(Vector2.ZERO, control, Color.yellow, 1.0)
+			draw_set_transform_matrix(Transform2D())
 		elif object.hovered:
 			draw_multiline(points, hovered_color, 1.0, true)
 
