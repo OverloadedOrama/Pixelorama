@@ -9,6 +9,9 @@ enum Gizmos {
 	X_ROT,
 	Y_ROT,
 	Z_ROT,
+	X_SCALE,
+	Y_SCALE,
+	Z_SCALE
 }
 
 var selected := false

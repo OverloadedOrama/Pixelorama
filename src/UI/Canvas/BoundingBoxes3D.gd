@@ -2,6 +2,7 @@ extends Node2D
 
 const ARROW_LENGTH := 14
 const SCALE_CIRCLE_LENGTH := 8
+const SCALE_CIRCLE_RADIUS := 1
 
 var points_per_object := {}
 var selected_color := Color.white
@@ -11,6 +12,10 @@ var gizmos_origin: Vector2
 var proj_right_local: Vector2
 var proj_up_local: Vector2
 var proj_back_local: Vector2
+# Same vectors as `proj_x_local`, but with a smaller length, for the rotation & scale gizmos
+var proj_right_local_scale: Vector2
+var proj_up_local_scale: Vector2
+var proj_back_local_scale: Vector2
 var gizmo_position_x := PoolVector2Array()
 var gizmo_position_y := PoolVector2Array()
 var gizmo_position_z := PoolVector2Array()
@@ -52,6 +57,18 @@ func _input(event: InputEvent) -> void:
 				for object in points_per_object:
 					if object.selected:
 						object.applying_gizmos = Object3D.Gizmos.Z_TRANS
+			elif Geometry.is_point_in_circle(pos, proj_right_local_scale, SCALE_CIRCLE_RADIUS):
+				for object in points_per_object:
+					if object.selected:
+						object.applying_gizmos = Object3D.Gizmos.X_SCALE
+			elif Geometry.is_point_in_circle(pos, proj_up_local_scale, SCALE_CIRCLE_RADIUS):
+				for object in points_per_object:
+					if object.selected:
+						object.applying_gizmos = Object3D.Gizmos.Y_SCALE
+			elif Geometry.is_point_in_circle(pos, proj_back_local_scale, SCALE_CIRCLE_RADIUS):
+				for object in points_per_object:
+					if object.selected:
+						object.applying_gizmos = Object3D.Gizmos.Z_SCALE
 			elif Geometry.is_point_in_polygon(pos, gizmo_rotation_x_poly):
 				for object in points_per_object:
 					if object.selected:
@@ -99,6 +116,10 @@ func get_points(camera: Camera, object3d: Object3D) -> void:
 		proj_up_local = _resize_vector(proj_up_local, ARROW_LENGTH)
 		proj_back_local = _resize_vector(proj_back_local, ARROW_LENGTH)
 
+		proj_right_local_scale = _resize_vector(proj_right_local, SCALE_CIRCLE_LENGTH)
+		proj_up_local_scale = _resize_vector(proj_up_local, SCALE_CIRCLE_LENGTH)
+		proj_back_local_scale = _resize_vector(proj_back_local, SCALE_CIRCLE_LENGTH)
+
 		# Calculate position gizmos (arrows)
 		gizmo_position_x = _find_arrow(proj_right_local)
 		gizmo_position_y = _find_arrow(proj_up_local)
@@ -140,9 +161,9 @@ func _draw() -> void:
 			draw_polyline(gizmo_rotation_x, Color.red, width)
 			draw_polyline(gizmo_rotation_y, Color.green, width)
 			draw_polyline(gizmo_rotation_z, Color.blue, width)
-			draw_circle((proj_right_local.normalized() * SCALE_CIRCLE_LENGTH).limit_length(proj_right_local.length()), 1, Color.red)
-			draw_circle((proj_up_local.normalized() * SCALE_CIRCLE_LENGTH).limit_length(proj_up_local.length()), 1, Color.green)
-			draw_circle((proj_back_local.normalized() * SCALE_CIRCLE_LENGTH).limit_length(proj_back_local.length()), 1, Color.blue)
+			draw_circle(proj_right_local_scale, SCALE_CIRCLE_RADIUS, Color.red)
+			draw_circle(proj_up_local_scale, SCALE_CIRCLE_RADIUS, Color.green)
+			draw_circle(proj_back_local_scale, SCALE_CIRCLE_RADIUS, Color.blue)
 #			draw_set_transform(gizmos_origin, 0, Vector2.ONE)
 #			for i in gizmo_rotation_x.size():
 #				gizmo_rotation_x[i] *= draw_scale
@@ -154,9 +175,9 @@ func _draw() -> void:
 			var font_height := font.get_height()
 			var char_scale := 0.16
 			draw_set_transform(gizmos_origin + Vector2(-font_height, font_height) * char_scale / 4 * draw_scale, 0, draw_scale * char_scale)
-			draw_char(font, (proj_right_local.normalized() * SCALE_CIRCLE_LENGTH).limit_length(proj_right_local.length())/char_scale, 'X', '')
-			draw_char(font, (proj_up_local.normalized() * SCALE_CIRCLE_LENGTH).limit_length(proj_up_local.length())/char_scale, "Y", '')
-			draw_char(font, (proj_back_local.normalized() * SCALE_CIRCLE_LENGTH).limit_length(proj_back_local.length())/char_scale, "Z", '')
+			draw_char(font, proj_right_local_scale / char_scale, 'X', '')
+			draw_char(font, proj_up_local_scale / char_scale, "Y", '')
+			draw_char(font, proj_back_local_scale / char_scale, "Z", '')
 			draw_set_transform_matrix(Transform2D())
 		elif object.hovered:
 			draw_multiline(points, hovered_color, 1.0, true)
