@@ -24,18 +24,34 @@ func _ready() -> void:
 func _input(event: InputEvent) -> void:
 	if not event is InputEventMouseButton:
 		return
+	if gizmo_rotation_x.empty():
+		return
 	var pos: Vector2 = Global.canvas.current_pixel - gizmos_origin
 	if event.button_index == BUTTON_LEFT:
 		if event.pressed:
-			if Geometry.is_point_in_polygon(pos, gizmo_rotation_x):
+			var draw_scale := Global.camera.zoom * 10
+#			print(Geometry.offset_polyline_2d(gizmo_rotation_x, draw_scale.x)[0])
+			var gizmo_rotation_x_poly: PoolVector2Array
+			for i in gizmo_rotation_x.size():
+				gizmo_rotation_x_poly.append(gizmo_rotation_x[i] * draw_scale)
+			var gizmo_rotation_y_poly: PoolVector2Array
+			for i in gizmo_rotation_y.size():
+				gizmo_rotation_y_poly.append(gizmo_rotation_y[i] * draw_scale)
+			var gizmo_rotation_z_poly: PoolVector2Array
+			for i in gizmo_rotation_z.size():
+				gizmo_rotation_z_poly.append(gizmo_rotation_z[i] * draw_scale)
+			gizmo_rotation_x_poly = Geometry.offset_polyline_2d(gizmo_rotation_x_poly, draw_scale.x)[0]
+			gizmo_rotation_y_poly = Geometry.offset_polyline_2d(gizmo_rotation_y_poly, draw_scale.x)[0]
+			gizmo_rotation_z_poly = Geometry.offset_polyline_2d(gizmo_rotation_z_poly, draw_scale.x)[0]
+			if Geometry.is_point_in_polygon(pos, gizmo_rotation_x_poly):
 				for object in points_per_object:
 					if object.selected:
 						object.applying_gizmos = Object3D.Gizmos.X_ROT
-			elif Geometry.is_point_in_polygon(pos, gizmo_rotation_y):
+			elif Geometry.is_point_in_polygon(pos, gizmo_rotation_y_poly):
 				for object in points_per_object:
 					if object.selected:
 						object.applying_gizmos = Object3D.Gizmos.Y_ROT
-			elif Geometry.is_point_in_polygon(pos, gizmo_rotation_z):
+			elif Geometry.is_point_in_polygon(pos, gizmo_rotation_z_poly):
 				for object in points_per_object:
 					if object.selected:
 						object.applying_gizmos = Object3D.Gizmos.Z_ROT
@@ -71,9 +87,9 @@ func get_points(camera: Camera, object3d: Object3D) -> void:
 		proj_back_local = proj_back - gizmos_origin
 
 		# Calculate rotation gizmos
-		gizmo_rotation_z = _find_curve(proj_right_local, proj_up_local)
-		gizmo_rotation_y = _find_curve(proj_right_local, proj_back_local)
 		gizmo_rotation_x = _find_curve(proj_up_local, proj_back_local)
+		gizmo_rotation_y = _find_curve(proj_right_local, proj_back_local)
+		gizmo_rotation_z = _find_curve(proj_right_local, proj_up_local)
 
 	update()
 
@@ -95,7 +111,9 @@ func _draw() -> void:
 		if object.selected:
 			draw_multiline(points, selected_color, 1.0, true)
 			var width := 1.1
-			draw_set_transform(gizmos_origin, 0, Vector2.ONE)
+#			var draw_scale := Vector2.ONE
+			var draw_scale := Global.camera.zoom * 10
+			draw_set_transform(gizmos_origin, 0, draw_scale)
 			draw_line(Vector2.ZERO, proj_right_local, Color.red)
 			draw_line(Vector2.ZERO, proj_up_local, Color.green)
 			draw_line(Vector2.ZERO, proj_back_local, Color.blue)
@@ -108,10 +126,17 @@ func _draw() -> void:
 			draw_circle((proj_right_local.normalized() * 8).limit_length(proj_right_local.length()), 1, Color.red)
 			draw_circle((proj_up_local.normalized() * 8).limit_length(proj_up_local.length()), 1, Color.green)
 			draw_circle((proj_back_local.normalized() * 8).limit_length(proj_back_local.length()), 1, Color.blue)
+#			draw_set_transform(gizmos_origin, 0, Vector2.ONE)
+#			for i in gizmo_rotation_x.size():
+#				gizmo_rotation_x[i] *= draw_scale
+#			draw_polygon(Geometry.offset_polyline_2d(gizmo_rotation_x, draw_scale.x)[0], [Color.red])
+#			draw_polygon(gizmo_rotation_x, [Color.red])
+#			draw_polygon(gizmo_rotation_y, [Color.green])
+#			draw_polygon(gizmo_rotation_z, [Color.blue])
 			var font: Font = Global.control.theme.default_font
 			var font_height := font.get_height()
 			var char_scale := 0.16
-			draw_set_transform(gizmos_origin + Vector2(-font_height / 4, font_height / 4) * char_scale, 0, Vector2.ONE * char_scale)
+			draw_set_transform(gizmos_origin + Vector2(-font_height, font_height) * char_scale / 4 * draw_scale, 0, draw_scale * char_scale)
 			draw_char(font, (proj_right_local.normalized() * 8).limit_length(proj_right_local.length())/char_scale, 'X', '')
 			draw_char(font, (proj_up_local.normalized() * 8).limit_length(proj_up_local.length())/char_scale, "Y", '')
 			draw_char(font, (proj_back_local.normalized() * 8).limit_length(proj_back_local.length())/char_scale, "Z", '')
