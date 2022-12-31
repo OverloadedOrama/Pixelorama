@@ -100,5 +100,3 @@ func change_scale(diff: Vector3, axis: Vector3, dir: Vector3) -> void:
 	var diff_v2 := Vector2(diff.x, diff.y).normalized()
 	scale += dir * trans_proj.dot(diff_v2) * diff.length()
 	select()
-
-	select()
