@@ -3,9 +3,9 @@ extends MeshInstance
 
 enum Gizmos {
 	NONE,
-	X_TRANS,
-	Y_TRANS,
-	Z_TRANS,
+	X_POS,
+	Y_POS,
+	Z_POS,
 	X_ROT,
 	Y_ROT,
 	Z_ROT,

@@ -1,8 +1,10 @@
 extends Node2D
 
 const ARROW_LENGTH := 14
+const GIZMO_WIDTH := 1.1
 const SCALE_CIRCLE_LENGTH := 8
 const SCALE_CIRCLE_RADIUS := 1
+const CHAR_SCALE := 0.16
 
 var points_per_object := {}
 var selected_color := Color.white
@@ -16,67 +18,68 @@ var proj_back_local: Vector2
 var proj_right_local_scale: Vector2
 var proj_up_local_scale: Vector2
 var proj_back_local_scale: Vector2
-var gizmo_position_x := PoolVector2Array()
-var gizmo_position_y := PoolVector2Array()
-var gizmo_position_z := PoolVector2Array()
-var gizmo_rotation_x := PoolVector2Array()
-var gizmo_rotation_y := PoolVector2Array()
-var gizmo_rotation_z := PoolVector2Array()
+var gizmo_pos_x := PoolVector2Array()
+var gizmo_pos_y := PoolVector2Array()
+var gizmo_pos_z := PoolVector2Array()
+var gizmo_rot_x := PoolVector2Array()
+var gizmo_rot_y := PoolVector2Array()
+var gizmo_rot_z := PoolVector2Array()
 
 
 func _input(event: InputEvent) -> void:
 	if not event is InputEventMouseButton:
 		return
-	if gizmo_rotation_x.empty():
+	if gizmo_rot_x.empty():
+		return
+	if not event.button_index == BUTTON_LEFT:
 		return
 	var pos: Vector2 = Global.canvas.current_pixel - gizmos_origin
-	if event.button_index == BUTTON_LEFT:
-		if event.pressed:
-			var draw_scale := Global.camera.zoom * 10
-			pos /= draw_scale
-			var gizmo_rotation_x_poly: PoolVector2Array = Geometry.offset_polyline_2d(gizmo_rotation_x, 1)[0]
-			var gizmo_rotation_y_poly: PoolVector2Array = Geometry.offset_polyline_2d(gizmo_rotation_y, 1)[0]
-			var gizmo_rotation_z_poly: PoolVector2Array = Geometry.offset_polyline_2d(gizmo_rotation_z, 1)[0]
-			if Geometry.point_is_inside_triangle(pos, gizmo_position_x[0], gizmo_position_x[1], gizmo_position_x[2]):
-				for object in points_per_object:
-					if object.selected:
-						object.applying_gizmos = Object3D.Gizmos.X_TRANS
-			elif Geometry.point_is_inside_triangle(pos, gizmo_position_y[0], gizmo_position_y[1], gizmo_position_y[2]):
-				for object in points_per_object:
-					if object.selected:
-						object.applying_gizmos = Object3D.Gizmos.Y_TRANS
-			elif Geometry.point_is_inside_triangle(pos, gizmo_position_z[0], gizmo_position_z[1], gizmo_position_z[2]):
-				for object in points_per_object:
-					if object.selected:
-						object.applying_gizmos = Object3D.Gizmos.Z_TRANS
-			elif Geometry.is_point_in_circle(pos, proj_right_local_scale, SCALE_CIRCLE_RADIUS):
-				for object in points_per_object:
-					if object.selected:
-						object.applying_gizmos = Object3D.Gizmos.X_SCALE
-			elif Geometry.is_point_in_circle(pos, proj_up_local_scale, SCALE_CIRCLE_RADIUS):
-				for object in points_per_object:
-					if object.selected:
-						object.applying_gizmos = Object3D.Gizmos.Y_SCALE
-			elif Geometry.is_point_in_circle(pos, proj_back_local_scale, SCALE_CIRCLE_RADIUS):
-				for object in points_per_object:
-					if object.selected:
-						object.applying_gizmos = Object3D.Gizmos.Z_SCALE
-			elif Geometry.is_point_in_polygon(pos, gizmo_rotation_x_poly):
-				for object in points_per_object:
-					if object.selected:
-						object.applying_gizmos = Object3D.Gizmos.X_ROT
-			elif Geometry.is_point_in_polygon(pos, gizmo_rotation_y_poly):
-				for object in points_per_object:
-					if object.selected:
-						object.applying_gizmos = Object3D.Gizmos.Y_ROT
-			elif Geometry.is_point_in_polygon(pos, gizmo_rotation_z_poly):
-				for object in points_per_object:
-					if object.selected:
-						object.applying_gizmos = Object3D.Gizmos.Z_ROT
-		else:
+	if event.pressed:
+		var draw_scale := Global.camera.zoom * 10
+		pos /= draw_scale
+		var rot_x_offset: PoolVector2Array = Geometry.offset_polyline_2d(gizmo_rot_x, 1)[0]
+		var rot_y_offset: PoolVector2Array = Geometry.offset_polyline_2d(gizmo_rot_y, 1)[0]
+		var rot_z_offset: PoolVector2Array = Geometry.offset_polyline_2d(gizmo_rot_z, 1)[0]
+		if Geometry.point_is_inside_triangle(pos, gizmo_pos_x[0], gizmo_pos_x[1], gizmo_pos_x[2]):
 			for object in points_per_object:
 				if object.selected:
-					object.applying_gizmos = Object3D.Gizmos.NONE
+					object.applying_gizmos = Object3D.Gizmos.X_POS
+		elif Geometry.point_is_inside_triangle(pos, gizmo_pos_y[0], gizmo_pos_y[1], gizmo_pos_y[2]):
+			for object in points_per_object:
+				if object.selected:
+					object.applying_gizmos = Object3D.Gizmos.Y_POS
+		elif Geometry.point_is_inside_triangle(pos, gizmo_pos_z[0], gizmo_pos_z[1], gizmo_pos_z[2]):
+			for object in points_per_object:
+				if object.selected:
+					object.applying_gizmos = Object3D.Gizmos.Z_POS
+		elif Geometry.is_point_in_circle(pos, proj_right_local_scale, SCALE_CIRCLE_RADIUS):
+			for object in points_per_object:
+				if object.selected:
+					object.applying_gizmos = Object3D.Gizmos.X_SCALE
+		elif Geometry.is_point_in_circle(pos, proj_up_local_scale, SCALE_CIRCLE_RADIUS):
+			for object in points_per_object:
+				if object.selected:
+					object.applying_gizmos = Object3D.Gizmos.Y_SCALE
+		elif Geometry.is_point_in_circle(pos, proj_back_local_scale, SCALE_CIRCLE_RADIUS):
+			for object in points_per_object:
+				if object.selected:
+					object.applying_gizmos = Object3D.Gizmos.Z_SCALE
+		elif Geometry.is_point_in_polygon(pos, rot_x_offset):
+			for object in points_per_object:
+				if object.selected:
+					object.applying_gizmos = Object3D.Gizmos.X_ROT
+		elif Geometry.is_point_in_polygon(pos, rot_y_offset):
+			for object in points_per_object:
+				if object.selected:
+					object.applying_gizmos = Object3D.Gizmos.Y_ROT
+		elif Geometry.is_point_in_polygon(pos, rot_z_offset):
+			for object in points_per_object:
+				if object.selected:
+					object.applying_gizmos = Object3D.Gizmos.Z_ROT
+	else:
+		for object in points_per_object:
+			if object.selected:
+				object.applying_gizmos = Object3D.Gizmos.NONE
 
 
 func get_points(camera: Camera, object3d: Object3D) -> void:
@@ -112,13 +115,13 @@ func get_points(camera: Camera, object3d: Object3D) -> void:
 		proj_back_local_scale = _resize_vector(proj_back_local, SCALE_CIRCLE_LENGTH)
 
 		# Calculate position gizmos (arrows)
-		gizmo_position_x = _find_arrow(proj_right_local)
-		gizmo_position_y = _find_arrow(proj_up_local)
-		gizmo_position_z = _find_arrow(proj_back_local)
+		gizmo_pos_x = _find_arrow(proj_right_local)
+		gizmo_pos_y = _find_arrow(proj_up_local)
+		gizmo_pos_z = _find_arrow(proj_back_local)
 		# Calculate rotation gizmos
-		gizmo_rotation_x = _find_curve(proj_up_local, proj_back_local)
-		gizmo_rotation_y = _find_curve(proj_right_local, proj_back_local)
-		gizmo_rotation_z = _find_curve(proj_right_local, proj_up_local)
+		gizmo_rot_x = _find_curve(proj_up_local, proj_back_local)
+		gizmo_rot_y = _find_curve(proj_right_local, proj_back_local)
+		gizmo_rot_z = _find_curve(proj_right_local, proj_up_local)
 
 	update()
 
@@ -138,37 +141,37 @@ func _draw() -> void:
 		if points.empty():
 			continue
 		if object.selected:
+			# Draw bounding box outline
 			draw_multiline(points, selected_color, 1.0, true)
-			var width := 1.1
-#			var draw_scale := Vector2.ONE
+
 			var draw_scale := Global.camera.zoom * 10
 			draw_set_transform(gizmos_origin, 0, draw_scale)
+			# Draw position arrows
 			draw_line(Vector2.ZERO, proj_right_local, Color.red)
 			draw_line(Vector2.ZERO, proj_up_local, Color.green)
 			draw_line(Vector2.ZERO, proj_back_local, Color.blue)
-			_draw_arrow(gizmo_position_x, Color.red)
-			_draw_arrow(gizmo_position_y, Color.green)
-			_draw_arrow(gizmo_position_z, Color.blue)
-			draw_polyline(gizmo_rotation_x, Color.red, width)
-			draw_polyline(gizmo_rotation_y, Color.green, width)
-			draw_polyline(gizmo_rotation_z, Color.blue, width)
+			_draw_arrow(gizmo_pos_x, Color.red)
+			_draw_arrow(gizmo_pos_y, Color.green)
+			_draw_arrow(gizmo_pos_z, Color.blue)
+
+			# Draw rotation curves
+			draw_polyline(gizmo_rot_x, Color.red, GIZMO_WIDTH)
+			draw_polyline(gizmo_rot_y, Color.green, GIZMO_WIDTH)
+			draw_polyline(gizmo_rot_z, Color.blue, GIZMO_WIDTH)
+
+			# Draw scale circles
 			draw_circle(proj_right_local_scale, SCALE_CIRCLE_RADIUS, Color.red)
 			draw_circle(proj_up_local_scale, SCALE_CIRCLE_RADIUS, Color.green)
 			draw_circle(proj_back_local_scale, SCALE_CIRCLE_RADIUS, Color.blue)
-#			draw_set_transform(gizmos_origin, 0, Vector2.ONE)
-#			for i in gizmo_rotation_x.size():
-#				gizmo_rotation_x[i] *= draw_scale
-#			draw_polygon(Geometry.offset_polyline_2d(gizmo_rotation_x, 1)[0], [Color.red])
-#			draw_polygon(gizmo_rotation_x, [Color.red])
-#			draw_polygon(gizmo_rotation_y, [Color.green])
-#			draw_polygon(gizmo_rotation_z, [Color.blue])
+
+			# Draw X, Y, Z characters on top of the scale circles
 			var font: Font = Global.control.theme.default_font
 			var font_height := font.get_height()
-			var char_scale := 0.16
-			draw_set_transform(gizmos_origin + Vector2(-font_height, font_height) * char_scale / 4 * draw_scale, 0, draw_scale * char_scale)
-			draw_char(font, proj_right_local_scale / char_scale, 'X', '')
-			draw_char(font, proj_up_local_scale / char_scale, "Y", '')
-			draw_char(font, proj_back_local_scale / char_scale, "Z", '')
+			var char_position := Vector2(-font_height, font_height) * CHAR_SCALE / 4 * draw_scale
+			draw_set_transform(gizmos_origin + char_position, 0, draw_scale * CHAR_SCALE)
+			draw_char(font, proj_right_local_scale / CHAR_SCALE, 'X', '')
+			draw_char(font, proj_up_local_scale / CHAR_SCALE, "Y", '')
+			draw_char(font, proj_back_local_scale / CHAR_SCALE, "Z", '')
 			draw_set_transform_matrix(Transform2D())
 		elif object.hovered:
 			draw_multiline(points, hovered_color, 1.0, true)
@@ -198,8 +201,3 @@ func _find_arrow(a: Vector2, tilt := 0.5) -> PoolVector2Array:
 
 func _draw_arrow(triangle: PoolVector2Array, color: Color) -> void:
 	draw_primitive(triangle, [color, color, color], [])
-
-
-func _scale_gizmo(gizmo: Control, new_scale: Vector2) -> void:
-	gizmo.rect_scale.x = max(0.1, new_scale.x) if new_scale.x >= 0 else min(-0.1, new_scale.x)
-	gizmo.rect_scale.y = max(0.1, new_scale.y) if new_scale.y >= 0 else min(-0.1, new_scale.y)
