@@ -64,11 +64,11 @@ func change_transform(diff: Vector3) -> void:
 		Gizmos.Z_ROT:
 			change_rotation(Vector3(0, 0, diff.x))
 		Gizmos.X_SCALE:
-			change_scale(Vector3(diff.x, 0, 0))
+			change_scale(diff, transform.basis.x, Vector3.RIGHT)
 		Gizmos.Y_SCALE:
-			change_scale(Vector3(0, diff.y, 0))
+			change_scale(diff, transform.basis.y, Vector3.UP)
 		Gizmos.Z_SCALE:
-			change_scale(Vector3(0, 0, diff.x))
+			change_scale(diff, transform.basis.z, Vector3.BACK)
 		_:
 			move(diff)
 
@@ -94,8 +94,11 @@ func change_rotation(position: Vector3) -> void:
 	select()
 
 
-func change_scale(position: Vector3) -> void:
-	scale += position
+func change_scale(diff: Vector3, axis: Vector3, dir: Vector3) -> void:
+	# Scale the object in the direction it is facing, and restrict mouse movement in that axis
+	var trans_proj := Vector2(axis.x, axis.y).normalized()
+	var diff_v2 := Vector2(diff.x, diff.y).normalized()
+	scale += dir * trans_proj.dot(diff_v2) * diff.length()
 	select()
 
 	select()
