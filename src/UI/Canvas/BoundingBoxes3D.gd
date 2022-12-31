@@ -30,19 +30,20 @@ func _input(event: InputEvent) -> void:
 	if event.button_index == BUTTON_LEFT:
 		if event.pressed:
 			var draw_scale := Global.camera.zoom * 10
+			pos /= draw_scale
 #			print(Geometry.offset_polyline_2d(gizmo_rotation_x, draw_scale.x)[0])
-			var gizmo_rotation_x_poly: PoolVector2Array
-			for i in gizmo_rotation_x.size():
-				gizmo_rotation_x_poly.append(gizmo_rotation_x[i] * draw_scale)
-			var gizmo_rotation_y_poly: PoolVector2Array
-			for i in gizmo_rotation_y.size():
-				gizmo_rotation_y_poly.append(gizmo_rotation_y[i] * draw_scale)
-			var gizmo_rotation_z_poly: PoolVector2Array
-			for i in gizmo_rotation_z.size():
-				gizmo_rotation_z_poly.append(gizmo_rotation_z[i] * draw_scale)
-			gizmo_rotation_x_poly = Geometry.offset_polyline_2d(gizmo_rotation_x_poly, draw_scale.x)[0]
-			gizmo_rotation_y_poly = Geometry.offset_polyline_2d(gizmo_rotation_y_poly, draw_scale.x)[0]
-			gizmo_rotation_z_poly = Geometry.offset_polyline_2d(gizmo_rotation_z_poly, draw_scale.x)[0]
+#			var gizmo_rotation_x_poly: PoolVector2Array
+#			for i in gizmo_rotation_x.size():
+#				gizmo_rotation_x_poly.append(gizmo_rotation_x[i] * draw_scale)
+#			var gizmo_rotation_y_poly: PoolVector2Array
+#			for i in gizmo_rotation_y.size():
+#				gizmo_rotation_y_poly.append(gizmo_rotation_y[i] * draw_scale)
+#			var gizmo_rotation_z_poly: PoolVector2Array
+#			for i in gizmo_rotation_z.size():
+#				gizmo_rotation_z_poly.append(gizmo_rotation_z[i] * draw_scale)
+			var gizmo_rotation_x_poly: PoolVector2Array = Geometry.offset_polyline_2d(gizmo_rotation_x, 1)[0]
+			var gizmo_rotation_y_poly: PoolVector2Array = Geometry.offset_polyline_2d(gizmo_rotation_y, 1)[0]
+			var gizmo_rotation_z_poly: PoolVector2Array = Geometry.offset_polyline_2d(gizmo_rotation_z, 1)[0]
 			if Geometry.is_point_in_polygon(pos, gizmo_rotation_x_poly):
 				for object in points_per_object:
 					if object.selected:
@@ -129,7 +130,7 @@ func _draw() -> void:
 #			draw_set_transform(gizmos_origin, 0, Vector2.ONE)
 #			for i in gizmo_rotation_x.size():
 #				gizmo_rotation_x[i] *= draw_scale
-#			draw_polygon(Geometry.offset_polyline_2d(gizmo_rotation_x, draw_scale.x)[0], [Color.red])
+#			draw_polygon(Geometry.offset_polyline_2d(gizmo_rotation_x, 1)[0], [Color.red])
 #			draw_polygon(gizmo_rotation_x, [Color.red])
 #			draw_polygon(gizmo_rotation_y, [Color.green])
 #			draw_polygon(gizmo_rotation_z, [Color.blue])
