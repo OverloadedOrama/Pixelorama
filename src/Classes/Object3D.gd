@@ -1,18 +1,7 @@
 class_name Object3D
 extends MeshInstance
 
-enum Gizmos {
-	NONE,
-	X_POS,
-	Y_POS,
-	Z_POS,
-	X_ROT,
-	Y_ROT,
-	Z_ROT,
-	X_SCALE,
-	Y_SCALE,
-	Z_SCALE
-}
+enum Gizmos { NONE, X_POS, Y_POS, Z_POS, X_ROT, Y_ROT, Z_ROT, X_SCALE, Y_SCALE, Z_SCALE }
 
 var selected := false
 var hovered := false

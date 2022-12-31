@@ -169,9 +169,9 @@ func _draw() -> void:
 			var font_height := font.get_height()
 			var char_position := Vector2(-font_height, font_height) * CHAR_SCALE / 4 * draw_scale
 			draw_set_transform(gizmos_origin + char_position, 0, draw_scale * CHAR_SCALE)
-			draw_char(font, proj_right_local_scale / CHAR_SCALE, 'X', '')
-			draw_char(font, proj_up_local_scale / CHAR_SCALE, "Y", '')
-			draw_char(font, proj_back_local_scale / CHAR_SCALE, "Z", '')
+			draw_char(font, proj_right_local_scale / CHAR_SCALE, "X", "")
+			draw_char(font, proj_up_local_scale / CHAR_SCALE, "Y", "")
+			draw_char(font, proj_back_local_scale / CHAR_SCALE, "Z", "")
 			draw_set_transform_matrix(Transform2D())
 		elif object.hovered:
 			draw_multiline(points, hovered_color, 1.0, true)
@@ -184,7 +184,7 @@ func _resize_vector(v: Vector2, l: float) -> Vector2:
 func _find_curve(a: Vector2, b: Vector2) -> PoolVector2Array:
 	var curve2d := Curve2D.new()
 	curve2d.bake_interval = 0.5
-	var control := (b.linear_interpolate(a, 0.5))
+	var control := b.linear_interpolate(a, 0.5)
 	a = _resize_vector(a, SCALE_CIRCLE_LENGTH)
 	b = _resize_vector(b, SCALE_CIRCLE_LENGTH)
 	control = control.normalized() * sqrt(pow(a.length() / 4, 2) * 2)  # Thank you Pythagoras
@@ -194,8 +194,8 @@ func _find_curve(a: Vector2, b: Vector2) -> PoolVector2Array:
 
 
 func _find_arrow(a: Vector2, tilt := 0.5) -> PoolVector2Array:
-	var b := (a + Vector2(-tilt, 1).rotated(a.angle() + PI / 2) * 2)
-	var c := (a + Vector2(tilt, 1).rotated(a.angle() + PI / 2) * 2)
+	var b := a + Vector2(-tilt, 1).rotated(a.angle() + PI / 2) * 2
+	var c := a + Vector2(tilt, 1).rotated(a.angle() + PI / 2) * 2
 	return PoolVector2Array([a, b, c])
 
 

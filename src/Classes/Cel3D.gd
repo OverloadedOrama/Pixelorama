@@ -25,9 +25,8 @@ func _init(size: Vector2) -> void:
 	var cube_mesh := CubeMesh.new()
 	cube.mesh = cube_mesh
 	camera.current = true
-	light.rotate_y(-PI/4)
+	light.rotate_y(-PI / 4)
 #	cube.translation = Vector3(0, 0, -4)
-	cube.rotation_degrees = Vector3(20, -50, -20)
 	node_3d.add_child(camera)
 	node_3d.add_child(light)
 	node_3d.add_child(cube)
