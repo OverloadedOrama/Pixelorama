@@ -1,5 +1,8 @@
 extends Node2D
 
+const ARROW_LENGTH := 14
+const SCALE_CIRCLE_LENGTH := 8
+
 var points_per_object := {}
 var selected_color := Color.white
 var hovered_color := Color.gray
@@ -31,16 +34,6 @@ func _input(event: InputEvent) -> void:
 		if event.pressed:
 			var draw_scale := Global.camera.zoom * 10
 			pos /= draw_scale
-#			print(Geometry.offset_polyline_2d(gizmo_rotation_x, draw_scale.x)[0])
-#			var gizmo_rotation_x_poly: PoolVector2Array
-#			for i in gizmo_rotation_x.size():
-#				gizmo_rotation_x_poly.append(gizmo_rotation_x[i] * draw_scale)
-#			var gizmo_rotation_y_poly: PoolVector2Array
-#			for i in gizmo_rotation_y.size():
-#				gizmo_rotation_y_poly.append(gizmo_rotation_y[i] * draw_scale)
-#			var gizmo_rotation_z_poly: PoolVector2Array
-#			for i in gizmo_rotation_z.size():
-#				gizmo_rotation_z_poly.append(gizmo_rotation_z[i] * draw_scale)
 			var gizmo_rotation_x_poly: PoolVector2Array = Geometry.offset_polyline_2d(gizmo_rotation_x, 1)[0]
 			var gizmo_rotation_y_poly: PoolVector2Array = Geometry.offset_polyline_2d(gizmo_rotation_y, 1)[0]
 			var gizmo_rotation_z_poly: PoolVector2Array = Geometry.offset_polyline_2d(gizmo_rotation_z, 1)[0]
@@ -87,6 +80,10 @@ func get_points(camera: Camera, object3d: Object3D) -> void:
 		proj_up_local = proj_up - gizmos_origin
 		proj_back_local = proj_back - gizmos_origin
 
+		proj_right_local = (proj_right_local.normalized() * ARROW_LENGTH).limit_length(proj_right_local.length())
+		proj_up_local = (proj_up_local.normalized() * ARROW_LENGTH).limit_length(proj_up_local.length())
+		proj_back_local = (proj_back_local.normalized() * ARROW_LENGTH).limit_length(proj_back_local.length())
+
 		# Calculate rotation gizmos
 		gizmo_rotation_x = _find_curve(proj_up_local, proj_back_local)
 		gizmo_rotation_y = _find_curve(proj_right_local, proj_back_local)
@@ -124,9 +121,9 @@ func _draw() -> void:
 			draw_polyline(gizmo_rotation_x, Color.red, width)
 			draw_polyline(gizmo_rotation_y, Color.green, width)
 			draw_polyline(gizmo_rotation_z, Color.blue, width)
-			draw_circle((proj_right_local.normalized() * 8).limit_length(proj_right_local.length()), 1, Color.red)
-			draw_circle((proj_up_local.normalized() * 8).limit_length(proj_up_local.length()), 1, Color.green)
-			draw_circle((proj_back_local.normalized() * 8).limit_length(proj_back_local.length()), 1, Color.blue)
+			draw_circle((proj_right_local.normalized() * SCALE_CIRCLE_LENGTH).limit_length(proj_right_local.length()), 1, Color.red)
+			draw_circle((proj_up_local.normalized() * SCALE_CIRCLE_LENGTH).limit_length(proj_up_local.length()), 1, Color.green)
+			draw_circle((proj_back_local.normalized() * SCALE_CIRCLE_LENGTH).limit_length(proj_back_local.length()), 1, Color.blue)
 #			draw_set_transform(gizmos_origin, 0, Vector2.ONE)
 #			for i in gizmo_rotation_x.size():
 #				gizmo_rotation_x[i] *= draw_scale
@@ -138,9 +135,9 @@ func _draw() -> void:
 			var font_height := font.get_height()
 			var char_scale := 0.16
 			draw_set_transform(gizmos_origin + Vector2(-font_height, font_height) * char_scale / 4 * draw_scale, 0, draw_scale * char_scale)
-			draw_char(font, (proj_right_local.normalized() * 8).limit_length(proj_right_local.length())/char_scale, 'X', '')
-			draw_char(font, (proj_up_local.normalized() * 8).limit_length(proj_up_local.length())/char_scale, "Y", '')
-			draw_char(font, (proj_back_local.normalized() * 8).limit_length(proj_back_local.length())/char_scale, "Z", '')
+			draw_char(font, (proj_right_local.normalized() * SCALE_CIRCLE_LENGTH).limit_length(proj_right_local.length())/char_scale, 'X', '')
+			draw_char(font, (proj_up_local.normalized() * SCALE_CIRCLE_LENGTH).limit_length(proj_up_local.length())/char_scale, "Y", '')
+			draw_char(font, (proj_back_local.normalized() * SCALE_CIRCLE_LENGTH).limit_length(proj_back_local.length())/char_scale, "Z", '')
 			draw_set_transform_matrix(Transform2D())
 		elif object.hovered:
 			draw_multiline(points, hovered_color, 1.0, true)
@@ -161,11 +158,11 @@ func _on_gizmo_button_up() -> void:
 func _find_curve(a: Vector2, b: Vector2) -> PoolVector2Array:
 	var curve2d := Curve2D.new()
 	curve2d.bake_interval = 0.5
-#	var control := (b.linear_interpolate(a, 0.5) - gizmos_origin).limit_length(8)
+#	var control := (b.linear_interpolate(a, 0.5) - gizmos_origin).limit_length(SCALE_CIRCLE_LENGTH)
 	var control := (b.linear_interpolate(a, 0.5))
 #	print(control.length())
-	a = (a.normalized() * 8).limit_length(a.length())
-	b = (b.normalized() * 8).limit_length(b.length())
+	a = (a.normalized() * SCALE_CIRCLE_LENGTH).limit_length(a.length())
+	b = (b.normalized() * SCALE_CIRCLE_LENGTH).limit_length(b.length())
 	control = control.normalized() * sqrt(pow(a.length()/4, 2) * 2)
 #	print(a.length(), " ", b.length())
 	curve2d.add_point(a, Vector2.ZERO, control)
