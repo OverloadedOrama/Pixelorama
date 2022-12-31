@@ -80,9 +80,9 @@ func get_points(camera: Camera, object3d: Object3D) -> void:
 		proj_up_local = proj_up - gizmos_origin
 		proj_back_local = proj_back - gizmos_origin
 
-		proj_right_local = (proj_right_local.normalized() * ARROW_LENGTH).limit_length(proj_right_local.length())
-		proj_up_local = (proj_up_local.normalized() * ARROW_LENGTH).limit_length(proj_up_local.length())
-		proj_back_local = (proj_back_local.normalized() * ARROW_LENGTH).limit_length(proj_back_local.length())
+		proj_right_local = _resize_vector(proj_right_local, ARROW_LENGTH)
+		proj_up_local = _resize_vector(proj_up_local, ARROW_LENGTH)
+		proj_back_local = _resize_vector(proj_back_local, ARROW_LENGTH)
 
 		# Calculate rotation gizmos
 		gizmo_rotation_x = _find_curve(proj_up_local, proj_back_local)
@@ -155,16 +155,17 @@ func _on_gizmo_button_up() -> void:
 			object.applying_gizmos = Object3D.Gizmos.NONE
 
 
+func _resize_vector(v: Vector2, l: float) -> Vector2:
+	return (v.normalized() * l).limit_length(v.length())
+
+
 func _find_curve(a: Vector2, b: Vector2) -> PoolVector2Array:
 	var curve2d := Curve2D.new()
 	curve2d.bake_interval = 0.5
-#	var control := (b.linear_interpolate(a, 0.5) - gizmos_origin).limit_length(SCALE_CIRCLE_LENGTH)
 	var control := (b.linear_interpolate(a, 0.5))
-#	print(control.length())
-	a = (a.normalized() * SCALE_CIRCLE_LENGTH).limit_length(a.length())
-	b = (b.normalized() * SCALE_CIRCLE_LENGTH).limit_length(b.length())
-	control = control.normalized() * sqrt(pow(a.length()/4, 2) * 2)
-#	print(a.length(), " ", b.length())
+	a = _resize_vector(a, SCALE_CIRCLE_LENGTH)
+	b = _resize_vector(b, SCALE_CIRCLE_LENGTH)
+	control = control.normalized() * sqrt(pow(a.length() / 4, 2) * 2)  # Thank you Pythagoras
 	curve2d.add_point(a, Vector2.ZERO, control)
 	curve2d.add_point(b, control)
 	return curve2d.get_baked_points()
@@ -173,7 +174,6 @@ func _find_curve(a: Vector2, b: Vector2) -> PoolVector2Array:
 func _draw_arrow(a: Vector2, color) -> void:
 	var b := (a + Vector2(-0.5, 1).rotated(a.angle() + PI / 2) * 2)
 	var c := (a + Vector2(0.5, 1).rotated(a.angle() + PI / 2) * 2)
-#	draw_polyline([b, a, c, b], Color.black)
 	draw_primitive([a, b, c], [color, color, color], [])
 
 
