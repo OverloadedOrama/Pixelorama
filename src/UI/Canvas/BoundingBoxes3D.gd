@@ -23,14 +23,6 @@ var gizmo_rotation_x := PoolVector2Array()
 var gizmo_rotation_y := PoolVector2Array()
 var gizmo_rotation_z := PoolVector2Array()
 
-onready var gizmos: Control = $Gizmos
-
-
-func _ready() -> void:
-	for gizmo in gizmos.get_children():
-		gizmo.connect("button_up", self, "_on_gizmo_button_up")
-		gizmo.connect("button_down", self, "_on_gizmo_button_down", [gizmo.get_index() + 1])
-
 
 func _input(event: InputEvent) -> void:
 	if not event is InputEventMouseButton:
@@ -97,7 +89,6 @@ func get_points(camera: Camera, object3d: Object3D) -> void:
 		points.append(point)
 	points_per_object[object3d] = points
 	if object3d.selected:
-		gizmos.visible = true
 		gizmos_origin = camera.unproject_position(object3d.translation)
 
 		var right: Vector3 = object3d.translation + object3d.transform.basis.x
@@ -134,8 +125,8 @@ func get_points(camera: Camera, object3d: Object3D) -> void:
 
 func clear_points(object3d: Object3D) -> void:
 	points_per_object.erase(object3d)
-	if not object3d.selected:
-		gizmos.visible = false
+#	if not object3d.selected:
+#		gizmos.visible = false
 	update()
 
 
@@ -181,18 +172,6 @@ func _draw() -> void:
 			draw_set_transform_matrix(Transform2D())
 		elif object.hovered:
 			draw_multiline(points, hovered_color, 1.0, true)
-
-
-func _on_gizmo_button_down(index: int) -> void:
-	for object in points_per_object:
-		if object.selected:
-			object.applying_gizmos = index
-
-
-func _on_gizmo_button_up() -> void:
-	for object in points_per_object:
-		if object.selected:
-			object.applying_gizmos = Object3D.Gizmos.NONE
 
 
 func _resize_vector(v: Vector2, l: float) -> Vector2:

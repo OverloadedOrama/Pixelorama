@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=2]
+[gd_scene load_steps=16 format=2]
 
 [ext_resource path="res://src/UI/Canvas/Canvas.gd" type="Script" id=1]
 [ext_resource path="res://src/UI/Canvas/Grid.gd" type="Script" id=2]
@@ -12,10 +12,6 @@
 [ext_resource path="res://src/Shaders/AutoInvertColors.shader" type="Shader" id=10]
 [ext_resource path="res://src/UI/Canvas/BoundingBoxes3D.gd" type="Script" id=11]
 [ext_resource path="res://src/UI/Canvas/OnionSkinning.gd" type="Script" id=12]
-[ext_resource path="res://assets/graphics/gizmos/gizmo_arrow.png" type="Texture" id=13]
-[ext_resource path="res://assets/graphics/gizmos/gizmo_arc.png" type="Texture" id=14]
-[ext_resource path="res://assets/graphics/gizmos/gizmo_arrow_bitmap.png" type="BitMap" id=15]
-[ext_resource path="res://assets/graphics/gizmos/gizmo_arc_bitmap.png" type="BitMap" id=16]
 
 [sub_resource type="CanvasItemMaterial" id=1]
 blend_mode = 4
@@ -80,101 +76,3 @@ script = ExtResource( 12 )
 
 [node name="BoundingBoxes3D" type="Node2D" parent="."]
 script = ExtResource( 11 )
-
-[node name="Gizmos" type="Control" parent="BoundingBoxes3D"]
-
-[node name="XArrow" type="TextureButton" parent="BoundingBoxes3D/Gizmos"]
-modulate = Color( 0.956863, 0.2, 0.317647, 1 )
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-margin_left = -4.5
-margin_top = -16.0
-margin_right = 4.5
-rect_pivot_offset = Vector2( 4, 16 )
-mouse_default_cursor_shape = 13
-texture_normal = ExtResource( 13 )
-texture_click_mask = ExtResource( 15 )
-expand = true
-stretch_mode = 4
-
-[node name="YArrow" type="TextureButton" parent="BoundingBoxes3D/Gizmos"]
-modulate = Color( 0.529412, 0.839216, 0.00784314, 1 )
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-margin_left = -4.5
-margin_top = -16.0
-margin_right = 4.5
-rect_pivot_offset = Vector2( 4, 16 )
-mouse_default_cursor_shape = 13
-texture_normal = ExtResource( 13 )
-texture_click_mask = ExtResource( 15 )
-expand = true
-stretch_mode = 4
-
-[node name="ZArrow" type="TextureButton" parent="BoundingBoxes3D/Gizmos"]
-modulate = Color( 0.156863, 0.54902, 0.956863, 1 )
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-margin_left = -4.5
-margin_top = -16.0
-margin_right = 4.5
-rect_pivot_offset = Vector2( 4, 16 )
-mouse_default_cursor_shape = 13
-texture_normal = ExtResource( 13 )
-texture_click_mask = ExtResource( 15 )
-expand = true
-stretch_mode = 4
-
-[node name="XRot" type="TextureButton" parent="BoundingBoxes3D/Gizmos"]
-modulate = Color( 0.956863, 0.2, 0.317647, 1 )
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-margin_left = -11.0
-margin_top = -16.0
-margin_right = -2.0
-rect_pivot_offset = Vector2( 9, 16 )
-mouse_default_cursor_shape = 13
-texture_normal = ExtResource( 14 )
-texture_click_mask = ExtResource( 16 )
-expand = true
-stretch_mode = 4
-
-[node name="YRot" type="TextureButton" parent="BoundingBoxes3D/Gizmos"]
-modulate = Color( 0.529412, 0.839216, 0.00784314, 1 )
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-margin_left = -18.0
-margin_top = -16.0
-margin_right = -9.0
-rect_pivot_offset = Vector2( 9, 16 )
-mouse_default_cursor_shape = 13
-texture_normal = ExtResource( 14 )
-texture_click_mask = ExtResource( 16 )
-expand = true
-stretch_mode = 4
-
-[node name="ZRot" type="TextureButton" parent="BoundingBoxes3D/Gizmos"]
-modulate = Color( 0.156863, 0.54902, 0.956863, 1 )
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-margin_left = -11.0
-margin_top = -16.0
-margin_right = -2.0
-rect_pivot_offset = Vector2( 9, 16 )
-mouse_default_cursor_shape = 13
-texture_normal = ExtResource( 14 )
-texture_click_mask = ExtResource( 16 )
-expand = true
-stretch_mode = 4
