@@ -49,8 +49,47 @@ func unhover() -> void:
 	Global.canvas.get_node("BoundingBoxes3D").clear_points(self)
 
 
+func change_transform(diff: Vector3) -> void:
+	match applying_gizmos:
+		Gizmos.X_POS:
+			move_x(Vector3(diff.x, 0, 0))
+		Gizmos.Y_POS:
+			move_y(Vector3(0, diff.y, 0))
+		Gizmos.Z_POS:
+			move_z(Vector3(0, 0, diff.x))
+		Gizmos.X_ROT:
+			change_rotation(Vector3(diff.x, 0, 0))
+		Gizmos.Y_ROT:
+			change_rotation(Vector3(0, diff.y, 0))
+		Gizmos.Z_ROT:
+			change_rotation(Vector3(0, 0, diff.x))
+		Gizmos.X_SCALE:
+			change_scale(Vector3(diff.x, 0, 0))
+		Gizmos.Y_SCALE:
+			change_scale(Vector3(0, diff.y, 0))
+		Gizmos.Z_SCALE:
+			change_scale(Vector3(0, 0, diff.x))
+		_:
+			move(diff)
+
+
 func move(position: Vector3) -> void:
 	translation += position
+	select()
+
+
+func move_x(position: Vector3) -> void:
+	translation += position.x * transform.basis.x
+	select()
+
+
+func move_y(position: Vector3) -> void:
+	translation += position.y * transform.basis.y
+	select()
+
+
+func move_z(position: Vector3) -> void:
+	translation += position.z * transform.basis.z
 	select()
 
 
@@ -65,3 +104,4 @@ func change_rotation(position: Vector3) -> void:
 func change_scale(position: Vector3) -> void:
 	scale += position
 	select()
+

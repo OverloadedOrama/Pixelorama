@@ -49,26 +49,8 @@ func _input(event: InputEvent) -> void:
 	if dragging and event is InputEventMouseMotion:
 		var prev_projected := camera.project_position(prev_mouse_pos, camera.translation.z)
 		var projected := camera.project_position(mouse_pos, camera.translation.z)
-		if selected.applying_gizmos == Object3D.Gizmos.X_POS:
-			selected.move(Vector3(projected.x - prev_projected.x, 0, 0))
-		elif selected.applying_gizmos == Object3D.Gizmos.Y_POS:
-			selected.move(Vector3(0, projected.y - prev_projected.y, 0))
-		elif selected.applying_gizmos == Object3D.Gizmos.Z_POS:
-			selected.move(Vector3(0, 0, projected.x - prev_projected.x))
-		elif selected.applying_gizmos == Object3D.Gizmos.X_ROT:
-			selected.change_rotation(Vector3(projected.x - prev_projected.x, 0, 0))
-		elif selected.applying_gizmos == Object3D.Gizmos.Y_ROT:
-			selected.change_rotation(Vector3(0, projected.y - prev_projected.y, 0))
-		elif selected.applying_gizmos == Object3D.Gizmos.Z_ROT:
-			selected.change_rotation(Vector3(0, 0, projected.x - prev_projected.x))
-		elif selected.applying_gizmos == Object3D.Gizmos.X_SCALE:
-			selected.change_scale(Vector3(projected.x - prev_projected.x, 0, 0))
-		elif selected.applying_gizmos == Object3D.Gizmos.Y_SCALE:
-			selected.change_scale(Vector3(0, projected.y - prev_projected.y, 0))
-		elif selected.applying_gizmos == Object3D.Gizmos.Z_SCALE:
-			selected.change_scale(Vector3(0, 0, projected.x - prev_projected.x))
-		else:
-			selected.move(projected - prev_projected)
+		var projected_diff := projected - prev_projected
+		selected.change_transform(projected_diff)
 		prev_mouse_pos = mouse_pos
 
 	# Hover logic
