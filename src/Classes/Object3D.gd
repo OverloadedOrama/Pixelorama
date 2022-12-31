@@ -52,11 +52,11 @@ func unhover() -> void:
 func change_transform(diff: Vector3) -> void:
 	match applying_gizmos:
 		Gizmos.X_POS:
-			move_x(Vector3(diff.x, 0, 0))
+			move_axis(diff, transform.basis.x)
 		Gizmos.Y_POS:
-			move_y(Vector3(0, diff.y, 0))
+			move_axis(diff, transform.basis.y)
 		Gizmos.Z_POS:
-			move_z(Vector3(0, 0, diff.x))
+			move_axis(diff, transform.basis.z)
 		Gizmos.X_ROT:
 			change_rotation(Vector3(diff.x, 0, 0))
 		Gizmos.Y_ROT:
@@ -78,18 +78,11 @@ func move(position: Vector3) -> void:
 	select()
 
 
-func move_x(position: Vector3) -> void:
-	translation += position.x * transform.basis.x
-	select()
-
-
-func move_y(position: Vector3) -> void:
-	translation += position.y * transform.basis.y
-	select()
-
-
-func move_z(position: Vector3) -> void:
-	translation += position.z * transform.basis.z
+func move_axis(diff: Vector3, axis: Vector3) -> void:
+	# Move the object in the direction it is facing, and restrict mouse movement in that axis
+	var trans_proj := Vector2(axis.x, axis.y).normalized()
+	var diff_v2 := Vector2(diff.x, diff.y).normalized()
+	translation += axis * trans_proj.dot(diff_v2) * diff.length()
 	select()
 
 
@@ -105,3 +98,4 @@ func change_scale(position: Vector3) -> void:
 	scale += position
 	select()
 
+	select()
