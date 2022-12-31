@@ -11,6 +11,9 @@ var gizmos_origin: Vector2
 var proj_right_local: Vector2
 var proj_up_local: Vector2
 var proj_back_local: Vector2
+var gizmo_position_x := PoolVector2Array()
+var gizmo_position_y := PoolVector2Array()
+var gizmo_position_z := PoolVector2Array()
 var gizmo_rotation_x := PoolVector2Array()
 var gizmo_rotation_y := PoolVector2Array()
 var gizmo_rotation_z := PoolVector2Array()
@@ -37,7 +40,19 @@ func _input(event: InputEvent) -> void:
 			var gizmo_rotation_x_poly: PoolVector2Array = Geometry.offset_polyline_2d(gizmo_rotation_x, 1)[0]
 			var gizmo_rotation_y_poly: PoolVector2Array = Geometry.offset_polyline_2d(gizmo_rotation_y, 1)[0]
 			var gizmo_rotation_z_poly: PoolVector2Array = Geometry.offset_polyline_2d(gizmo_rotation_z, 1)[0]
-			if Geometry.is_point_in_polygon(pos, gizmo_rotation_x_poly):
+			if Geometry.point_is_inside_triangle(pos, gizmo_position_x[0], gizmo_position_x[1], gizmo_position_x[2]):
+				for object in points_per_object:
+					if object.selected:
+						object.applying_gizmos = Object3D.Gizmos.X_TRANS
+			elif Geometry.point_is_inside_triangle(pos, gizmo_position_y[0], gizmo_position_y[1], gizmo_position_y[2]):
+				for object in points_per_object:
+					if object.selected:
+						object.applying_gizmos = Object3D.Gizmos.Y_TRANS
+			elif Geometry.point_is_inside_triangle(pos, gizmo_position_z[0], gizmo_position_z[1], gizmo_position_z[2]):
+				for object in points_per_object:
+					if object.selected:
+						object.applying_gizmos = Object3D.Gizmos.Z_TRANS
+			elif Geometry.is_point_in_polygon(pos, gizmo_rotation_x_poly):
 				for object in points_per_object:
 					if object.selected:
 						object.applying_gizmos = Object3D.Gizmos.X_ROT
@@ -84,6 +99,10 @@ func get_points(camera: Camera, object3d: Object3D) -> void:
 		proj_up_local = _resize_vector(proj_up_local, ARROW_LENGTH)
 		proj_back_local = _resize_vector(proj_back_local, ARROW_LENGTH)
 
+		# Calculate position gizmos (arrows)
+		gizmo_position_x = _find_arrow(proj_right_local)
+		gizmo_position_y = _find_arrow(proj_up_local)
+		gizmo_position_z = _find_arrow(proj_back_local)
 		# Calculate rotation gizmos
 		gizmo_rotation_x = _find_curve(proj_up_local, proj_back_local)
 		gizmo_rotation_y = _find_curve(proj_right_local, proj_back_local)
@@ -115,9 +134,9 @@ func _draw() -> void:
 			draw_line(Vector2.ZERO, proj_right_local, Color.red)
 			draw_line(Vector2.ZERO, proj_up_local, Color.green)
 			draw_line(Vector2.ZERO, proj_back_local, Color.blue)
-			_draw_arrow(proj_right_local, Color.red)
-			_draw_arrow(proj_up_local, Color.green)
-			_draw_arrow(proj_back_local, Color.blue)
+			_draw_arrow(gizmo_position_x, Color.red)
+			_draw_arrow(gizmo_position_y, Color.green)
+			_draw_arrow(gizmo_position_z, Color.blue)
 			draw_polyline(gizmo_rotation_x, Color.red, width)
 			draw_polyline(gizmo_rotation_y, Color.green, width)
 			draw_polyline(gizmo_rotation_z, Color.blue, width)
@@ -171,10 +190,14 @@ func _find_curve(a: Vector2, b: Vector2) -> PoolVector2Array:
 	return curve2d.get_baked_points()
 
 
-func _draw_arrow(a: Vector2, color) -> void:
-	var b := (a + Vector2(-0.5, 1).rotated(a.angle() + PI / 2) * 2)
-	var c := (a + Vector2(0.5, 1).rotated(a.angle() + PI / 2) * 2)
-	draw_primitive([a, b, c], [color, color, color], [])
+func _find_arrow(a: Vector2, tilt := 0.5) -> PoolVector2Array:
+	var b := (a + Vector2(-tilt, 1).rotated(a.angle() + PI / 2) * 2)
+	var c := (a + Vector2(tilt, 1).rotated(a.angle() + PI / 2) * 2)
+	return PoolVector2Array([a, b, c])
+
+
+func _draw_arrow(triangle: PoolVector2Array, color: Color) -> void:
+	draw_primitive(triangle, [color, color, color], [])
 
 
 func _scale_gizmo(gizmo: Control, new_scale: Vector2) -> void:
