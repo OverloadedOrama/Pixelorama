@@ -29,10 +29,15 @@ func _input(event: InputEvent) -> void:
 				dragging = true
 				prev_mouse_pos = mouse_pos
 			else:
-				# We're not hovering, which means we're unselecting
+				# We're not hovering
 				if is_instance_valid(selected):
-					selected.unselect()
-					selected = null
+					# If we're not clicking on a gizmo, unselect
+					if selected.applying_gizmos == Object3D.Gizmos.NONE:
+						selected.unselect()
+						selected = null
+					else:
+						dragging = true
+						prev_mouse_pos = mouse_pos
 		elif event.button_index == BUTTON_LEFT and event.pressed == false:
 			dragging = false
 

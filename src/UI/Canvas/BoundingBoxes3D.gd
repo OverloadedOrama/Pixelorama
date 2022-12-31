@@ -29,14 +29,16 @@ var gizmo_rot_z := PoolVector2Array()
 func _input(event: InputEvent) -> void:
 	if not event is InputEventMouseButton:
 		return
-	if gizmo_rot_x.empty():
+	if gizmo_rot_x.empty() or gizmo_pos_y.empty() or gizmo_pos_z.empty():
 		return
 	if not event.button_index == BUTTON_LEFT:
 		return
 	var pos: Vector2 = Global.canvas.current_pixel - gizmos_origin
 	if event.pressed:
 		var draw_scale := Global.camera.zoom * 10
+		# Scale the position based on the zoom, has the same effect as enlarging the shapes
 		pos /= draw_scale
+		# Inflate the rotation polylines by one to make them easier to click
 		var rot_x_offset: PoolVector2Array = Geometry.offset_polyline_2d(gizmo_rot_x, 1)[0]
 		var rot_y_offset: PoolVector2Array = Geometry.offset_polyline_2d(gizmo_rot_y, 1)[0]
 		var rot_z_offset: PoolVector2Array = Geometry.offset_polyline_2d(gizmo_rot_z, 1)[0]
