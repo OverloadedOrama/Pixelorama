@@ -34,6 +34,8 @@ func _input(event: InputEvent) -> void:
 		return
 	if points_per_object.empty():
 		return
+	if gizmo_rot_x.empty() or gizmo_pos_y.empty() or gizmo_pos_z.empty():
+		return
 	if not event.button_index == BUTTON_LEFT:
 		return
 	var pos: Vector2 = Global.canvas.current_pixel - gizmos_origin
