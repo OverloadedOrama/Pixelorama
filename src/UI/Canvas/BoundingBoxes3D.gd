@@ -1,5 +1,7 @@
 extends Node2D
 
+enum {X, Y, Z}
+
 const ARROW_LENGTH := 14
 const GIZMO_WIDTH := 1.1
 const SCALE_CIRCLE_LENGTH := 8
@@ -24,12 +26,13 @@ var gizmo_pos_z := PoolVector2Array()
 var gizmo_rot_x := PoolVector2Array()
 var gizmo_rot_y := PoolVector2Array()
 var gizmo_rot_z := PoolVector2Array()
+var is_rotating := -1
 
 
 func _input(event: InputEvent) -> void:
 	if not event is InputEventMouseButton:
 		return
-	if gizmo_rot_x.empty() or gizmo_pos_y.empty() or gizmo_pos_z.empty():
+	if points_per_object.empty():
 		return
 	if not event.button_index == BUTTON_LEFT:
 		return
@@ -70,18 +73,23 @@ func _input(event: InputEvent) -> void:
 			for object in points_per_object:
 				if object.selected:
 					object.applying_gizmos = Object3D.Gizmos.X_ROT
+					is_rotating = X
 		elif Geometry.is_point_in_polygon(pos, rot_y_offset):
 			for object in points_per_object:
 				if object.selected:
 					object.applying_gizmos = Object3D.Gizmos.Y_ROT
+					is_rotating = Y
 		elif Geometry.is_point_in_polygon(pos, rot_z_offset):
 			for object in points_per_object:
 				if object.selected:
 					object.applying_gizmos = Object3D.Gizmos.Z_ROT
+					is_rotating = Z
 	else:
 		for object in points_per_object:
 			if object.selected:
 				object.applying_gizmos = Object3D.Gizmos.NONE
+				is_rotating = -1
+		update()
 
 
 func get_points(camera: Camera, object3d: Object3D) -> void:
@@ -145,6 +153,13 @@ func _draw() -> void:
 		if object.selected:
 			# Draw bounding box outline
 			draw_multiline(points, selected_color, 1.0, true)
+			match is_rotating:
+				X:
+					draw_line(gizmos_origin, Global.canvas.current_pixel, Color.red)
+				Y:
+					draw_line(gizmos_origin, Global.canvas.current_pixel, Color.green)
+				Z:
+					draw_line(gizmos_origin, Global.canvas.current_pixel, Color.blue)
 
 			var draw_scale := Global.camera.zoom * 10
 			draw_set_transform(gizmos_origin, 0, draw_scale)

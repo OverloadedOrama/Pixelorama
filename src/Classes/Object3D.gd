@@ -94,8 +94,10 @@ func change_rotation(a: Vector3, b: Vector3, axis: Vector3) -> void:
 	var a_local_v2 := Vector2(a_local.x, a_local.y)
 	var b_local := b - translation
 	var b_local_v2 := Vector2(b_local.x, b_local.y)
-	var ang := b_local_v2.angle_to(a_local_v2)
-	rotate(axis.normalized(), ang)
+	var angle := b_local_v2.angle_to(a_local_v2)
+	# Rotate the object around a basis axis, instead of a fixed axis, such as
+	# Vector3.RIGHT, Vector3.UP or Vector3.BACK
+	rotate(axis.normalized(), angle)
 	rotation.x = wrapf(rotation.x, -PI, PI)
 	rotation.y = wrapf(rotation.y, -PI, PI)
 	rotation.z = wrapf(rotation.z, -PI, PI)
