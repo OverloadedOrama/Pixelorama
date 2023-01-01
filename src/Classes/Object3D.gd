@@ -81,11 +81,11 @@ func move(position: Vector3) -> void:
 
 func move_axis(diff: Vector3, axis: Vector3) -> void:
 	# Move the object in the direction it is facing, and restrict mouse movement in that axis
-	var trans_proj := Vector2(axis.x, axis.y).normalized()
-	if trans_proj == Vector2.ZERO:
-		trans_proj = Vector2(axis.y, axis.z).normalized()
+	var axis_v2 := Vector2(axis.x, axis.y).normalized()
+	if axis_v2 == Vector2.ZERO:
+		axis_v2 = Vector2(axis.y, axis.z).normalized()
 	var diff_v2 := Vector2(diff.x, diff.y).normalized()
-	translation += axis * trans_proj.dot(diff_v2) * diff.length()
+	translation += axis * axis_v2.dot(diff_v2) * diff.length()
 	select()
 
 
@@ -106,9 +106,9 @@ func change_rotation(a: Vector3, b: Vector3, axis: Vector3) -> void:
 
 func change_scale(diff: Vector3, axis: Vector3, dir: Vector3) -> void:
 	# Scale the object in the direction it is facing, and restrict mouse movement in that axis
-	var trans_proj := Vector2(axis.x, axis.y).normalized()
-	if trans_proj == Vector2.ZERO:
-		trans_proj = Vector2(axis.y, axis.z).normalized()
+	var axis_v2 := Vector2(axis.x, axis.y).normalized()
+	if axis_v2 == Vector2.ZERO:
+		axis_v2 = Vector2(axis.y, axis.z).normalized()
 	var diff_v2 := Vector2(diff.x, diff.y).normalized()
-	scale += dir * trans_proj.dot(diff_v2) * diff.length()
+	scale += dir * axis_v2.dot(diff_v2) * diff.length()
 	select()

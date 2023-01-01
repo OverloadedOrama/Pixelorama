@@ -1,6 +1,6 @@
 extends Node2D
 
-enum {X, Y, Z}
+enum { X, Y, Z }
 
 const ARROW_LENGTH := 14
 const GIZMO_WIDTH := 1.1
@@ -202,7 +202,7 @@ func _resize_vector(v: Vector2, l: float) -> Vector2:
 
 func _find_curve(a: Vector2, b: Vector2) -> PoolVector2Array:
 	var curve2d := Curve2D.new()
-	curve2d.bake_interval = 0.5
+	curve2d.bake_interval = 1
 	var control := b.linear_interpolate(a, 0.5)
 	a = _resize_vector(a, SCALE_CIRCLE_LENGTH)
 	b = _resize_vector(b, SCALE_CIRCLE_LENGTH)
