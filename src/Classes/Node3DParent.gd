@@ -47,10 +47,9 @@ func _input(event: InputEvent) -> void:
 	var selection := space_state.intersect_ray(ray_from, ray_to)
 
 	if dragging and event is InputEventMouseMotion:
-		var prev_projected := camera.project_position(prev_mouse_pos, camera.translation.z)
-		var projected := camera.project_position(mouse_pos, camera.translation.z)
-		var projected_diff := projected - prev_projected
-		selected.change_transform(projected_diff)
+		var proj_mouse_pos := camera.project_position(mouse_pos, camera.translation.z)
+		var proj_prev_mouse_pos := camera.project_position(prev_mouse_pos, camera.translation.z)
+		selected.change_transform(proj_mouse_pos, proj_prev_mouse_pos)
 		prev_mouse_pos = mouse_pos
 
 	# Hover logic

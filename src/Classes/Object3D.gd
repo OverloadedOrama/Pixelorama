@@ -49,7 +49,8 @@ func unhover() -> void:
 	Global.canvas.get_node("BoundingBoxes3D").clear_points(self)
 
 
-func change_transform(diff: Vector3) -> void:
+func change_transform(a: Vector3, b: Vector3) -> void:
+	var diff := a - b
 	match applying_gizmos:
 		Gizmos.X_POS:
 			move_axis(diff, transform.basis.x)
@@ -58,11 +59,11 @@ func change_transform(diff: Vector3) -> void:
 		Gizmos.Z_POS:
 			move_axis(diff, transform.basis.z)
 		Gizmos.X_ROT:
-			change_rotation(Vector3(diff.x, 0, 0))
+			change_rotation(a, b, transform.basis.x)
 		Gizmos.Y_ROT:
-			change_rotation(Vector3(0, diff.y, 0))
+			change_rotation(a, b, transform.basis.y)
 		Gizmos.Z_ROT:
-			change_rotation(Vector3(0, 0, diff.x))
+			change_rotation(a, b, transform.basis.z)
 		Gizmos.X_SCALE:
 			change_scale(diff, transform.basis.x, Vector3.RIGHT)
 		Gizmos.Y_SCALE:
@@ -86,8 +87,13 @@ func move_axis(diff: Vector3, axis: Vector3) -> void:
 	select()
 
 
-func change_rotation(position: Vector3) -> void:
-	rotation += position
+func change_rotation(a: Vector3, b: Vector3, axis: Vector3) -> void:
+	var a_local := a - translation
+	var a_local_v2 := Vector2(a_local.x, a_local.y)
+	var b_local := b - translation
+	var b_local_v2 := Vector2(b_local.x, b_local.y)
+	var ang := b_local_v2.angle_to(a_local_v2)
+	rotate(axis.normalized(), ang)
 	rotation.x = wrapf(rotation.x, -PI, PI)
 	rotation.y = wrapf(rotation.y, -PI, PI)
 	rotation.z = wrapf(rotation.z, -PI, PI)
