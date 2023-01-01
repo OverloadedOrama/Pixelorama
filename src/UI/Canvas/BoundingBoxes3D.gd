@@ -50,51 +50,51 @@ func _input(event: InputEvent) -> void:
 		if Geometry.point_is_inside_triangle(pos, gizmo_pos_x[0], gizmo_pos_x[1], gizmo_pos_x[2]):
 			for object in points_per_object:
 				if object.selected:
-					object.applying_gizmos = Object3D.Gizmos.X_POS
+					object.applying_gizmos = Cel3DObject.Gizmos.X_POS
 		elif Geometry.point_is_inside_triangle(pos, gizmo_pos_y[0], gizmo_pos_y[1], gizmo_pos_y[2]):
 			for object in points_per_object:
 				if object.selected:
-					object.applying_gizmos = Object3D.Gizmos.Y_POS
+					object.applying_gizmos = Cel3DObject.Gizmos.Y_POS
 		elif Geometry.point_is_inside_triangle(pos, gizmo_pos_z[0], gizmo_pos_z[1], gizmo_pos_z[2]):
 			for object in points_per_object:
 				if object.selected:
-					object.applying_gizmos = Object3D.Gizmos.Z_POS
+					object.applying_gizmos = Cel3DObject.Gizmos.Z_POS
 		elif Geometry.is_point_in_circle(pos, proj_right_local_scale, SCALE_CIRCLE_RADIUS):
 			for object in points_per_object:
 				if object.selected:
-					object.applying_gizmos = Object3D.Gizmos.X_SCALE
+					object.applying_gizmos = Cel3DObject.Gizmos.X_SCALE
 		elif Geometry.is_point_in_circle(pos, proj_up_local_scale, SCALE_CIRCLE_RADIUS):
 			for object in points_per_object:
 				if object.selected:
-					object.applying_gizmos = Object3D.Gizmos.Y_SCALE
+					object.applying_gizmos = Cel3DObject.Gizmos.Y_SCALE
 		elif Geometry.is_point_in_circle(pos, proj_back_local_scale, SCALE_CIRCLE_RADIUS):
 			for object in points_per_object:
 				if object.selected:
-					object.applying_gizmos = Object3D.Gizmos.Z_SCALE
+					object.applying_gizmos = Cel3DObject.Gizmos.Z_SCALE
 		elif Geometry.is_point_in_polygon(pos, rot_x_offset):
 			for object in points_per_object:
 				if object.selected:
-					object.applying_gizmos = Object3D.Gizmos.X_ROT
+					object.applying_gizmos = Cel3DObject.Gizmos.X_ROT
 					is_rotating = X
 		elif Geometry.is_point_in_polygon(pos, rot_y_offset):
 			for object in points_per_object:
 				if object.selected:
-					object.applying_gizmos = Object3D.Gizmos.Y_ROT
+					object.applying_gizmos = Cel3DObject.Gizmos.Y_ROT
 					is_rotating = Y
 		elif Geometry.is_point_in_polygon(pos, rot_z_offset):
 			for object in points_per_object:
 				if object.selected:
-					object.applying_gizmos = Object3D.Gizmos.Z_ROT
+					object.applying_gizmos = Cel3DObject.Gizmos.Z_ROT
 					is_rotating = Z
 	else:
 		for object in points_per_object:
 			if object.selected:
-				object.applying_gizmos = Object3D.Gizmos.NONE
+				object.applying_gizmos = Cel3DObject.Gizmos.NONE
 				is_rotating = -1
 		update()
 
 
-func get_points(camera: Camera, object3d: Object3D) -> void:
+func get_points(camera: Camera, object3d: Cel3DObject) -> void:
 	var debug_mesh := object3d.box_shape.get_debug_mesh()
 	var arrays := debug_mesh.surface_get_arrays(0)
 	var points := PoolVector2Array()
@@ -138,7 +138,7 @@ func get_points(camera: Camera, object3d: Object3D) -> void:
 	update()
 
 
-func clear_points(object3d: Object3D) -> void:
+func clear_points(object3d: Cel3DObject) -> void:
 	points_per_object.erase(object3d)
 #	if not object3d.selected:
 #		gizmos.visible = false

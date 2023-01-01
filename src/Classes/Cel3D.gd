@@ -1,7 +1,6 @@
 class_name Cel3D
 extends BaseCel
 
-var node_3d_parent := preload("res://src/Classes/Node3DParent.gd")
 var viewport: Viewport
 var camera: Camera
 var objects := []
@@ -15,13 +14,12 @@ func _init(size: Vector2) -> void:
 	viewport.transparent_bg = true
 	viewport.render_target_v_flip = true
 
-	var node_3d := Spatial.new()
-	node_3d.set_script(node_3d_parent)
+	var node_3d := Cel3DParent.new()
 	node_3d.cel = self
 	camera = Camera.new()
 	camera.translation = Vector3(0, 0, 3)
 	var light := DirectionalLight.new()
-	var cube := Object3D.new()
+	var cube := Cel3DObject.new()
 	var cube_mesh := CubeMesh.new()
 	cube.mesh = cube_mesh
 	camera.current = true

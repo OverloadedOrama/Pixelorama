@@ -79,6 +79,16 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://src/Classes/Cel3D.gd"
 }, {
+"base": "MeshInstance",
+"class": "Cel3DObject",
+"language": "GDScript",
+"path": "res://src/Classes/Cel3DObject.gd"
+}, {
+"base": "Spatial",
+"class": "Cel3DParent",
+"language": "GDScript",
+"path": "res://src/Classes/Cel3DParent.gd"
+}, {
 "base": "VBoxContainer",
 "class": "CollapsibleContainer",
 "language": "GDScript",
@@ -133,11 +143,6 @@ _global_script_classes=[ {
 "class": "LayerButton",
 "language": "GDScript",
 "path": "res://src/UI/Timeline/LayerButton.gd"
-}, {
-"base": "MeshInstance",
-"class": "Object3D",
-"language": "GDScript",
-"path": "res://src/Classes/Object3D.gd"
 }, {
 "base": "Resource",
 "class": "Palette",
@@ -244,6 +249,8 @@ _global_script_class_icons={
 "Brushes": "",
 "Canvas": "",
 "Cel3D": "",
+"Cel3DObject": "",
+"Cel3DParent": "",
 "CollapsibleContainer": "",
 "Drawer": "",
 "Frame": "",
@@ -255,7 +262,6 @@ _global_script_class_icons={
 "ImageEffect": "",
 "Layer3D": "",
 "LayerButton": "",
-"Object3D": "",
 "Palette": "",
 "PaletteColor": "",
 "PaletteGrid": "",

@@ -1,8 +1,9 @@
+class_name Cel3DParent
 extends Spatial
 
 var cel
-var hovering: Object3D = null
-var selected: Object3D = null
+var hovering: Cel3DObject = null
+var selected: Cel3DObject = null
 var dragging := false
 var prev_mouse_pos := Vector2.ZERO
 
@@ -32,7 +33,7 @@ func _input(event: InputEvent) -> void:
 				# We're not hovering
 				if is_instance_valid(selected):
 					# If we're not clicking on a gizmo, unselect
-					if selected.applying_gizmos == Object3D.Gizmos.NONE:
+					if selected.applying_gizmos == Cel3DObject.Gizmos.NONE:
 						selected.unselect()
 						selected = null
 					else:
