@@ -16,7 +16,7 @@ var applying_gizmos := 0
 
 var dir_light_texture := preload("res://assets/graphics/gizmos/directional_light.svg")
 
-onready var gizmos_3d := Global.canvas.gizmos_3d
+onready var gizmos_3d: Node2D = Global.canvas.gizmos_3d
 
 
 func _ready() -> void:

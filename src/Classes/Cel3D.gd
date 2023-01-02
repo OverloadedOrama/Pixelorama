@@ -75,6 +75,12 @@ func get_image() -> Image:
 	return viewport.get_texture().get_data()
 
 
+func size_changed(new_size: Vector2) -> void:
+	size = new_size
+	viewport.size = size
+	image_texture = viewport.get_texture()
+
+
 func on_remove() -> void:
 	if is_instance_valid(viewport):
 		viewport.queue_free()

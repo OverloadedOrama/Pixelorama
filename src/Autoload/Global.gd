@@ -466,7 +466,10 @@ func undo_or_redo(
 			for i in project.frames.size():
 				for j in project.layers.size():
 					var current_cel: BaseCel = project.frames[i].cels[j]
-					current_cel.image_texture.create_from_image(current_cel.get_image(), 0)
+					if current_cel is Cel3D:
+						current_cel.size_changed(project.size)
+					else:
+						current_cel.image_texture.create_from_image(current_cel.get_image(), 0)
 			canvas.camera_zoom()
 			canvas.grid.update()
 			canvas.pixel_grid.update()
