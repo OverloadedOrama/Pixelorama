@@ -32,6 +32,7 @@ var is_rotating := -1
 
 
 func _ready() -> void:
+	set_process_input(false)
 	Global.connect("project_changed", self, "_project_changed")
 	Global.current_project.connect("cel_changed", self, "_cel_changed")
 	Global.camera.connect("zoom_changed", self, "update")
@@ -89,10 +90,12 @@ func _input(event: InputEvent) -> void:
 func _project_changed() -> void:
 	if not Global.current_project.is_connected("cel_changed", self, "_cel_changed"):
 		Global.current_project.connect("cel_changed", self, "_cel_changed")
+	set_process_input(Global.current_project.get_current_cel() is Cel3D)
 
 
-func _cel_changed(_frame: int, _layer: int) -> void:
+func _cel_changed() -> void:
 	update()
+	set_process_input(Global.current_project.get_current_cel() is Cel3D)
 
 
 func _find_selected_object() -> Cel3DObject:
