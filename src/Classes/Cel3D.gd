@@ -41,7 +41,8 @@ func get_image() -> Image:
 
 
 func on_remove() -> void:
-	viewport.queue_free()
+	if is_instance_valid(viewport):
+		viewport.queue_free()
 
 
 func instantiate_cel_button() -> Node:

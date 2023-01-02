@@ -46,6 +46,7 @@ func _ready() -> void:
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_EXIT_TREE:
+		unselect()
 		gizmos_3d.remove_always_visible(self)
 
 
