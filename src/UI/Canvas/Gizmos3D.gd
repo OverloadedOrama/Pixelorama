@@ -152,7 +152,9 @@ func _draw() -> void:
 	var draw_scale := Global.camera.zoom * 10
 	for object in always_visible:
 		if not always_visible[object]:
-			break
+			continue
+		if not object.find_cel():
+			continue
 		var texture: Texture = always_visible[object]
 		var center := Vector2(8, 8)
 		var pos: Vector2 = object.camera.unproject_position(object.translation)

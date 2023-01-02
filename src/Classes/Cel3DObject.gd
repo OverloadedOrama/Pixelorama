@@ -1,11 +1,12 @@
 class_name Cel3DObject
 extends Spatial
 
-signal property_changed()
+signal property_changed
 
 enum Types { MESH, DIR_LIGHT, SPOT_LIGHT, OMNI_LIGHT }
 enum Gizmos { NONE, X_POS, Y_POS, Z_POS, X_ROT, Y_ROT, Z_ROT, X_SCALE, Y_SCALE, Z_SCALE }
 
+var cel
 var type: int = Types.MESH
 var mesh: Mesh
 var selected := false
@@ -46,12 +47,13 @@ func _ready() -> void:
 	add_child(static_body)
 
 
+func find_cel() -> bool:
+	var project: Project = Global.current_project
+	return cel == project.frames[project.current_frame].cels[project.current_layer]
+
+
 func serialize() -> Dictionary:
-	return {
-		"type": type,
-		"mesh": mesh,
-		"transform": transform
-	}
+	return {"type": type, "mesh": mesh, "transform": transform}
 
 
 func _notification(what: int) -> void:

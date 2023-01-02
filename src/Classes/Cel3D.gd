@@ -38,10 +38,12 @@ func _add_nodes() -> void:
 
 	if objects.empty():
 		var light := Cel3DObject.new()
+		light.cel = self
 		light.type = Cel3DObject.Types.DIR_LIGHT
 		light.connect("property_changed", self, "_object_property_changed", [light])
 		light.rotate_y(-PI / 4)
 		var cube := Cel3DObject.new()
+		cube.cel = self
 		var cube_mesh := CubeMesh.new()
 		cube.mesh = cube_mesh
 		cube.connect("property_changed", self, "_object_property_changed", [cube])
@@ -54,6 +56,7 @@ func _add_nodes() -> void:
 		for object_name in objects_duplicate:
 			var properties: Dictionary = objects[object_name]
 			var object_node := Cel3DObject.new()
+			object_node.cel = self
 			object_node.type = properties["type"]
 			if properties["mesh"]:
 				object_node.mesh = properties["mesh"]
@@ -75,10 +78,7 @@ func _get_image_texture() -> Texture:
 func _serialize_camera() -> void:
 	if not is_instance_valid(camera):
 		return
-	camera_properties = {
-		"transform": camera.transform,
-		"projection": camera.projection
-	}
+	camera_properties = {"transform": camera.transform, "projection": camera.projection}
 
 
 func _deserialize_camera() -> void:

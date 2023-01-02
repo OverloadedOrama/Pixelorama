@@ -4,7 +4,7 @@ extends Reference
 # The term "cel" comes from "celluloid" (https://en.wikipedia.org/wiki/Cel).
 
 var opacity: float
-var image_texture: Texture setget ,_get_image_texture
+var image_texture: Texture setget , _get_image_texture
 # If the cel is linked a ref to the link set Dictionary this cel is in, or null if not linked:
 var link_set = null  # { "cels": Array, "hue": float } or null
 
