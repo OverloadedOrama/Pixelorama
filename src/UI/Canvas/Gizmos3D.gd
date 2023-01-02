@@ -31,6 +31,12 @@ var gizmo_rot_z := PoolVector2Array()
 var is_rotating := -1
 
 
+func _ready() -> void:
+	Global.connect("project_changed", self, "_project_changed")
+	Global.current_project.connect("cel_changed", self, "_cel_changed")
+	Global.camera.connect("zoom_changed", self, "update")
+
+
 func _input(event: InputEvent) -> void:
 	if not event is InputEventMouseButton:
 		return
@@ -78,6 +84,15 @@ func _input(event: InputEvent) -> void:
 		selected_obj.applying_gizmos = Cel3DObject.Gizmos.NONE
 		is_rotating = -1
 		update()
+
+
+func _project_changed() -> void:
+	if not Global.current_project.is_connected("cel_changed", self, "_cel_changed"):
+		Global.current_project.connect("cel_changed", self, "_cel_changed")
+
+
+func _cel_changed(_frame: int, _layer: int) -> void:
+	update()
 
 
 func _find_selected_object() -> Cel3DObject:
