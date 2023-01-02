@@ -172,6 +172,10 @@ func _draw() -> void:
 	if points_per_object.empty():
 		return
 	for object in points_per_object:
+		if not object.find_cel():
+			if object.selected:
+				object.unselect()
+			continue
 		var points: PoolVector2Array = points_per_object[object]
 		if points.empty():
 			continue
