@@ -61,6 +61,14 @@ func _draw() -> void:
 
 
 func _input(event: InputEvent) -> void:
+	if Global.current_project.get_current_cel() is Cel3D and Global.has_focus:
+		for child in get_children():
+			if not child is Viewport:
+				continue
+			var modified_event := event.duplicate()
+			if event is InputEventMouse:
+				modified_event.position = current_pixel.floor()
+			child.input(modified_event)
 	# Don't process anything below if the input isn't a mouse event, or Shift/Ctrl.
 	# This decreases CPU/GPU usage slightly.
 	var get_velocity := false
@@ -87,11 +95,6 @@ func _input(event: InputEvent) -> void:
 	var tmp_transform = get_canvas_transform().affine_inverse()
 	current_pixel = tmp_transform.basis_xform(tmp_position) + tmp_transform.origin
 
-	for child in get_children():
-		if child is Viewport and event is InputEventMouse and Global.has_focus:
-			var modified_event := event.duplicate()
-			modified_event.position = current_pixel.floor()
-			child.input(modified_event)
 	if Global.has_focus:
 		update()
 

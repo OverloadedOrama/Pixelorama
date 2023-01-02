@@ -11,6 +11,10 @@ onready var camera := get_viewport().get_camera()
 
 
 func _input(event: InputEvent) -> void:
+	if event.is_action_pressed("delete") and is_instance_valid(selected):
+		selected.delete()
+	if not event is InputEventMouse:
+		return
 	var found_cel := false
 	for frame_layer in Global.current_project.selected_cels:
 		if cel == Global.current_project.frames[frame_layer[0]].cels[frame_layer[1]]:

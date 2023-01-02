@@ -100,6 +100,10 @@ func size_changed(new_size: Vector2) -> void:
 	image_texture = viewport.get_texture()
 
 
+func remove_object(object: Cel3DObject) -> void:
+	objects.erase(object.name)
+
+
 func on_remove() -> void:
 	if is_instance_valid(viewport):
 		viewport.queue_free()
