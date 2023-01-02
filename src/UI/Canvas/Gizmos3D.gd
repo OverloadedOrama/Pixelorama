@@ -3,6 +3,7 @@ extends Node2D
 enum { X, Y, Z }
 
 const ARROW_LENGTH := 14
+const LIGHT_ARROW_LENGTH := 25
 const GIZMO_WIDTH := 1.1
 const SCALE_CIRCLE_LENGTH := 8
 const SCALE_CIRCLE_RADIUS := 1
@@ -166,6 +167,7 @@ func _draw() -> void:
 		var pos: Vector2 = object.camera.unproject_position(object.translation)
 		var back: Vector3 = object.translation - object.transform.basis.z
 		var back_proj: Vector2 = object.camera.unproject_position(back) - pos
+		back_proj = _resize_vector(back_proj, LIGHT_ARROW_LENGTH)
 		draw_set_transform(pos, 0, draw_scale / 2)
 		draw_texture(texture, -center)
 		draw_line(Vector2.ZERO, back_proj, Color.white)
