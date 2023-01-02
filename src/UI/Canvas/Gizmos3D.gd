@@ -41,6 +41,9 @@ func _input(event: InputEvent) -> void:
 	if not event.button_index == BUTTON_LEFT:
 		return
 	var pos: Vector2 = Global.canvas.current_pixel - gizmos_origin
+	var selected_obj := _find_selected_object()
+	if not is_instance_valid(selected_obj):
+		return
 	if event.pressed:
 		var draw_scale := Global.camera.zoom * 10
 		# Scale the position based on the zoom, has the same effect as enlarging the shapes
@@ -49,51 +52,39 @@ func _input(event: InputEvent) -> void:
 		var rot_x_offset: PoolVector2Array = Geometry.offset_polyline_2d(gizmo_rot_x, 1)[0]
 		var rot_y_offset: PoolVector2Array = Geometry.offset_polyline_2d(gizmo_rot_y, 1)[0]
 		var rot_z_offset: PoolVector2Array = Geometry.offset_polyline_2d(gizmo_rot_z, 1)[0]
+
 		if Geometry.point_is_inside_triangle(pos, gizmo_pos_x[0], gizmo_pos_x[1], gizmo_pos_x[2]):
-			for object in points_per_object:
-				if object.selected:
-					object.applying_gizmos = Cel3DObject.Gizmos.X_POS
+			selected_obj.applying_gizmos = Cel3DObject.Gizmos.X_POS
 		elif Geometry.point_is_inside_triangle(pos, gizmo_pos_y[0], gizmo_pos_y[1], gizmo_pos_y[2]):
-			for object in points_per_object:
-				if object.selected:
-					object.applying_gizmos = Cel3DObject.Gizmos.Y_POS
+			selected_obj.applying_gizmos = Cel3DObject.Gizmos.Y_POS
 		elif Geometry.point_is_inside_triangle(pos, gizmo_pos_z[0], gizmo_pos_z[1], gizmo_pos_z[2]):
-			for object in points_per_object:
-				if object.selected:
-					object.applying_gizmos = Cel3DObject.Gizmos.Z_POS
+			selected_obj.applying_gizmos = Cel3DObject.Gizmos.Z_POS
 		elif Geometry.is_point_in_circle(pos, proj_right_local_scale, SCALE_CIRCLE_RADIUS):
-			for object in points_per_object:
-				if object.selected:
-					object.applying_gizmos = Cel3DObject.Gizmos.X_SCALE
+			selected_obj.applying_gizmos = Cel3DObject.Gizmos.X_SCALE
 		elif Geometry.is_point_in_circle(pos, proj_up_local_scale, SCALE_CIRCLE_RADIUS):
-			for object in points_per_object:
-				if object.selected:
-					object.applying_gizmos = Cel3DObject.Gizmos.Y_SCALE
+			selected_obj.applying_gizmos = Cel3DObject.Gizmos.Y_SCALE
 		elif Geometry.is_point_in_circle(pos, proj_back_local_scale, SCALE_CIRCLE_RADIUS):
-			for object in points_per_object:
-				if object.selected:
-					object.applying_gizmos = Cel3DObject.Gizmos.Z_SCALE
+			selected_obj.applying_gizmos = Cel3DObject.Gizmos.Z_SCALE
 		elif Geometry.is_point_in_polygon(pos, rot_x_offset):
-			for object in points_per_object:
-				if object.selected:
-					object.applying_gizmos = Cel3DObject.Gizmos.X_ROT
-					is_rotating = X
+			selected_obj.applying_gizmos = Cel3DObject.Gizmos.X_ROT
+			is_rotating = X
 		elif Geometry.is_point_in_polygon(pos, rot_y_offset):
-			for object in points_per_object:
-				if object.selected:
-					object.applying_gizmos = Cel3DObject.Gizmos.Y_ROT
-					is_rotating = Y
+			selected_obj.applying_gizmos = Cel3DObject.Gizmos.Y_ROT
+			is_rotating = Y
 		elif Geometry.is_point_in_polygon(pos, rot_z_offset):
-			for object in points_per_object:
-				if object.selected:
-					object.applying_gizmos = Cel3DObject.Gizmos.Z_ROT
-					is_rotating = Z
+			selected_obj.applying_gizmos = Cel3DObject.Gizmos.Z_ROT
+			is_rotating = Z
 	else:
-		for object in points_per_object:
-			if object.selected:
-				object.applying_gizmos = Cel3DObject.Gizmos.NONE
-				is_rotating = -1
+		selected_obj.applying_gizmos = Cel3DObject.Gizmos.NONE
+		is_rotating = -1
 		update()
+
+
+func _find_selected_object() -> Cel3DObject:
+	for object in points_per_object:
+		if is_instance_valid(object) and object.selected:
+			return object
+	return null
 
 
 func add_always_visible(object3d: Cel3DObject, texture: Texture) -> void:
