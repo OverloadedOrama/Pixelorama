@@ -4,11 +4,15 @@ extends Reference
 # The term "cel" comes from "celluloid" (https://en.wikipedia.org/wiki/Cel).
 
 var opacity: float
-var image_texture: Texture
+var image_texture: Texture setget ,_get_image_texture
 # If the cel is linked a ref to the link set Dictionary this cel is in, or null if not linked:
 var link_set = null  # { "cels": Array, "hue": float } or null
 
 # Methods to Override:
+
+
+func _get_image_texture() -> Texture:
+	return image_texture
 
 
 # The content methods deal with the unique content of each cel type. For example, an Image for

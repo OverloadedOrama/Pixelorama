@@ -1,6 +1,8 @@
 class_name Cel3DObject
 extends Spatial
 
+signal property_changed()
+
 enum Types { MESH, DIR_LIGHT, SPOT_LIGHT, OMNI_LIGHT }
 enum Gizmos { NONE, X_POS, Y_POS, Z_POS, X_ROT, Y_ROT, Z_ROT, X_SCALE, Y_SCALE, Z_SCALE }
 
@@ -42,6 +44,14 @@ func _ready() -> void:
 	collision_shape.shape = box_shape
 	static_body.add_child(collision_shape)
 	add_child(static_body)
+
+
+func serialize() -> Dictionary:
+	return {
+		"type": type,
+		"mesh": mesh,
+		"transform": transform
+	}
 
 
 func _notification(what: int) -> void:
@@ -106,6 +116,7 @@ func change_transform(a: Vector3, b: Vector3) -> void:
 func move(position: Vector3) -> void:
 	translation += position
 	select()
+	emit_signal("property_changed")
 
 
 func move_axis(diff: Vector3, axis: Vector3) -> void:
@@ -116,6 +127,7 @@ func move_axis(diff: Vector3, axis: Vector3) -> void:
 	var diff_v2 := Vector2(diff.x, diff.y).normalized()
 	translation += axis * axis_v2.dot(diff_v2) * diff.length()
 	select()
+	emit_signal("property_changed")
 
 
 func change_rotation(a: Vector3, b: Vector3, axis: Vector3) -> void:
@@ -131,6 +143,7 @@ func change_rotation(a: Vector3, b: Vector3, axis: Vector3) -> void:
 	rotation.y = wrapf(rotation.y, -PI, PI)
 	rotation.z = wrapf(rotation.z, -PI, PI)
 	select()
+	emit_signal("property_changed")
 
 
 func change_scale(diff: Vector3, axis: Vector3, dir: Vector3) -> void:
@@ -141,3 +154,4 @@ func change_scale(diff: Vector3, axis: Vector3, dir: Vector3) -> void:
 	var diff_v2 := Vector2(diff.x, diff.y).normalized()
 	scale += dir * axis_v2.dot(diff_v2) * diff.length()
 	select()
+	emit_signal("property_changed")
