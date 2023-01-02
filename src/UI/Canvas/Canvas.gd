@@ -16,6 +16,7 @@ onready var grid = $Grid
 onready var selection = $Selection
 onready var indicators = $Indicators
 onready var previews = $Previews
+onready var gizmos_3d: Node2D = $Gizmos3D
 
 
 func _ready() -> void:

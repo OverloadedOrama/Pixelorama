@@ -14,6 +14,8 @@ var applying_gizmos := 0
 
 var dir_light_texture := preload("res://assets/graphics/gizmos/directional_light.svg")
 
+onready var gizmos_3d := Global.canvas.gizmos_3d
+
 
 func _ready() -> void:
 	camera = get_viewport().get_camera()
@@ -25,7 +27,7 @@ func _ready() -> void:
 				add_child(mesh_instance)
 		Types.DIR_LIGHT:
 			var light := DirectionalLight.new()
-			Global.canvas.get_node("BoundingBoxes3D").add_always_visible(self, dir_light_texture)
+			gizmos_3d.add_always_visible(self, dir_light_texture)
 			add_child(light)
 		Types.SPOT_LIGHT:
 			var light := SpotLight.new()
@@ -44,17 +46,17 @@ func _ready() -> void:
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_EXIT_TREE:
-		Global.canvas.get_node("BoundingBoxes3D").remove_always_visible(self)
+		gizmos_3d.remove_always_visible(self)
 
 
 func select() -> void:
 	selected = true
-	Global.canvas.get_node("BoundingBoxes3D").get_points(camera, self)
+	gizmos_3d.get_points(camera, self)
 
 
 func unselect() -> void:
 	selected = false
-	Global.canvas.get_node("BoundingBoxes3D").clear_points(self)
+	gizmos_3d.clear_points(self)
 
 
 func hover() -> void:
@@ -63,7 +65,7 @@ func hover() -> void:
 	hovered = true
 	if selected:
 		return
-	Global.canvas.get_node("BoundingBoxes3D").get_points(camera, self)
+	gizmos_3d.get_points(camera, self)
 
 
 func unhover() -> void:
@@ -72,7 +74,7 @@ func unhover() -> void:
 	hovered = false
 	if selected:
 		return
-	Global.canvas.get_node("BoundingBoxes3D").clear_points(self)
+	gizmos_3d.clear_points(self)
 
 
 func change_transform(a: Vector3, b: Vector3) -> void:

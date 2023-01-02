@@ -10,7 +10,7 @@
 [ext_resource path="res://src/UI/Canvas/Selection.gd" type="Script" id=8]
 [ext_resource path="res://src/Shaders/MarchingAntsOutline.shader" type="Shader" id=9]
 [ext_resource path="res://src/Shaders/AutoInvertColors.shader" type="Shader" id=10]
-[ext_resource path="res://src/UI/Canvas/BoundingBoxes3D.gd" type="Script" id=11]
+[ext_resource path="res://src/UI/Canvas/Gizmos3D.gd" type="Script" id=11]
 [ext_resource path="res://src/UI/Canvas/OnionSkinning.gd" type="Script" id=12]
 
 [sub_resource type="CanvasItemMaterial" id=1]
@@ -74,5 +74,5 @@ script = ExtResource( 12 )
 [node name="OnionFuture" type="Node2D" parent="."]
 script = ExtResource( 12 )
 
-[node name="BoundingBoxes3D" type="Node2D" parent="."]
+[node name="Gizmos3D" type="Node2D" parent="."]
 script = ExtResource( 11 )
