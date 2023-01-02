@@ -79,7 +79,7 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://src/Classes/Cel3D.gd"
 }, {
-"base": "MeshInstance",
+"base": "Spatial",
 "class": "Cel3DObject",
 "language": "GDScript",
 "path": "res://src/Classes/Cel3DObject.gd"

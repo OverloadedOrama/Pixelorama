@@ -8,7 +8,8 @@ const SCALE_CIRCLE_LENGTH := 8
 const SCALE_CIRCLE_RADIUS := 1
 const CHAR_SCALE := 0.16
 
-var points_per_object := {}
+var always_visible := {}  # Key = Cel3DObject, Value = Texture
+var points_per_object := {}  # Key = Cel3DObject, Value = PoolVector2Array
 var selected_color := Color.white
 var hovered_color := Color.gray
 
@@ -94,6 +95,16 @@ func _input(event: InputEvent) -> void:
 		update()
 
 
+func add_always_visible(object3d: Cel3DObject, texture: Texture) -> void:
+	always_visible[object3d] = texture
+	update()
+
+
+func remove_always_visible(object3d: Cel3DObject) -> void:
+	always_visible.erase(object3d)
+	update()
+
+
 func get_points(camera: Camera, object3d: Cel3DObject) -> void:
 	var debug_mesh := object3d.box_shape.get_debug_mesh()
 	var arrays := debug_mesh.surface_get_arrays(0)
@@ -146,6 +157,23 @@ func clear_points(object3d: Cel3DObject) -> void:
 
 
 func _draw() -> void:
+	var draw_scale := Global.camera.zoom * 10
+	for object in always_visible:
+		if not always_visible[object]:
+			break
+		var texture: Texture = always_visible[object]
+		var center := Vector2(8, 8)
+		var pos: Vector2 = object.camera.unproject_position(object.translation)
+		var back: Vector3 = object.translation - object.transform.basis.z
+		var back_proj: Vector2 = object.camera.unproject_position(back) - pos
+		draw_set_transform(pos, 0, draw_scale / 2)
+		draw_texture(texture, -center)
+		draw_line(Vector2.ZERO, back_proj, Color.white)
+		if object.type == Cel3DObject.Types.DIR_LIGHT:
+			var arrow := _find_arrow(back_proj)
+			_draw_arrow(arrow, Color.white)
+		draw_set_transform_matrix(Transform2D())
+
 	if points_per_object.empty():
 		return
 	for object in points_per_object:
@@ -163,7 +191,6 @@ func _draw() -> void:
 				Z:
 					draw_line(gizmos_origin, Global.canvas.current_pixel, Color.blue)
 
-			var draw_scale := Global.camera.zoom * 10
 			draw_set_transform(gizmos_origin, 0, draw_scale)
 			# Draw position arrows
 			draw_line(Vector2.ZERO, proj_right_local, Color.red)

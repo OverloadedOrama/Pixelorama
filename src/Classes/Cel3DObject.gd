@@ -1,17 +1,38 @@
 class_name Cel3DObject
-extends MeshInstance
+extends Spatial
 
+enum Types { MESH, DIR_LIGHT, SPOT_LIGHT, OMNI_LIGHT }
 enum Gizmos { NONE, X_POS, Y_POS, Z_POS, X_ROT, Y_ROT, Z_ROT, X_SCALE, Y_SCALE, Z_SCALE }
 
+var type: int = Types.MESH
+var mesh: Mesh
 var selected := false
 var hovered := false
 var box_shape: BoxShape
 var camera: Camera
 var applying_gizmos := 0
 
+var dir_light_texture := preload("res://assets/graphics/gizmos/directional_light.svg")
+
 
 func _ready() -> void:
 	camera = get_viewport().get_camera()
+	match type:
+		Types.MESH:
+			if mesh:
+				var mesh_instance := MeshInstance.new()
+				mesh_instance.mesh = mesh
+				add_child(mesh_instance)
+		Types.DIR_LIGHT:
+			var light := DirectionalLight.new()
+			Global.canvas.get_node("BoundingBoxes3D").add_always_visible(self, dir_light_texture)
+			add_child(light)
+		Types.SPOT_LIGHT:
+			var light := SpotLight.new()
+			add_child(light)
+		Types.OMNI_LIGHT:
+			var light := OmniLight.new()
+			add_child(light)
 	var static_body := StaticBody.new()
 	var collision_shape := CollisionShape.new()
 	box_shape = BoxShape.new()
@@ -19,6 +40,11 @@ func _ready() -> void:
 	collision_shape.shape = box_shape
 	static_body.add_child(collision_shape)
 	add_child(static_body)
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_EXIT_TREE:
+		Global.canvas.get_node("BoundingBoxes3D").remove_always_visible(self)
 
 
 func select() -> void:

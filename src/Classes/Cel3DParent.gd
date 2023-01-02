@@ -63,5 +63,3 @@ func _input(event: InputEvent) -> void:
 			hovering.unhover()
 		hovering = selection["collider"].get_parent()
 		hovering.hover()
-#		print(hovering)
-#	print(selection)

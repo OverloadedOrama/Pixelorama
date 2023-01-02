@@ -18,7 +18,8 @@ func _init(size: Vector2) -> void:
 	node_3d.cel = self
 	camera = Camera.new()
 	camera.translation = Vector3(0, 0, 3)
-	var light := DirectionalLight.new()
+	var light := Cel3DObject.new()
+	light.type = Cel3DObject.Types.DIR_LIGHT
 	var cube := Cel3DObject.new()
 	var cube_mesh := CubeMesh.new()
 	cube.mesh = cube_mesh
