@@ -3,11 +3,11 @@ extends Spatial
 
 signal property_changed
 
-enum Types { MESH, DIR_LIGHT, SPOT_LIGHT, OMNI_LIGHT }
+enum Type { MESH, DIR_LIGHT, SPOT_LIGHT, OMNI_LIGHT }
 enum Gizmos { NONE, X_POS, Y_POS, Z_POS, X_ROT, Y_ROT, Z_ROT, X_SCALE, Y_SCALE, Z_SCALE }
 
 var cel
-var type: int = Types.MESH
+var type: int = Type.MESH
 var mesh: Mesh
 var selected := false
 var hovered := false
@@ -23,19 +23,19 @@ onready var gizmos_3d: Node2D = Global.canvas.gizmos_3d
 func _ready() -> void:
 	camera = get_viewport().get_camera()
 	match type:
-		Types.MESH:
+		Type.MESH:
 			if mesh:
 				var mesh_instance := MeshInstance.new()
 				mesh_instance.mesh = mesh
 				add_child(mesh_instance)
-		Types.DIR_LIGHT:
+		Type.DIR_LIGHT:
 			var light := DirectionalLight.new()
 			gizmos_3d.add_always_visible(self, dir_light_texture)
 			add_child(light)
-		Types.SPOT_LIGHT:
+		Type.SPOT_LIGHT:
 			var light := SpotLight.new()
 			add_child(light)
-		Types.OMNI_LIGHT:
+		Type.OMNI_LIGHT:
 			var light := OmniLight.new()
 			add_child(light)
 	var static_body := StaticBody.new()

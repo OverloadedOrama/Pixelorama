@@ -40,7 +40,7 @@ func _add_nodes() -> void:
 	if objects.empty():
 		var light := Cel3DObject.new()
 		light.cel = self
-		light.type = Cel3DObject.Types.DIR_LIGHT
+		light.type = Cel3DObject.Type.DIR_LIGHT
 		light.connect("property_changed", self, "_object_property_changed", [light])
 		light.rotate_y(-PI / 4)
 		var cube := Cel3DObject.new()

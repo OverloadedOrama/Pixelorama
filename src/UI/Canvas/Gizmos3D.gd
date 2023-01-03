@@ -175,7 +175,7 @@ func _draw() -> void:
 		draw_set_transform(pos, 0, draw_scale / 2)
 		draw_texture(texture, -center)
 		draw_line(Vector2.ZERO, back_proj, Color.white)
-		if object.type == Cel3DObject.Types.DIR_LIGHT:
+		if object.type == Cel3DObject.Type.DIR_LIGHT:
 			var arrow := _find_arrow(back_proj)
 			_draw_arrow(arrow, Color.white)
 		draw_set_transform_matrix(Transform2D())
