@@ -122,8 +122,7 @@ func change_transform(a: Vector3, b: Vector3) -> void:
 
 func move(position: Vector3) -> void:
 	translation += position
-	select()
-	emit_signal("property_changed")
+	change_property()
 
 
 func move_axis(diff: Vector3, axis: Vector3) -> void:
@@ -133,8 +132,7 @@ func move_axis(diff: Vector3, axis: Vector3) -> void:
 		axis_v2 = Vector2(axis.y, axis.z).normalized()
 	var diff_v2 := Vector2(diff.x, diff.y).normalized()
 	translation += axis * axis_v2.dot(diff_v2) * diff.length()
-	select()
-	emit_signal("property_changed")
+	change_property()
 
 
 func change_rotation(a: Vector3, b: Vector3, axis: Vector3) -> void:
@@ -149,8 +147,7 @@ func change_rotation(a: Vector3, b: Vector3, axis: Vector3) -> void:
 	rotation.x = wrapf(rotation.x, -PI, PI)
 	rotation.y = wrapf(rotation.y, -PI, PI)
 	rotation.z = wrapf(rotation.z, -PI, PI)
-	select()
-	emit_signal("property_changed")
+	change_property()
 
 
 func change_scale(diff: Vector3, axis: Vector3, dir: Vector3) -> void:
@@ -160,5 +157,9 @@ func change_scale(diff: Vector3, axis: Vector3, dir: Vector3) -> void:
 		axis_v2 = Vector2(axis.y, axis.z).normalized()
 	var diff_v2 := Vector2(diff.x, diff.y).normalized()
 	scale += dir * axis_v2.dot(diff_v2) * diff.length()
+	change_property()
+
+
+func change_property() -> void:
 	select()
 	emit_signal("property_changed")

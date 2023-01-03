@@ -3,6 +3,7 @@ extends BaseCel
 
 var size: Vector2
 var viewport: Viewport
+var parent_node: Cel3DParent
 var camera: Camera
 var camera_properties := {}  # Key = property name, Value = property
 # Key = Cel3DObject's name, Value = Dictionary containing the properties of the Cel3DObject
@@ -21,15 +22,15 @@ func _add_nodes() -> void:
 	viewport.own_world = true
 	viewport.transparent_bg = true
 	viewport.render_target_v_flip = true
+#	viewport.render_target_update_mode = Viewport.UPDATE_ALWAYS
 
-	var parent_node := Cel3DParent.new()
+	parent_node = Cel3DParent.new()
 	parent_node.cel = self
 	camera = Camera.new()
 	camera.current = true
 	if camera_properties.empty():
 		camera.translation = Vector3(0, 0, 3)
-#		camera.rotation_degrees = Vector3(-30, 45, 0)
-		_serialize_camera()
+		serialize_camera()
 	else:
 		_deserialize_camera()
 	viewport.add_child(camera)
@@ -75,7 +76,7 @@ func _get_image_texture() -> Texture:
 	return image_texture
 
 
-func _serialize_camera() -> void:
+func serialize_camera() -> void:
 	if not is_instance_valid(camera):
 		return
 	camera_properties = {"transform": camera.transform, "projection": camera.projection}
@@ -98,6 +99,10 @@ func size_changed(new_size: Vector2) -> void:
 	size = new_size
 	viewport.size = size
 	image_texture = viewport.get_texture()
+
+
+func add_object(object: Cel3DObject) -> void:
+	_object_property_changed(object)
 
 
 func remove_object(object: Cel3DObject) -> void:

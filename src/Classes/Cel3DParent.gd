@@ -1,9 +1,11 @@
 class_name Cel3DParent
 extends Spatial
 
+signal selected_object(object)
+
 var cel
 var hovering: Cel3DObject = null
-var selected: Cel3DObject = null
+var selected: Cel3DObject = null setget _set_selected
 var dragging := false
 var prev_mouse_pos := Vector2.ZERO
 
@@ -13,6 +15,7 @@ onready var camera := get_viewport().get_camera()
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("delete") and is_instance_valid(selected):
 		selected.delete()
+		self.selected = null
 	if not event is InputEventMouse:
 		return
 	var found_cel := false
@@ -30,7 +33,7 @@ func _input(event: InputEvent) -> void:
 					# Unselect previous object if we're hovering something else
 					if hovering != selected:
 						selected.unselect()
-				selected = hovering
+				self.selected = hovering
 				dragging = true
 				prev_mouse_pos = mouse_pos
 			else:
@@ -39,7 +42,7 @@ func _input(event: InputEvent) -> void:
 					# If we're not clicking on a gizmo, unselect
 					if selected.applying_gizmos == Cel3DObject.Gizmos.NONE:
 						selected.unselect()
-						selected = null
+						self.selected = null
 					else:
 						dragging = true
 						prev_mouse_pos = mouse_pos
@@ -67,3 +70,8 @@ func _input(event: InputEvent) -> void:
 			hovering.unhover()
 		hovering = selection["collider"].get_parent()
 		hovering.hover()
+
+
+func _set_selected(value: Cel3DObject) -> void:
+	selected = value
+	emit_signal("selected_object", value)
