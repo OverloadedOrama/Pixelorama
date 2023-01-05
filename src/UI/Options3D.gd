@@ -2,6 +2,7 @@ extends VBoxContainer
 
 var cel: Cel3D
 
+onready var new_object_menu_button: MenuButton = $NewObjectMenuButton
 onready var cel_options: Container = $CelOptions
 onready var object_options: Container = $ObjectOptions
 
@@ -23,6 +24,18 @@ onready var object_scale_z: ValueSlider = $ObjectOptions/ScaleContainer/ObjectSc
 
 func _ready() -> void:
 	Global.connect("cel_changed", self, "_cel_changed")
+	var new_object_popup := new_object_menu_button.get_popup()
+	new_object_popup.add_item("Cube")
+	new_object_popup.add_item("Sphere")
+	new_object_popup.add_item("Capsule")
+	new_object_popup.add_item("Cylinder")
+	new_object_popup.add_item("Prism")
+	new_object_popup.add_item("Plane")
+	new_object_popup.add_item("Text")
+	new_object_popup.add_item("Directional light")
+	new_object_popup.add_item("Spotlight")
+	new_object_popup.add_item("Omnilight")
+	new_object_popup.connect("id_pressed", self, "_add_new_object")
 
 
 func _cel_changed() -> void:
@@ -38,6 +51,10 @@ func _cel_changed() -> void:
 	cel_options.visible = true
 	object_options.visible = false
 	_set_cel_settings_values()
+
+
+func _add_new_object(id: int) -> void:
+	cel.layer.add_object(id, true)
 
 
 func _selected_object(object: Cel3DObject) -> void:

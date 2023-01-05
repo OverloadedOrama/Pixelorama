@@ -2,7 +2,7 @@ class_name Layer3D
 extends BaseLayer
 
 var objects := {}  # Key = id, Value = Cel3DObject.Type
-var objects_id := 0  # This number is used as the id of the objects, its value never decreases
+var current_object_id := 0  # Its value never decreases
 
 # Overridden Methods:
 
@@ -14,16 +14,22 @@ func _init(_project, _name := "") -> void:
 	add_object(Cel3DObject.Type.CUBE)
 
 
-func add_object(type: int) -> void:
-	objects[objects_id] = type
-	objects_id += 1
+func add_object(type: int, add_to_cels := false) -> void:
+	objects[current_object_id] = type
+	if add_to_cels:
+		for frame in project.frames:
+			var cel: Cel3D = frame.cels[index]
+			cel.objects = objects
+			cel.add_object(current_object_id)
+	current_object_id += 1
 
 
 func remove_object(id: int) -> void:
+	objects.erase(id)
 	for frame in project.frames:
 		var cel: Cel3D = frame.cels[index]
+		cel.objects = objects
 		cel.remove_object(id)
-	objects.erase(id)
 
 
 func serialize() -> Dictionary:

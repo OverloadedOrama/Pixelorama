@@ -42,17 +42,9 @@ func _add_nodes() -> void:
 	Global.canvas.add_child(viewport)
 
 	if object_properties.empty():
-		for i in objects.size():
-			var node3d := Cel3DObject.new()
-			node3d.id = i
-			node3d.cel = self
-			node3d.type = objects[i]
-			node3d.connect("property_changed", self, "_object_property_changed", [node3d])
-			if i == 0:
-				node3d.translation = Vector3(-2.5, 0, 0)
-				node3d.rotate_y(-PI / 4)
-			parent_node.add_child(node3d)
-			object_properties[node3d.id] = node3d.serialize()
+		for id in objects:
+			add_object(id)
+
 	else:
 		var objects_duplicate := object_properties.duplicate(true)
 		for object_name in objects_duplicate:
@@ -99,8 +91,17 @@ func size_changed(new_size: Vector2) -> void:
 	image_texture = viewport.get_texture()
 
 
-func add_object(object: Cel3DObject) -> void:
-	_object_property_changed(object)
+func add_object(id: int) -> void:
+	var node3d := Cel3DObject.new()
+	node3d.id = id
+	node3d.cel = self
+	node3d.type = objects[id]
+	node3d.connect("property_changed", self, "_object_property_changed", [node3d])
+	if id == 0:  # Directional light
+		node3d.translation = Vector3(-2.5, 0, 0)
+		node3d.rotate_y(-PI / 4)
+	parent_node.add_child(node3d)
+	object_properties[node3d.id] = node3d.serialize()
 
 
 func remove_object(id: int) -> void:
@@ -111,6 +112,7 @@ func remove_object(id: int) -> void:
 			child.queue_free()
 			break
 	object_properties.erase(id)
+	objects.erase(id)
 
 
 func on_remove() -> void:
