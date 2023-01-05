@@ -3,12 +3,11 @@ extends Spatial
 
 signal property_changed
 
-enum Type { MESH, DIR_LIGHT, SPOT_LIGHT, OMNI_LIGHT }
+enum Type { CUBE, SPHERE, CAPSULE, CYLINDER, PRISM, PLANE, TEXT, DIR_LIGHT, SPOT_LIGHT, OMNI_LIGHT }
 enum Gizmos { NONE, X_POS, Y_POS, Z_POS, X_ROT, Y_ROT, Z_ROT, X_SCALE, Y_SCALE, Z_SCALE }
 
 var cel
-var type: int = Type.MESH
-var mesh: Mesh
+var type: int = Type.CUBE
 var selected := false
 var hovered := false
 var box_shape: BoxShape
@@ -22,22 +21,40 @@ onready var gizmos_3d: Node2D = Global.canvas.gizmos_3d
 
 func _ready() -> void:
 	camera = get_viewport().get_camera()
+	var node3d_type: Spatial
 	match type:
-		Type.MESH:
-			if mesh:
-				var mesh_instance := MeshInstance.new()
-				mesh_instance.mesh = mesh
-				add_child(mesh_instance)
+		Type.CUBE:
+			node3d_type = MeshInstance.new()
+			node3d_type.mesh = CubeMesh.new()
+		Type.SPHERE:
+			node3d_type = MeshInstance.new()
+			node3d_type.mesh = SphereMesh.new()
+		Type.CAPSULE:
+			node3d_type = MeshInstance.new()
+			node3d_type.mesh = CapsuleMesh.new()
+		Type.CYLINDER:
+			node3d_type = MeshInstance.new()
+			node3d_type.mesh = CylinderMesh.new()
+		Type.PRISM:
+			node3d_type = MeshInstance.new()
+			node3d_type.mesh = PrismMesh.new()
+		Type.PLANE:
+			node3d_type = MeshInstance.new()
+			node3d_type.mesh = PlaneMesh.new()
+		Type.TEXT:
+			node3d_type = MeshInstance.new()
+			var mesh := TextMesh.new()
+			mesh.font = Global.control.theme.default_font
+			mesh.text = "Hello world!"
+			node3d_type.mesh = mesh
 		Type.DIR_LIGHT:
-			var light := DirectionalLight.new()
+			node3d_type = DirectionalLight.new()
 			gizmos_3d.add_always_visible(self, dir_light_texture)
-			add_child(light)
 		Type.SPOT_LIGHT:
-			var light := SpotLight.new()
-			add_child(light)
+			node3d_type = SpotLight.new()
 		Type.OMNI_LIGHT:
-			var light := OmniLight.new()
-			add_child(light)
+			node3d_type = OmniLight.new()
+	add_child(node3d_type)
 	var static_body := StaticBody.new()
 	var collision_shape := CollisionShape.new()
 	box_shape = BoxShape.new()
@@ -53,7 +70,7 @@ func find_cel() -> bool:
 
 
 func serialize() -> Dictionary:
-	return {"type": type, "mesh": mesh, "transform": transform}
+	return {"type": type, "transform": transform}
 
 
 func _notification(what: int) -> void:

@@ -45,8 +45,7 @@ func _add_nodes() -> void:
 		light.rotate_y(-PI / 4)
 		var cube := Cel3DObject.new()
 		cube.cel = self
-		var cube_mesh := CubeMesh.new()
-		cube.mesh = cube_mesh
+		cube.type = Cel3DObject.Type.CUBE
 		cube.connect("property_changed", self, "_object_property_changed", [cube])
 		parent_node.add_child(light)
 		parent_node.add_child(cube)
@@ -59,8 +58,6 @@ func _add_nodes() -> void:
 			var object_node := Cel3DObject.new()
 			object_node.cel = self
 			object_node.type = properties["type"]
-			if properties["mesh"]:
-				object_node.mesh = properties["mesh"]
 			object_node.transform = properties["transform"]
 			object_node.connect("property_changed", self, "_object_property_changed", [object_node])
 			parent_node.add_child(object_node)
