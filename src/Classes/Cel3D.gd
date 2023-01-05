@@ -1,17 +1,21 @@
 class_name Cel3D
 extends BaseCel
 
+var layer
 var size: Vector2
+var objects := {}  # Key = id, Value = Cel3DObject.Type
 var viewport: Viewport
 var parent_node: Cel3DParent
 var camera: Camera
 var camera_properties := {}  # Key = property name, Value = property
 # Key = Cel3DObject's name, Value = Dictionary containing the properties of the Cel3DObject
-var objects := {}
+var object_properties := {}
 
 
-func _init(_size: Vector2) -> void:
+func _init(_layer, _size: Vector2, _objects: Dictionary) -> void:
+	layer = _layer
 	size = _size
+	objects = _objects
 	opacity = 1.0
 	_add_nodes()
 
@@ -37,32 +41,29 @@ func _add_nodes() -> void:
 	viewport.add_child(parent_node)
 	Global.canvas.add_child(viewport)
 
-	if objects.empty():
-		var light := Cel3DObject.new()
-		light.cel = self
-		light.type = Cel3DObject.Type.DIR_LIGHT
-		light.connect("property_changed", self, "_object_property_changed", [light])
-		light.rotate_y(-PI / 4)
-		var cube := Cel3DObject.new()
-		cube.cel = self
-		cube.type = Cel3DObject.Type.CUBE
-		cube.connect("property_changed", self, "_object_property_changed", [cube])
-		parent_node.add_child(light)
-		parent_node.add_child(cube)
-		objects[light.name] = light.serialize()
-		objects[cube.name] = cube.serialize()
+	if object_properties.empty():
+		for i in objects.size():
+			var node3d := Cel3DObject.new()
+			node3d.id = i
+			node3d.cel = self
+			node3d.type = objects[i]
+			node3d.connect("property_changed", self, "_object_property_changed", [node3d])
+			if i == 0:
+				node3d.translation = Vector3(-2.5, 0, 0)
+				node3d.rotate_y(-PI / 4)
+			parent_node.add_child(node3d)
+			object_properties[node3d.id] = node3d.serialize()
 	else:
-		var objects_duplicate := objects.duplicate(true)
+		var objects_duplicate := object_properties.duplicate(true)
 		for object_name in objects_duplicate:
-			var properties: Dictionary = objects[object_name]
-			var object_node := Cel3DObject.new()
-			object_node.cel = self
-			object_node.type = properties["type"]
-			object_node.transform = properties["transform"]
-			object_node.connect("property_changed", self, "_object_property_changed", [object_node])
-			parent_node.add_child(object_node)
-			objects.erase(object_name)
-			objects[object_node.name] = properties
+			var properties: Dictionary = object_properties[object_name]
+			var node3d := Cel3DObject.new()
+			node3d.cel = self
+			node3d.deserialize(properties)
+			node3d.connect("property_changed", self, "_object_property_changed", [node3d])
+			parent_node.add_child(node3d)
+			object_properties.erase(object_name)
+			object_properties[node3d.id] = properties
 
 	image_texture = viewport.get_texture()
 
@@ -85,7 +86,7 @@ func _deserialize_camera() -> void:
 
 
 func _object_property_changed(object: Cel3DObject) -> void:
-	objects[object.name] = object.serialize()
+	object_properties[object.id] = object.serialize()
 
 
 func get_image() -> Image:
@@ -102,8 +103,14 @@ func add_object(object: Cel3DObject) -> void:
 	_object_property_changed(object)
 
 
-func remove_object(object: Cel3DObject) -> void:
-	objects.erase(object.name)
+func remove_object(id: int) -> void:
+	for child in parent_node.get_children():
+		if not child is Cel3DObject:
+			continue
+		if child.id == id:
+			child.queue_free()
+			break
+	object_properties.erase(id)
 
 
 func on_remove() -> void:

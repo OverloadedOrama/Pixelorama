@@ -7,6 +7,7 @@ enum Type { CUBE, SPHERE, CAPSULE, CYLINDER, PRISM, PLANE, TEXT, DIR_LIGHT, SPOT
 enum Gizmos { NONE, X_POS, Y_POS, Z_POS, X_ROT, Y_ROT, Z_ROT, X_SCALE, Y_SCALE, Z_SCALE }
 
 var cel
+var id := -1
 var type: int = Type.CUBE
 var selected := false
 var hovered := false
@@ -70,7 +71,13 @@ func find_cel() -> bool:
 
 
 func serialize() -> Dictionary:
-	return {"type": type, "transform": transform}
+	return {"id": id, "type": type, "transform": transform}
+
+
+func deserialize(dict: Dictionary) -> void:
+	id = dict["id"]
+	type = dict["type"]
+	transform = dict["transform"]
 
 
 func _notification(what: int) -> void:
@@ -108,7 +115,7 @@ func unhover() -> void:
 
 
 func delete() -> void:
-	cel.remove_object(self)
+	cel.layer.remove_object(id)
 	queue_free()
 
 
