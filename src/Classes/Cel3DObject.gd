@@ -2,6 +2,7 @@ class_name Cel3DObject
 extends Spatial
 
 signal property_changed
+signal property_finished_changing
 
 enum Type { CUBE, SPHERE, CAPSULE, CYLINDER, PRISM, PLANE, TEXT, DIR_LIGHT, SPOT_LIGHT, OMNI_LIGHT }
 enum Gizmos { NONE, X_POS, Y_POS, Z_POS, X_ROT, Y_ROT, Z_ROT, X_SCALE, Y_SCALE, Z_SCALE }
@@ -13,7 +14,7 @@ var selected := false
 var hovered := false
 var box_shape: BoxShape
 var camera: Camera
-var applying_gizmos := 0
+var applying_gizmos: int = Gizmos.NONE
 
 var dir_light_texture := preload("res://assets/graphics/gizmos/directional_light.svg")
 
@@ -78,6 +79,7 @@ func deserialize(dict: Dictionary) -> void:
 	id = dict["id"]
 	type = dict["type"]
 	transform = dict["transform"]
+	change_property()
 
 
 func _notification(what: int) -> void:
@@ -185,5 +187,16 @@ func change_scale(diff: Vector3, axis: Vector3, dir: Vector3) -> void:
 
 
 func change_property() -> void:
-	select()
+	if selected:
+		select()
+	else:
+		# Check is needed in case this runs before _ready(), and thus onready variables
+		if is_instance_valid(gizmos_3d):
+			gizmos_3d.update()
 	emit_signal("property_changed")
+
+
+func finish_changing_property() -> void:
+	print(self)
+	select()
+	emit_signal("property_finished_changing")

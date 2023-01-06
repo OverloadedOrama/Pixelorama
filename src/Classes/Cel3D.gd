@@ -46,15 +46,15 @@ func _add_nodes() -> void:
 			add_object(id)
 
 	else:
-		var objects_duplicate := object_properties.duplicate(true)
-		for object_name in objects_duplicate:
-			var properties: Dictionary = object_properties[object_name]
+		var objects_duplicate := object_properties.duplicate()
+		for id in objects_duplicate:
+			var properties: Dictionary = object_properties[id]
 			var node3d := Cel3DObject.new()
 			node3d.cel = self
 			node3d.deserialize(properties)
-			node3d.connect("property_changed", self, "_object_property_changed", [node3d])
+			node3d.connect("property_finished_changing", self, "_object_property_changed", [node3d])
 			parent_node.add_child(node3d)
-			object_properties.erase(object_name)
+			object_properties.erase(id)
 			object_properties[node3d.id] = properties
 
 	image_texture = viewport.get_texture()
@@ -78,11 +78,26 @@ func _deserialize_camera() -> void:
 
 
 func _object_property_changed(object: Cel3DObject) -> void:
-	object_properties[object.id] = object.serialize()
+	var undo_redo : UndoRedo = layer.project.undo_redo
+	var new_properties := object_properties.duplicate()
+	new_properties[object.id] = object.serialize()
+	undo_redo.create_action("Change object transform")
+	undo_redo.add_do_property(self, "object_properties", new_properties)
+	undo_redo.add_undo_property(self, "object_properties", object_properties)
+	undo_redo.add_do_method(self, "_update_objects_transform", object.id)
+	undo_redo.add_undo_method(self, "_update_objects_transform", object.id)
+	undo_redo.add_do_method(Global, "undo_or_redo", false)
+	undo_redo.add_undo_method(Global, "undo_or_redo", true)
+	undo_redo.commit_action()
 
 
-func get_image() -> Image:
-	return viewport.get_texture().get_data()
+func _update_objects_transform(id: int) -> void:  # Called by undo/redo
+	var properties: Dictionary = object_properties[id]
+	for child in parent_node.get_children():
+		if not child is Cel3DObject:
+			continue
+		if child.id == id:
+			child.deserialize(properties)
 
 
 func size_changed(new_size: Vector2) -> void:
@@ -96,7 +111,7 @@ func add_object(id: int) -> void:
 	node3d.id = id
 	node3d.cel = self
 	node3d.type = objects[id]
-	node3d.connect("property_changed", self, "_object_property_changed", [node3d])
+	node3d.connect("property_finished_changing", self, "_object_property_changed", [node3d])
 	if id == 0:  # Directional light
 		node3d.translation = Vector3(-2.5, 0, 0)
 		node3d.rotate_y(-PI / 4)
@@ -113,6 +128,13 @@ func remove_object(id: int) -> void:
 			break
 	object_properties.erase(id)
 	objects.erase(id)
+
+
+# Overridden methods
+
+
+func get_image() -> Image:
+	return viewport.get_texture().get_data()
 
 
 func on_remove() -> void:

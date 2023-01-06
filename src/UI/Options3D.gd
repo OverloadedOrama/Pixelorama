@@ -115,6 +115,8 @@ func _on_CameraRotationZ_value_changed(value: float) -> void:
 
 
 func _on_ObjectPositionX_value_changed(value: float) -> void:
+#	if cel.parent_node.selected.translation.x == value:
+#		return
 	cel.parent_node.selected.translation.x = value
 	cel.parent_node.selected.change_property()
 
@@ -157,3 +159,8 @@ func _on_ObjectScaleY_value_changed(value: float) -> void:
 func _on_ObjectScaleZ_value_changed(value: float) -> void:
 	cel.parent_node.selected.scale.z = value / 100
 	cel.parent_node.selected.change_property()
+
+
+func _on_object_slider_gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.button_index == BUTTON_LEFT and not event.pressed:
+		cel.parent_node.selected.finish_changing_property()
