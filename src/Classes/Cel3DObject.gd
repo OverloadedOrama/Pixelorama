@@ -197,6 +197,5 @@ func change_property() -> void:
 
 
 func finish_changing_property() -> void:
-	print(self)
 	select()
 	emit_signal("property_finished_changing")

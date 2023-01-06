@@ -79,6 +79,8 @@ func _set_cel_settings_values() -> void:
 
 func _set_object_settings_values() -> void:
 	var object: Cel3DObject = cel.parent_node.selected
+	if not is_instance_valid(object):
+		return
 	object_position_x.value = object.translation.x
 	object_position_y.value = object.translation.y
 	object_position_z.value = object.translation.z

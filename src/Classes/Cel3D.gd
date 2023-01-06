@@ -3,7 +3,6 @@ extends BaseCel
 
 var layer
 var size: Vector2
-var objects := {}  # Key = id, Value = Cel3DObject.Type
 var viewport: Viewport
 var parent_node: Cel3DParent
 var camera: Camera
@@ -12,10 +11,9 @@ var camera_properties := {}  # Key = property name, Value = property
 var object_properties := {}
 
 
-func _init(_layer, _size: Vector2, _objects: Dictionary) -> void:
+func _init(_layer, _size: Vector2) -> void:
 	layer = _layer
 	size = _size
-	objects = _objects
 	opacity = 1.0
 	_add_nodes()
 
@@ -42,7 +40,7 @@ func _add_nodes() -> void:
 	Global.canvas.add_child(viewport)
 
 	if object_properties.empty():
-		for id in objects:
+		for id in layer.objects:
 			add_object(id)
 
 	else:
@@ -78,7 +76,7 @@ func _deserialize_camera() -> void:
 
 
 func _object_property_changed(object: Cel3DObject) -> void:
-	var undo_redo : UndoRedo = layer.project.undo_redo
+	var undo_redo: UndoRedo = layer.project.undo_redo
 	var new_properties := object_properties.duplicate()
 	new_properties[object.id] = object.serialize()
 	undo_redo.create_action("Change object transform")
@@ -110,13 +108,16 @@ func add_object(id: int) -> void:
 	var node3d := Cel3DObject.new()
 	node3d.id = id
 	node3d.cel = self
-	node3d.type = objects[id]
+	node3d.type = layer.objects[id]
 	node3d.connect("property_finished_changing", self, "_object_property_changed", [node3d])
 	if id == 0:  # Directional light
 		node3d.translation = Vector3(-2.5, 0, 0)
 		node3d.rotate_y(-PI / 4)
 	parent_node.add_child(node3d)
-	object_properties[node3d.id] = node3d.serialize()
+	if object_properties.has(node3d.id):
+		node3d.deserialize(object_properties[node3d.id])
+	else:
+		object_properties[node3d.id] = node3d.serialize()
 
 
 func remove_object(id: int) -> void:
@@ -126,8 +127,6 @@ func remove_object(id: int) -> void:
 		if child.id == id:
 			child.queue_free()
 			break
-	object_properties.erase(id)
-	objects.erase(id)
 
 
 # Overridden methods

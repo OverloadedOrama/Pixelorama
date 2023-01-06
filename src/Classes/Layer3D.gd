@@ -14,21 +14,56 @@ func _init(_project, _name := "") -> void:
 	add_object(Cel3DObject.Type.CUBE)
 
 
-func add_object(type: int, add_to_cels := false) -> void:
-	objects[current_object_id] = type
-	if add_to_cels:
-		for frame in project.frames:
-			var cel: Cel3D = frame.cels[index]
-			cel.objects = objects
-			cel.add_object(current_object_id)
+func add_object(type: int, undoredo := false) -> void:
+	if undoredo:
+		var id := current_object_id
+		var new_objects := objects.duplicate()
+		new_objects[id] = type
+		var undo_redo: UndoRedo = project.undo_redo
+		undo_redo.create_action("Add 3D object")
+		undo_redo.add_do_property(self, "objects", new_objects)
+		undo_redo.add_undo_property(self, "objects", objects)
+		undo_redo.add_do_method(self, "add_object_in_cels", id)
+		undo_redo.add_undo_method(self, "remove_object_from_cels", id)
+		undo_redo.add_do_method(Global, "undo_or_redo", false)
+		undo_redo.add_undo_method(Global, "undo_or_redo", true)
+		undo_redo.commit_action()
+	else:
+		objects[current_object_id] = type
+
 	current_object_id += 1
 
 
-func remove_object(id: int) -> void:
-	objects.erase(id)
+func add_object_in_cels(id: int) -> void:
 	for frame in project.frames:
 		var cel: Cel3D = frame.cels[index]
-		cel.objects = objects
+		cel.add_object(id)
+
+
+func remove_object(id: int) -> void:
+	var new_objects := objects.duplicate()
+	new_objects.erase(id)
+	var undo_redo: UndoRedo = project.undo_redo
+	undo_redo.create_action("Remove 3D object")
+	undo_redo.add_do_property(self, "objects", new_objects)
+	undo_redo.add_undo_property(self, "objects", objects)
+	# Store object_properties in undoredo memory to keep previous transforms
+	for frame in project.frames:
+		var cel: Cel3D = frame.cels[index]
+		var new_properties := cel.object_properties.duplicate()
+		new_properties.erase(id)
+		undo_redo.add_do_property(cel, "object_properties", new_properties)
+		undo_redo.add_undo_property(cel, "object_properties", cel.object_properties)
+	undo_redo.add_do_method(self, "remove_object_from_cels", id)
+	undo_redo.add_undo_method(self, "add_object_in_cels", id)
+	undo_redo.add_do_method(Global, "undo_or_redo", false)
+	undo_redo.add_undo_method(Global, "undo_or_redo", true)
+	undo_redo.commit_action()
+
+
+func remove_object_from_cels(id: int) -> void:
+	for frame in project.frames:
+		var cel: Cel3D = frame.cels[index]
 		cel.remove_object(id)
 
 
@@ -45,7 +80,7 @@ func serialize() -> Dictionary:
 
 
 func new_empty_cel() -> BaseCel:
-	return Cel3D.new(self, project.size, objects)
+	return Cel3D.new(self, project.size)
 
 
 func instantiate_layer_button() -> Node:
