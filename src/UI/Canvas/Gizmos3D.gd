@@ -81,6 +81,8 @@ func _input(event: InputEvent) -> void:
 			selected_obj.applying_gizmos = Cel3DObject.Gizmos.Z_ROT
 			is_rotating = Z
 	else:
+		if selected_obj.applying_gizmos == Cel3DObject.Gizmos.NONE:
+			return
 		selected_obj.applying_gizmos = Cel3DObject.Gizmos.NONE
 		is_rotating = -1
 		update()
