@@ -78,5 +78,7 @@ func _input(event: InputEvent) -> void:
 
 
 func _set_selected(value: Cel3DObject) -> void:
+	if value == selected:
+		return
 	selected = value
 	emit_signal("selected_object", value)

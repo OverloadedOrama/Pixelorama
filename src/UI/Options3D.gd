@@ -1,6 +1,7 @@
 extends VBoxContainer
 
 var cel: Cel3D
+var can_start_timer := true
 
 onready var new_object_menu_button: MenuButton = $NewObjectMenuButton
 onready var cel_options: Container = $CelOptions
@@ -20,6 +21,7 @@ onready var object_rotation_z: ValueSlider = $ObjectOptions/RotationContainer/Ob
 onready var object_scale_x: ValueSlider = $ObjectOptions/ScaleContainer/ObjectScaleX
 onready var object_scale_y: ValueSlider = $ObjectOptions/ScaleContainer/ObjectScaleY
 onready var object_scale_z: ValueSlider = $ObjectOptions/ScaleContainer/ObjectScaleZ
+onready var undo_redo_timer: Timer = $UndoRedoTimer
 
 
 func _ready() -> void:
@@ -81,6 +83,7 @@ func _set_object_settings_values() -> void:
 	var object: Cel3DObject = cel.parent_node.selected
 	if not is_instance_valid(object):
 		return
+	can_start_timer = false
 	object_position_x.value = object.translation.x
 	object_position_y.value = object.translation.y
 	object_position_z.value = object.translation.z
@@ -90,6 +93,7 @@ func _set_object_settings_values() -> void:
 	object_scale_x.value = object.scale.x * 100
 	object_scale_y.value = object.scale.y * 100
 	object_scale_z.value = object.scale.z * 100
+	can_start_timer = true
 
 
 func _on_ProjectionOptionButton_item_selected(index: int) -> void:
@@ -116,53 +120,62 @@ func _on_CameraRotationZ_value_changed(value: float) -> void:
 	Global.canvas.gizmos_3d.update()
 
 
+# Object specific code
+
+
 func _on_ObjectPositionX_value_changed(value: float) -> void:
-#	if cel.parent_node.selected.translation.x == value:
-#		return
+	if is_equal_approx(cel.parent_node.selected.translation.x, value):
+		return
 	cel.parent_node.selected.translation.x = value
-	cel.parent_node.selected.change_property()
+	_object_value_handle_change()
 
 
 func _on_ObjectPositionY_value_changed(value: float) -> void:
+	if is_equal_approx(cel.parent_node.selected.translation.y, value):
+		return
 	cel.parent_node.selected.translation.y = value
-	cel.parent_node.selected.change_property()
+	_object_value_handle_change()
 
 
 func _on_ObjectPositionZ_value_changed(value: float) -> void:
 	cel.parent_node.selected.translation.z = value
-	cel.parent_node.selected.change_property()
+	_object_value_handle_change()
 
 
 func _on_ObjectRotationX_value_changed(value: float) -> void:
 	cel.parent_node.selected.rotation_degrees.x = value
-	cel.parent_node.selected.change_property()
+	_object_value_handle_change()
 
 
 func _on_ObjectRotationY_value_changed(value: float) -> void:
 	cel.parent_node.selected.rotation_degrees.y = value
-	cel.parent_node.selected.change_property()
+	_object_value_handle_change()
 
 
 func _on_ObjectRotationZ_value_changed(value: float) -> void:
 	cel.parent_node.selected.rotation_degrees.z = value
-	cel.parent_node.selected.change_property()
+	_object_value_handle_change()
 
 
 func _on_ObjectScaleX_value_changed(value: float) -> void:
 	cel.parent_node.selected.scale.x = value / 100
-	cel.parent_node.selected.change_property()
+	_object_value_handle_change()
 
 
 func _on_ObjectScaleY_value_changed(value: float) -> void:
 	cel.parent_node.selected.scale.y = value / 100
-	cel.parent_node.selected.change_property()
+	_object_value_handle_change()
 
 
 func _on_ObjectScaleZ_value_changed(value: float) -> void:
 	cel.parent_node.selected.scale.z = value / 100
-	cel.parent_node.selected.change_property()
+	_object_value_handle_change()
 
 
-func _on_object_slider_gui_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.button_index == BUTTON_LEFT and not event.pressed:
-		cel.parent_node.selected.finish_changing_property()
+func _object_value_handle_change() -> void:
+	if can_start_timer:
+		undo_redo_timer.start()
+
+
+func _on_UndoRedoTimer_timeout() -> void:
+	cel.parent_node.selected.finish_changing_property()
