@@ -379,6 +379,8 @@ func draw_preview() -> void:
 func handle_draw(position: Vector2, event: InputEvent) -> void:
 	if not (Global.can_draw and Global.has_focus):
 		return
+	if not Global.current_project.get_current_cel() is PixelCel:
+		return
 
 	var draw_pos := position
 	if Global.mirror_view:
