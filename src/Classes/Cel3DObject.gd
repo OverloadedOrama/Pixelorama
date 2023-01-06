@@ -17,6 +17,8 @@ var camera: Camera
 var applying_gizmos: int = Gizmos.NONE
 
 var dir_light_texture := preload("res://assets/graphics/gizmos/directional_light.svg")
+var spot_light_texture := preload("res://assets/graphics/gizmos/spot_light.svg")
+var omni_light_texture := preload("res://assets/graphics/gizmos/omni_light.svg")
 
 onready var gizmos_3d: Node2D = Global.canvas.gizmos_3d
 
@@ -54,8 +56,10 @@ func _ready() -> void:
 			gizmos_3d.add_always_visible(self, dir_light_texture)
 		Type.SPOT_LIGHT:
 			node3d_type = SpotLight.new()
+			gizmos_3d.add_always_visible(self, spot_light_texture)
 		Type.OMNI_LIGHT:
 			node3d_type = OmniLight.new()
+			gizmos_3d.add_always_visible(self, omni_light_texture)
 	add_child(node3d_type)
 	var static_body := StaticBody.new()
 	var collision_shape := CollisionShape.new()

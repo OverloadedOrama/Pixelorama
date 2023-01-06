@@ -156,8 +156,6 @@ func get_points(camera: Camera, object3d: Cel3DObject) -> void:
 
 func clear_points(object3d: Cel3DObject) -> void:
 	points_per_object.erase(object3d)
-#	if not object3d.selected:
-#		gizmos.visible = false
 	update()
 
 
@@ -176,8 +174,8 @@ func _draw() -> void:
 		back_proj = _resize_vector(back_proj, LIGHT_ARROW_LENGTH)
 		draw_set_transform(pos, 0, draw_scale / 2)
 		draw_texture(texture, -center)
-		draw_line(Vector2.ZERO, back_proj, Color.white)
 		if object.type == Cel3DObject.Type.DIR_LIGHT:
+			draw_line(Vector2.ZERO, back_proj, Color.white)
 			var arrow := _find_arrow(back_proj)
 			_draw_arrow(arrow, Color.white)
 		draw_set_transform_matrix(Transform2D())
