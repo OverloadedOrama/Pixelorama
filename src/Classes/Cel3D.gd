@@ -23,13 +23,15 @@ func _add_nodes() -> void:
 	viewport.own_world = true
 	viewport.transparent_bg = true
 	viewport.render_target_v_flip = true
-#	viewport.render_target_update_mode = Viewport.UPDATE_ALWAYS
-
+	var world := World.new()
+	var environment := Environment.new()
+	world.environment = environment
+	viewport.world = world
 	parent_node = Cel3DParent.new()
 	parent_node.cel = self
 	camera = Camera.new()
 	camera.current = true
-	deserialize_camera()
+	deserialize_layer_properties()
 	viewport.add_child(camera)
 	viewport.add_child(parent_node)
 	Global.canvas.add_child(viewport)
@@ -59,15 +61,20 @@ func _get_image_texture() -> Texture:
 	return image_texture
 
 
-func serialize_camera() -> Dictionary:
+func serialize_layer_properties() -> Dictionary:
 	if not is_instance_valid(camera):
 		return {}
-	return {"transform": camera.transform, "projection": camera.projection}
+	return {
+		"camera_transform": camera.transform,
+		"camera_projection": camera.projection,
+		"ambient_color": viewport.world.environment.ambient_light_color
+	}
 
 
-func deserialize_camera() -> void:
-	camera.transform = layer.camera_properties["transform"]
-	camera.projection = layer.camera_properties["projection"]
+func deserialize_layer_properties() -> void:
+	camera.transform = layer.properties["camera_transform"]
+	camera.projection = layer.properties["camera_projection"]
+	viewport.world.environment.ambient_light_color = layer.properties["ambient_color"]
 
 
 func _object_property_changed(object: Cel3DObject) -> void:
