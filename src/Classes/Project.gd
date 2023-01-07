@@ -551,6 +551,7 @@ func toggle_layer_buttons() -> void:
 			current_layer == child_count
 			or layers[current_layer] is GroupLayer
 			or layers[current_layer - 1] is GroupLayer
+			or layers[current_layer - 1] is Layer3D
 		)
 	)
 

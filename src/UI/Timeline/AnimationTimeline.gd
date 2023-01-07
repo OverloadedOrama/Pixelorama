@@ -750,7 +750,7 @@ func change_layer_order(up: bool) -> void:
 
 func _on_MergeDownLayer_pressed() -> void:
 	var project: Project = Global.current_project
-	var top_layer: PixelLayer = project.layers[project.current_layer]
+	var top_layer: BaseLayer = project.layers[project.current_layer]
 	var bottom_layer: PixelLayer = project.layers[project.current_layer - 1]
 	var top_cels := []
 
@@ -761,7 +761,7 @@ func _on_MergeDownLayer_pressed() -> void:
 		top_cels.append(frame.cels[top_layer.index])  # Store for undo purposes
 
 		var top_image := Image.new()
-		top_image.copy_from(frame.cels[top_layer.index].image)
+		top_image.copy_from(frame.cels[top_layer.index].get_image())
 
 		top_image.lock()
 		if frame.cels[top_layer.index].opacity < 1:  # If we have layer transparency

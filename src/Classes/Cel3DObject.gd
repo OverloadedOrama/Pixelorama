@@ -71,7 +71,7 @@ func _ready() -> void:
 
 
 func find_cel() -> bool:
-	var project: Project = Global.current_project
+	var project = Global.current_project
 	return cel == project.frames[project.current_frame].cels[project.current_layer]
 
 
