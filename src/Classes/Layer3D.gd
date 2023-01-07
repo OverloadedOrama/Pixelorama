@@ -1,15 +1,19 @@
 class_name Layer3D
 extends BaseLayer
 
+signal property_changed
+
+var camera_properties := {}  # Key = property name, Value = property
 var objects := {}  # Key = id, Value = Cel3DObject.Type
 var current_object_id := 0  # Its value never decreases
-
-# Overridden Methods:
 
 
 func _init(_project, _name := "") -> void:
 	project = _project
 	name = _name
+	var camera_transform := Transform()
+	camera_transform.origin = Vector3(0, 0, 3)
+	camera_properties = {"transform": camera_transform, "projection": Camera.PROJECTION_PERSPECTIVE}
 	add_object(Cel3DObject.Type.DIR_LIGHT)
 	add_object(Cel3DObject.Type.CUBE)
 
@@ -65,6 +69,29 @@ func remove_object_from_cels(id: int) -> void:
 	for frame in project.frames:
 		var cel: Cel3D = frame.cels[index]
 		cel.remove_object(id)
+
+
+func change_camera_properties(new_properties: Dictionary) -> void:
+	var undo_redo: UndoRedo = project.undo_redo
+	undo_redo.create_action("Change 3D camera properties")
+	undo_redo.add_do_property(self, "camera_properties", new_properties)
+	undo_redo.add_undo_property(self, "camera_properties", camera_properties)
+	for frame in project.frames:
+		var cel: Cel3D = frame.cels[index]
+		undo_redo.add_do_method(cel, "deserialize_camera")
+		undo_redo.add_undo_method(cel, "deserialize_camera")
+	undo_redo.add_do_method(self, "_property_changed")
+	undo_redo.add_undo_method(self, "_property_changed")
+	undo_redo.add_do_method(Global, "undo_or_redo", false)
+	undo_redo.add_undo_method(Global, "undo_or_redo", true)
+	undo_redo.commit_action()
+
+
+func _property_changed() -> void:
+	emit_signal("property_changed")
+
+
+# Overridden Methods:
 
 
 func serialize() -> Dictionary:

@@ -6,7 +6,6 @@ var size: Vector2
 var viewport: Viewport
 var parent_node: Cel3DParent
 var camera: Camera
-var camera_properties := {}  # Key = property name, Value = property
 # Key = Cel3DObject's name, Value = Dictionary containing the properties of the Cel3DObject
 var object_properties := {}
 
@@ -30,11 +29,7 @@ func _add_nodes() -> void:
 	parent_node.cel = self
 	camera = Camera.new()
 	camera.current = true
-	if camera_properties.empty():
-		camera.translation = Vector3(0, 0, 3)
-		serialize_camera()
-	else:
-		_deserialize_camera()
+	deserialize_camera()
 	viewport.add_child(camera)
 	viewport.add_child(parent_node)
 	Global.canvas.add_child(viewport)
@@ -64,15 +59,15 @@ func _get_image_texture() -> Texture:
 	return image_texture
 
 
-func serialize_camera() -> void:
+func serialize_camera() -> Dictionary:
 	if not is_instance_valid(camera):
-		return
-	camera_properties = {"transform": camera.transform, "projection": camera.projection}
+		return {}
+	return {"transform": camera.transform, "projection": camera.projection}
 
 
-func _deserialize_camera() -> void:
-	camera.transform = camera_properties["transform"]
-	camera.projection = camera_properties["projection"]
+func deserialize_camera() -> void:
+	camera.transform = layer.camera_properties["transform"]
+	camera.projection = layer.camera_properties["projection"]
 
 
 func _object_property_changed(object: Cel3DObject) -> void:

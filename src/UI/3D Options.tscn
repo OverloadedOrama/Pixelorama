@@ -14,21 +14,21 @@ margin_bottom = 20.0
 mouse_default_cursor_shape = 2
 text = "Add new object"
 
-[node name="CelOptions" type="GridContainer" parent="."]
+[node name="LayerOptions" type="GridContainer" parent="."]
 margin_top = 24.0
 margin_right = 1280.0
 margin_bottom = 720.0
 size_flags_vertical = 3
 columns = 2
 
-[node name="ProjectionLabel" type="Label" parent="CelOptions"]
+[node name="ProjectionLabel" type="Label" parent="LayerOptions"]
 margin_top = 3.0
 margin_right = 638.0
 margin_bottom = 17.0
 size_flags_horizontal = 3
 text = "Projection"
 
-[node name="ProjectionOptionButton" type="OptionButton" parent="CelOptions"]
+[node name="ProjectionOptionButton" type="OptionButton" parent="LayerOptions"]
 margin_left = 642.0
 margin_right = 1280.0
 margin_bottom = 20.0
@@ -38,21 +38,21 @@ text = "Perspective"
 items = [ "Perspective", null, false, 0, null, "Orthogonal", null, false, 1, null, "Frustum", null, false, 2, null ]
 selected = 0
 
-[node name="RotationLabel" type="Label" parent="CelOptions"]
+[node name="RotationLabel" type="Label" parent="LayerOptions"]
 margin_top = 57.0
 margin_right = 638.0
 margin_bottom = 71.0
 size_flags_horizontal = 3
 text = "Rotation"
 
-[node name="RotationContainer" type="VBoxContainer" parent="CelOptions"]
+[node name="RotationContainer" type="VBoxContainer" parent="LayerOptions"]
 margin_left = 642.0
 margin_top = 24.0
 margin_right = 1280.0
 margin_bottom = 104.0
 size_flags_horizontal = 3
 
-[node name="CameraRotationX" parent="CelOptions/RotationContainer" instance=ExtResource( 2 )]
+[node name="CameraRotationX" parent="LayerOptions/RotationContainer" instance=ExtResource( 2 )]
 margin_right = 638.0
 min_value = -180.0
 max_value = 180.0
@@ -60,7 +60,7 @@ step = 0.1
 prefix = "X"
 suffix = "°"
 
-[node name="CameraRotationY" parent="CelOptions/RotationContainer" instance=ExtResource( 2 )]
+[node name="CameraRotationY" parent="LayerOptions/RotationContainer" instance=ExtResource( 2 )]
 margin_top = 28.0
 margin_right = 638.0
 margin_bottom = 52.0
@@ -70,7 +70,7 @@ step = 0.1
 prefix = "Y"
 suffix = "°"
 
-[node name="CameraRotationZ" parent="CelOptions/RotationContainer" instance=ExtResource( 2 )]
+[node name="CameraRotationZ" parent="LayerOptions/RotationContainer" instance=ExtResource( 2 )]
 margin_top = 56.0
 margin_right = 638.0
 margin_bottom = 80.0
@@ -228,10 +228,10 @@ suffix = "%"
 wait_time = 0.2
 one_shot = true
 
-[connection signal="item_selected" from="CelOptions/ProjectionOptionButton" to="." method="_on_ProjectionOptionButton_item_selected"]
-[connection signal="value_changed" from="CelOptions/RotationContainer/CameraRotationX" to="." method="_on_CameraRotationX_value_changed"]
-[connection signal="value_changed" from="CelOptions/RotationContainer/CameraRotationY" to="." method="_on_CameraRotationY_value_changed"]
-[connection signal="value_changed" from="CelOptions/RotationContainer/CameraRotationZ" to="." method="_on_CameraRotationZ_value_changed"]
+[connection signal="item_selected" from="LayerOptions/ProjectionOptionButton" to="." method="_on_ProjectionOptionButton_item_selected"]
+[connection signal="value_changed" from="LayerOptions/RotationContainer/CameraRotationX" to="." method="_on_CameraRotationX_value_changed"]
+[connection signal="value_changed" from="LayerOptions/RotationContainer/CameraRotationY" to="." method="_on_CameraRotationY_value_changed"]
+[connection signal="value_changed" from="LayerOptions/RotationContainer/CameraRotationZ" to="." method="_on_CameraRotationZ_value_changed"]
 [connection signal="value_changed" from="ObjectOptions/PositionContainer/ObjectPositionX" to="." method="_on_ObjectPositionX_value_changed"]
 [connection signal="value_changed" from="ObjectOptions/PositionContainer/ObjectPositionY" to="." method="_on_ObjectPositionY_value_changed"]
 [connection signal="value_changed" from="ObjectOptions/PositionContainer/ObjectPositionZ" to="." method="_on_ObjectPositionZ_value_changed"]
