@@ -109,7 +109,7 @@ func add_object(id: int) -> void:
 		node3d.translation = Vector3(-2.5, 0, 0)
 		node3d.rotate_y(-PI / 4)
 	parent_node.add_child(node3d)
-	if object_properties.has(node3d.id):
+	if object_properties.has(node3d.id) and not object_properties[node3d.id].empty():
 		node3d.deserialize(object_properties[node3d.id])
 	else:
 		object_properties[node3d.id] = node3d.serialize()

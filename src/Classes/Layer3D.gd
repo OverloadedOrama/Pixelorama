@@ -27,6 +27,12 @@ func add_object(type: int, undoredo := false) -> void:
 		undo_redo.create_action("Add 3D object")
 		undo_redo.add_do_property(self, "objects", new_objects)
 		undo_redo.add_undo_property(self, "objects", objects)
+		for frame in project.frames:
+			var cel: Cel3D = frame.cels[index]
+			var new_properties := cel.object_properties.duplicate()
+			new_properties[id] = {}
+			undo_redo.add_do_property(cel, "object_properties", new_properties)
+			undo_redo.add_undo_property(cel, "object_properties", cel.object_properties)
 		undo_redo.add_do_method(self, "add_object_in_cels", id)
 		undo_redo.add_undo_method(self, "remove_object_from_cels", id)
 		undo_redo.add_do_method(Global, "undo_or_redo", false)
