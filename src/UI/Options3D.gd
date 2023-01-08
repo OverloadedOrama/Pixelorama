@@ -10,24 +10,23 @@ onready var undo_redo_timer: Timer = $UndoRedoTimer
 onready var load_model_dialog: FileDialog = $LoadModelDialog
 
 onready var layer_properties := {
-	"camera.projection": layer_options.get_node("ProjectionOptionButton"),
-	"camera.rotation_degrees.x": layer_options.get_node("RotationContainer/CameraRotationX"),
-	"camera.rotation_degrees.y": layer_options.get_node("RotationContainer/CameraRotationY"),
-	"camera.rotation_degrees.z": layer_options.get_node("RotationContainer/CameraRotationZ"),
-	"viewport.world.environment.ambient_light_color":
-	layer_options.get_node("AmbientColorPickerButton"),
+	"camera.projection": $"%ProjectionOptionButton",
+	"camera.rotation_degrees.x": $"%CameraRotationX",
+	"camera.rotation_degrees.y": $"%CameraRotationY",
+	"camera.rotation_degrees.z": $"%CameraRotationZ",
+	"viewport.world.environment.ambient_light_color": $"%AmbientColorPickerButton",
 }
 
 onready var object_properties := {
-	"translation.x": object_options.get_node("PositionContainer/ObjectPositionX"),
-	"translation.y": object_options.get_node("PositionContainer/ObjectPositionY"),
-	"translation.z": object_options.get_node("PositionContainer/ObjectPositionZ"),
-	"rotation_degrees.x": object_options.get_node("RotationContainer/ObjectRotationX"),
-	"rotation_degrees.y": object_options.get_node("RotationContainer/ObjectRotationY"),
-	"rotation_degrees.z": object_options.get_node("RotationContainer/ObjectRotationZ"),
-	"scale.x": object_options.get_node("ScaleContainer/ObjectScaleX"),
-	"scale.y": object_options.get_node("ScaleContainer/ObjectScaleY"),
-	"scale.z": object_options.get_node("ScaleContainer/ObjectScaleZ"),
+	"translation.x": $"%ObjectPositionX",
+	"translation.y": $"%ObjectPositionY",
+	"translation.z": $"%ObjectPositionZ",
+	"rotation_degrees.x": $"%ObjectRotationX",
+	"rotation_degrees.y": $"%ObjectRotationY",
+	"rotation_degrees.z": $"%ObjectRotationZ",
+	"scale.x": $"%ObjectScaleX",
+	"scale.y": $"%ObjectScaleY",
+	"scale.z": $"%ObjectScaleZ",
 }
 
 
