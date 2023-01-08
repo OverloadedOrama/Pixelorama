@@ -47,11 +47,11 @@ func update_texture() -> void:
 	return
 
 
-func save_image_data_to_pxo(_file: File) -> void:
+func save_cel_data_to_pxo(_file: File) -> void:
 	return
 
 
-func load_image_data_from_pxo(_file: File, _project_size: Vector2) -> void:
+func load_cel_data_from_pxo(_file: File, _project_size: Vector2) -> void:
 	return
 
 

@@ -568,3 +568,36 @@ func update_hint_tooltips() -> void:
 			var first_key: InputEventKey = Keychain.action_get_first_key(event_type.action)
 			hint = first_key.as_text() if first_key else "None"
 		tip.hint_tooltip = tr(ui_tooltips[tip]) % hint
+
+
+# Used in case some of the values in a dictionary are Strings, when they should be something else
+func convert_dictionary_values(dict: Dictionary) -> void:
+	for key in dict:
+		if typeof(dict[key]) != TYPE_STRING:
+			continue
+		if "transform" in key:  # Convert a String to a Transform
+			var basis_origin: PoolStringArray = dict[key].split(" - ")
+			var basis_props: PoolStringArray = basis_origin[0].split(",")
+			var origin_props: PoolStringArray = basis_origin[1].split(",")
+			var basis_x := Vector3(
+				str2var(basis_props[0]), str2var(basis_props[1]), str2var(basis_props[2])
+			)
+			var basis_y := Vector3(
+				str2var(basis_props[3]), str2var(basis_props[4]), str2var(basis_props[5])
+			)
+			var basis_z := Vector3(
+				str2var(basis_props[6]), str2var(basis_props[7]), str2var(basis_props[8])
+			)
+			var basis := Basis(basis_x, basis_y, basis_z)
+			var origin := Vector3(
+				str2var(origin_props[0]), str2var(origin_props[1]), str2var(origin_props[2])
+			)
+			dict[key] = Transform(basis, origin)
+		elif "color" in key:  # Convert a string to a Color
+			var color_props: PoolStringArray = dict[key].split(",")
+			dict[key] = Color(
+				str2var(color_props[0]),
+				str2var(color_props[1]),
+				str2var(color_props[2]),
+				str2var(color_props[3])
+			)

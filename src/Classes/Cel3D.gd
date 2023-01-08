@@ -10,11 +10,12 @@ var camera: Camera
 var object_properties := {}
 
 
-func _init(_layer, _size: Vector2) -> void:
+func _init(_layer, _size: Vector2, from_pxo := false) -> void:
 	layer = _layer
 	size = _size
 	opacity = 1.0
-	_add_nodes()
+	if not from_pxo:
+		_add_nodes()
 
 
 func _add_nodes() -> void:
@@ -44,6 +45,7 @@ func _add_nodes() -> void:
 		var objects_duplicate := object_properties.duplicate()
 		for id in objects_duplicate:
 			var properties: Dictionary = object_properties[id]
+			Global.convert_dictionary_values(properties)
 			var node3d := Cel3DObject.new()
 			node3d.cel = self
 			node3d.deserialize(properties)
@@ -72,6 +74,8 @@ func serialize_layer_properties() -> Dictionary:
 
 
 func deserialize_layer_properties() -> void:
+	print(layer.properties["camera_transform"])
+	print(typeof(layer.properties["camera_transform"]))
 	camera.transform = layer.properties["camera_transform"]
 	camera.projection = layer.properties["camera_projection"]
 	viewport.world.environment.ambient_light_color = layer.properties["ambient_color"]
@@ -138,6 +142,19 @@ func remove_object(id: int) -> void:
 
 func get_image() -> Image:
 	return viewport.get_texture().get_data()
+
+
+func save_cel_data_to_pxo(file: File) -> void:
+	file.store_line(JSON.print(object_properties))
+
+
+func load_cel_data_from_pxo(file: File, _project_size: Vector2) -> void:
+	var dict := JSON.parse(file.get_line())
+	if dict.error != OK:
+		print("Error while parsing a Cel3D. %s" % dict.error_string)
+		return
+	object_properties = dict.result
+	_add_nodes()
 
 
 func on_remove() -> void:

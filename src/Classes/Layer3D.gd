@@ -107,12 +107,17 @@ func _property_changed() -> void:
 func serialize() -> Dictionary:
 	var dict = .serialize()
 	dict["type"] = Global.LayerTypes.THREE_D
+	dict["properties"] = properties
 #	dict["new_cels_linked"] = new_cels_linked
 	return dict
 
 
-#func deserialize(dict: Dictionary) -> void:
-#	.deserialize(dict)
+func deserialize(dict: Dictionary) -> void:
+	.deserialize(dict)
+	properties = dict["properties"]
+	Global.convert_dictionary_values(properties)
+
+
 #	new_cels_linked = dict.new_cels_linked
 
 
