@@ -108,6 +108,7 @@ func serialize() -> Dictionary:
 	var dict = .serialize()
 	dict["type"] = Global.LayerTypes.THREE_D
 	dict["properties"] = properties
+	dict["objects"] = objects
 #	dict["new_cels_linked"] = new_cels_linked
 	return dict
 
@@ -115,10 +116,10 @@ func serialize() -> Dictionary:
 func deserialize(dict: Dictionary) -> void:
 	.deserialize(dict)
 	properties = dict["properties"]
-	Global.convert_dictionary_values(properties)
-
-
+	objects = dict["objects"]
 #	new_cels_linked = dict.new_cels_linked
+	current_object_id = objects.size()
+	Global.convert_dictionary_values(properties)
 
 
 func new_empty_cel() -> BaseCel:
