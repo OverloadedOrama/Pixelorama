@@ -580,13 +580,13 @@ func convert_dictionary_values(dict: Dictionary) -> void:
 			var basis_props: PoolStringArray = basis_origin[0].split(",")
 			var origin_props: PoolStringArray = basis_origin[1].split(",")
 			var basis_x := Vector3(
-				str2var(basis_props[0]), str2var(basis_props[1]), str2var(basis_props[2])
+				str2var(basis_props[0]), str2var(basis_props[3]), str2var(basis_props[6])
 			)
 			var basis_y := Vector3(
-				str2var(basis_props[3]), str2var(basis_props[4]), str2var(basis_props[5])
+				str2var(basis_props[1]), str2var(basis_props[4]), str2var(basis_props[7])
 			)
 			var basis_z := Vector3(
-				str2var(basis_props[6]), str2var(basis_props[7]), str2var(basis_props[8])
+				str2var(basis_props[2]), str2var(basis_props[5]), str2var(basis_props[8])
 			)
 			var basis := Basis(basis_x, basis_y, basis_z)
 			var origin := Vector3(

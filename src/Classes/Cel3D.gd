@@ -74,8 +74,6 @@ func serialize_layer_properties() -> Dictionary:
 
 
 func deserialize_layer_properties() -> void:
-	print(layer.properties["camera_transform"])
-	print(typeof(layer.properties["camera_transform"]))
 	camera.transform = layer.properties["camera_transform"]
 	camera.projection = layer.properties["camera_projection"]
 	viewport.world.environment.ambient_light_color = layer.properties["ambient_color"]
