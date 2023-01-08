@@ -3,58 +3,81 @@
 [ext_resource path="res://src/UI/Options3D.gd" type="Script" id=1]
 [ext_resource path="res://src/UI/Nodes/ValueSlider.tscn" type="PackedScene" id=2]
 
-[node name="3D Options" type="VBoxContainer"]
+[node name="3D Options" type="PanelContainer"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 script = ExtResource( 1 )
 
-[node name="NewObjectMenuButton" type="MenuButton" parent="."]
-margin_right = 1280.0
-margin_bottom = 20.0
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+margin_left = 7.0
+margin_top = 7.0
+margin_right = 1273.0
+margin_bottom = 713.0
+
+[node name="HeaderHBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
+margin_right = 1266.0
+margin_bottom = 14.0
+
+[node name="Label" type="Label" parent="VBoxContainer/HeaderHBoxContainer"]
+margin_right = 73.0
+margin_bottom = 14.0
+theme_type_variation = "Header"
+text = "3D Options"
+
+[node name="HSeparator" type="HSeparator" parent="VBoxContainer/HeaderHBoxContainer"]
+margin_left = 77.0
+margin_right = 1266.0
+margin_bottom = 14.0
+size_flags_horizontal = 3
+
+[node name="NewObjectMenuButton" type="MenuButton" parent="VBoxContainer"]
+margin_top = 18.0
+margin_right = 1266.0
+margin_bottom = 38.0
 mouse_default_cursor_shape = 2
 text = "Add new object"
 
-[node name="ScrollContainer" type="ScrollContainer" parent="."]
-margin_top = 24.0
-margin_right = 1280.0
-margin_bottom = 720.0
+[node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer"]
+margin_top = 42.0
+margin_right = 1266.0
+margin_bottom = 706.0
 size_flags_vertical = 3
 
-[node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer"]
-margin_right = 1280.0
-margin_bottom = 696.0
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/ScrollContainer"]
+margin_right = 1266.0
+margin_bottom = 664.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="LayerOptions" type="GridContainer" parent="ScrollContainer/VBoxContainer"]
+[node name="LayerOptions" type="GridContainer" parent="VBoxContainer/ScrollContainer/VBoxContainer"]
 unique_name_in_owner = true
-margin_right = 1280.0
-margin_bottom = 696.0
+margin_right = 1266.0
+margin_bottom = 664.0
 size_flags_vertical = 3
 columns = 2
 
-[node name="AmbientColorLabel" type="Label" parent="ScrollContainer/VBoxContainer/LayerOptions"]
+[node name="AmbientColorLabel" type="Label" parent="VBoxContainer/ScrollContainer/VBoxContainer/LayerOptions"]
 margin_top = 3.0
-margin_right = 638.0
+margin_right = 631.0
 margin_bottom = 17.0
 text = "Ambient color"
 
-[node name="AmbientColorPickerButton" type="ColorPickerButton" parent="ScrollContainer/VBoxContainer/LayerOptions"]
-margin_left = 642.0
-margin_right = 1280.0
+[node name="AmbientColorPickerButton" type="ColorPickerButton" parent="VBoxContainer/ScrollContainer/VBoxContainer/LayerOptions"]
+margin_left = 635.0
+margin_right = 1266.0
 margin_bottom = 20.0
 
-[node name="ProjectionLabel" type="Label" parent="ScrollContainer/VBoxContainer/LayerOptions"]
+[node name="ProjectionLabel" type="Label" parent="VBoxContainer/ScrollContainer/VBoxContainer/LayerOptions"]
 margin_top = 27.0
-margin_right = 638.0
+margin_right = 631.0
 margin_bottom = 41.0
 size_flags_horizontal = 3
 text = "Projection"
 
-[node name="ProjectionOptionButton" type="OptionButton" parent="ScrollContainer/VBoxContainer/LayerOptions"]
-margin_left = 642.0
+[node name="ProjectionOptionButton" type="OptionButton" parent="VBoxContainer/ScrollContainer/VBoxContainer/LayerOptions"]
+margin_left = 635.0
 margin_top = 24.0
-margin_right = 1280.0
+margin_right = 1266.0
 margin_bottom = 44.0
 mouse_default_cursor_shape = 2
 size_flags_horizontal = 3
@@ -62,31 +85,31 @@ text = "Perspective"
 items = [ "Perspective", null, false, 0, null, "Orthogonal", null, false, 1, null, "Frustum", null, false, 2, null ]
 selected = 0
 
-[node name="RotationLabel" type="Label" parent="ScrollContainer/VBoxContainer/LayerOptions"]
+[node name="RotationLabel" type="Label" parent="VBoxContainer/ScrollContainer/VBoxContainer/LayerOptions"]
 margin_top = 81.0
-margin_right = 638.0
+margin_right = 631.0
 margin_bottom = 95.0
 size_flags_horizontal = 3
 text = "Rotation"
 
-[node name="RotationContainer" type="VBoxContainer" parent="ScrollContainer/VBoxContainer/LayerOptions"]
-margin_left = 642.0
+[node name="RotationContainer" type="VBoxContainer" parent="VBoxContainer/ScrollContainer/VBoxContainer/LayerOptions"]
+margin_left = 635.0
 margin_top = 48.0
-margin_right = 1280.0
+margin_right = 1266.0
 margin_bottom = 128.0
 size_flags_horizontal = 3
 
-[node name="CameraRotationX" parent="ScrollContainer/VBoxContainer/LayerOptions/RotationContainer" instance=ExtResource( 2 )]
-margin_right = 638.0
+[node name="CameraRotationX" parent="VBoxContainer/ScrollContainer/VBoxContainer/LayerOptions/RotationContainer" instance=ExtResource( 2 )]
+margin_right = 631.0
 min_value = -180.0
 max_value = 180.0
 step = 0.1
 prefix = "X"
 suffix = "°"
 
-[node name="CameraRotationY" parent="ScrollContainer/VBoxContainer/LayerOptions/RotationContainer" instance=ExtResource( 2 )]
+[node name="CameraRotationY" parent="VBoxContainer/ScrollContainer/VBoxContainer/LayerOptions/RotationContainer" instance=ExtResource( 2 )]
 margin_top = 28.0
-margin_right = 638.0
+margin_right = 631.0
 margin_bottom = 52.0
 min_value = -180.0
 max_value = 180.0
@@ -94,9 +117,9 @@ step = 0.1
 prefix = "Y"
 suffix = "°"
 
-[node name="CameraRotationZ" parent="ScrollContainer/VBoxContainer/LayerOptions/RotationContainer" instance=ExtResource( 2 )]
+[node name="CameraRotationZ" parent="VBoxContainer/ScrollContainer/VBoxContainer/LayerOptions/RotationContainer" instance=ExtResource( 2 )]
 margin_top = 56.0
-margin_right = 638.0
+margin_right = 631.0
 margin_bottom = 80.0
 min_value = -180.0
 max_value = 180.0
@@ -104,7 +127,7 @@ step = 0.1
 prefix = "Z"
 suffix = "°"
 
-[node name="ObjectOptions" type="GridContainer" parent="ScrollContainer/VBoxContainer"]
+[node name="ObjectOptions" type="GridContainer" parent="VBoxContainer/ScrollContainer/VBoxContainer"]
 unique_name_in_owner = true
 visible = false
 margin_top = 338.0
@@ -113,20 +136,20 @@ margin_bottom = 696.0
 size_flags_vertical = 3
 columns = 2
 
-[node name="PositionLabel" type="Label" parent="ScrollContainer/VBoxContainer/ObjectOptions"]
+[node name="PositionLabel" type="Label" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions"]
 margin_right = 638.0
 margin_bottom = 80.0
 size_flags_horizontal = 3
 size_flags_vertical = 1
 text = "Position"
 
-[node name="PositionContainer" type="VBoxContainer" parent="ScrollContainer/VBoxContainer/ObjectOptions"]
+[node name="PositionContainer" type="VBoxContainer" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions"]
 margin_left = 642.0
 margin_right = 1280.0
 margin_bottom = 80.0
 size_flags_horizontal = 3
 
-[node name="ObjectPositionX" parent="ScrollContainer/VBoxContainer/ObjectOptions/PositionContainer" instance=ExtResource( 2 )]
+[node name="ObjectPositionX" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions/PositionContainer" instance=ExtResource( 2 )]
 margin_right = 638.0
 min_value = -20.0
 max_value = 20.0
@@ -136,7 +159,7 @@ allow_lesser = true
 prefix = "X"
 suffix = "m"
 
-[node name="ObjectPositionY" parent="ScrollContainer/VBoxContainer/ObjectOptions/PositionContainer" instance=ExtResource( 2 )]
+[node name="ObjectPositionY" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions/PositionContainer" instance=ExtResource( 2 )]
 margin_top = 28.0
 margin_right = 638.0
 margin_bottom = 52.0
@@ -148,7 +171,7 @@ allow_lesser = true
 prefix = "Y"
 suffix = "m"
 
-[node name="ObjectPositionZ" parent="ScrollContainer/VBoxContainer/ObjectOptions/PositionContainer" instance=ExtResource( 2 )]
+[node name="ObjectPositionZ" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions/PositionContainer" instance=ExtResource( 2 )]
 margin_top = 56.0
 margin_right = 638.0
 margin_bottom = 80.0
@@ -160,7 +183,7 @@ allow_lesser = true
 prefix = "Z"
 suffix = "m"
 
-[node name="RotationLabel" type="Label" parent="ScrollContainer/VBoxContainer/ObjectOptions"]
+[node name="RotationLabel" type="Label" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions"]
 margin_top = 84.0
 margin_right = 638.0
 margin_bottom = 164.0
@@ -168,14 +191,14 @@ size_flags_horizontal = 3
 size_flags_vertical = 1
 text = "Rotation"
 
-[node name="RotationContainer" type="VBoxContainer" parent="ScrollContainer/VBoxContainer/ObjectOptions"]
+[node name="RotationContainer" type="VBoxContainer" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions"]
 margin_left = 642.0
 margin_top = 84.0
 margin_right = 1280.0
 margin_bottom = 164.0
 size_flags_horizontal = 3
 
-[node name="ObjectRotationX" parent="ScrollContainer/VBoxContainer/ObjectOptions/RotationContainer" instance=ExtResource( 2 )]
+[node name="ObjectRotationX" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions/RotationContainer" instance=ExtResource( 2 )]
 margin_right = 638.0
 min_value = -180.0
 max_value = 180.0
@@ -183,7 +206,7 @@ step = 0.1
 prefix = "X"
 suffix = "°"
 
-[node name="ObjectRotationY" parent="ScrollContainer/VBoxContainer/ObjectOptions/RotationContainer" instance=ExtResource( 2 )]
+[node name="ObjectRotationY" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions/RotationContainer" instance=ExtResource( 2 )]
 margin_top = 28.0
 margin_right = 638.0
 margin_bottom = 52.0
@@ -193,7 +216,7 @@ step = 0.1
 prefix = "Y"
 suffix = "°"
 
-[node name="ObjectRotationZ" parent="ScrollContainer/VBoxContainer/ObjectOptions/RotationContainer" instance=ExtResource( 2 )]
+[node name="ObjectRotationZ" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions/RotationContainer" instance=ExtResource( 2 )]
 margin_top = 56.0
 margin_right = 638.0
 margin_bottom = 80.0
@@ -203,7 +226,7 @@ step = 0.1
 prefix = "Z"
 suffix = "°"
 
-[node name="ScaleLabel" type="Label" parent="ScrollContainer/VBoxContainer/ObjectOptions"]
+[node name="ScaleLabel" type="Label" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions"]
 margin_top = 168.0
 margin_right = 638.0
 margin_bottom = 248.0
@@ -211,14 +234,14 @@ size_flags_horizontal = 3
 size_flags_vertical = 1
 text = "Scale"
 
-[node name="ScaleContainer" type="VBoxContainer" parent="ScrollContainer/VBoxContainer/ObjectOptions"]
+[node name="ScaleContainer" type="VBoxContainer" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions"]
 margin_left = 642.0
 margin_top = 168.0
 margin_right = 1280.0
 margin_bottom = 248.0
 size_flags_horizontal = 3
 
-[node name="ObjectScaleX" parent="ScrollContainer/VBoxContainer/ObjectOptions/ScaleContainer" instance=ExtResource( 2 )]
+[node name="ObjectScaleX" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions/ScaleContainer" instance=ExtResource( 2 )]
 margin_right = 638.0
 step = 0.1
 value = 100.0
@@ -227,7 +250,7 @@ allow_lesser = true
 prefix = "X"
 suffix = "%"
 
-[node name="ObjectScaleY" parent="ScrollContainer/VBoxContainer/ObjectOptions/ScaleContainer" instance=ExtResource( 2 )]
+[node name="ObjectScaleY" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions/ScaleContainer" instance=ExtResource( 2 )]
 margin_top = 28.0
 margin_right = 638.0
 margin_bottom = 52.0
@@ -238,7 +261,7 @@ allow_lesser = true
 prefix = "Y"
 suffix = "%"
 
-[node name="ObjectScaleZ" parent="ScrollContainer/VBoxContainer/ObjectOptions/ScaleContainer" instance=ExtResource( 2 )]
+[node name="ObjectScaleZ" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions/ScaleContainer" instance=ExtResource( 2 )]
 margin_top = 56.0
 margin_right = 638.0
 margin_bottom = 80.0

@@ -6,7 +6,7 @@ onready var global_tool_options: PanelContainer = $"%Global Tool Options"
 onready var left_tool_options: ScrollContainer = $"%Left Tool Options"
 onready var right_tool_options: ScrollContainer = $"%Right Tool Options"
 onready var palettes: PanelContainer = $"%Palettes"
-onready var options_3d: VBoxContainer = $"%3D Options"
+onready var options_3d: PanelContainer = $"%3D Options"
 
 
 func _ready() -> void:

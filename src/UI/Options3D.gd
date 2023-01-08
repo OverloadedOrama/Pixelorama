@@ -1,9 +1,9 @@
-extends VBoxContainer
+extends PanelContainer
 
 var cel: Cel3D
 var can_start_timer := true
 
-onready var new_object_menu_button: MenuButton = $NewObjectMenuButton
+onready var new_object_menu_button: MenuButton = $VBoxContainer/NewObjectMenuButton
 onready var layer_options: Container = $"%LayerOptions"
 onready var object_options: Container = $"%ObjectOptions"
 onready var undo_redo_timer: Timer = $UndoRedoTimer
