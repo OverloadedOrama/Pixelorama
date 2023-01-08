@@ -4,7 +4,19 @@ extends Spatial
 signal property_changed
 signal property_finished_changing
 
-enum Type { CUBE, SPHERE, CAPSULE, CYLINDER, PRISM, PLANE, TEXT, DIR_LIGHT, SPOT_LIGHT, OMNI_LIGHT }
+enum Type {
+	CUBE,
+	SPHERE,
+	CAPSULE,
+	CYLINDER,
+	PRISM,
+	PLANE,
+	TEXT,
+	DIR_LIGHT,
+	SPOT_LIGHT,
+	OMNI_LIGHT,
+	IMPORTED
+}
 enum Gizmos { NONE, X_POS, Y_POS, Z_POS, X_ROT, Y_ROT, Z_ROT, X_SCALE, Y_SCALE, Z_SCALE }
 
 var cel
@@ -14,6 +26,7 @@ var selected := false
 var hovered := false
 var box_shape: BoxShape
 var camera: Camera
+var file_path := ""  # Only useful for Type.IMPORTED
 var applying_gizmos: int = Gizmos.NONE
 
 var dir_light_texture := preload("res://assets/graphics/gizmos/directional_light.svg")
@@ -60,6 +73,10 @@ func _ready() -> void:
 		Type.OMNI_LIGHT:
 			node3d_type = OmniLight.new()
 			gizmos_3d.add_always_visible(self, omni_light_texture)
+		Type.IMPORTED:
+			node3d_type = MeshInstance.new()
+			var mesh := ObjParse.load_obj(file_path)
+			node3d_type.mesh = mesh
 	add_child(node3d_type)
 	var static_body := StaticBody.new()
 	var collision_shape := CollisionShape.new()
@@ -76,13 +93,14 @@ func find_cel() -> bool:
 
 
 func serialize() -> Dictionary:
-	return {"id": id, "type": type, "transform": transform}
+	return {"id": id, "type": type, "transform": transform, "file_path": file_path}
 
 
 func deserialize(dict: Dictionary) -> void:
 	id = dict["id"]
 	type = dict["type"]
 	transform = dict["transform"]
+	file_path = dict["file_path"]
 	change_property()
 
 

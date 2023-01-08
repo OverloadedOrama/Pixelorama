@@ -6,8 +6,8 @@ var can_start_timer := true
 onready var new_object_menu_button: MenuButton = $NewObjectMenuButton
 onready var layer_options: Container = $"%LayerOptions"
 onready var object_options: Container = $"%ObjectOptions"
-
 onready var undo_redo_timer: Timer = $UndoRedoTimer
+onready var load_model_dialog: FileDialog = $LoadModelDialog
 
 onready var layer_properties := {
 	"camera.projection": layer_options.get_node("ProjectionOptionButton"),
@@ -44,6 +44,7 @@ func _ready() -> void:
 	new_object_popup.add_item("Directional light")
 	new_object_popup.add_item("Spotlight")
 	new_object_popup.add_item("Omnidirectional (point) light")
+	new_object_popup.add_item("Load model from file")
 	new_object_popup.connect("id_pressed", self, "_add_new_object")
 	for prop in layer_properties:
 		var node: Control = layer_properties[prop]
@@ -82,7 +83,11 @@ func _cel_changed() -> void:
 
 
 func _add_new_object(id: int) -> void:
-	cel.layer.add_object(id, true)
+	if id == Cel3DObject.Type.IMPORTED:
+		load_model_dialog.popup_centered()
+		Global.dialog_open(true)
+	else:
+		cel.layer.add_object(id)
 
 
 func _selected_object(object: Cel3DObject) -> void:
@@ -204,3 +209,12 @@ func _on_UndoRedoTimer_timeout() -> void:
 	else:
 		var new_properties := cel.serialize_layer_properties()
 		cel.layer.change_properties(new_properties)
+
+
+func _on_LoadModelDialog_files_selected(paths: PoolStringArray) -> void:
+	for path in paths:
+		cel.layer.add_object(Cel3DObject.Type.IMPORTED, true, path)
+
+
+func _on_LoadModelDialog_popup_hide() -> void:
+	Global.dialog_open(false)

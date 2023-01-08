@@ -18,11 +18,11 @@ func _init(_project, _name := "") -> void:
 		"camera_projection": Camera.PROJECTION_PERSPECTIVE,
 		"ambient_color": Color.black,
 	}
-	add_object(Cel3DObject.Type.DIR_LIGHT)
-	add_object(Cel3DObject.Type.CUBE)
+	add_object(Cel3DObject.Type.DIR_LIGHT, false)
+	add_object(Cel3DObject.Type.CUBE, false)
 
 
-func add_object(type: int, undoredo := false) -> void:
+func add_object(type: int, undoredo := true, file_path := "") -> void:
 	if undoredo:
 		var id := current_object_id
 		var new_objects := objects.duplicate()
@@ -34,7 +34,7 @@ func add_object(type: int, undoredo := false) -> void:
 		for frame in project.frames:
 			var cel: Cel3D = frame.cels[index]
 			var new_properties := cel.object_properties.duplicate()
-			new_properties[id] = {}
+			new_properties[id] = {"file_path": file_path}
 			undo_redo.add_do_property(cel, "object_properties", new_properties)
 			undo_redo.add_undo_property(cel, "object_properties", cel.object_properties)
 		undo_redo.add_do_method(self, "add_object_in_cels", id)

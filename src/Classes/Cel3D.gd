@@ -115,11 +115,13 @@ func add_object(id: int) -> void:
 	if id == 0:  # Directional light
 		node3d.translation = Vector3(-2.5, 0, 0)
 		node3d.rotate_y(-PI / 4)
-	parent_node.add_child(node3d)
-	if object_properties.has(node3d.id) and not object_properties[node3d.id].empty():
+	if object_properties.has(node3d.id) and object_properties[node3d.id].has("id"):
 		node3d.deserialize(object_properties[node3d.id])
 	else:
+		if object_properties.has(node3d.id) and object_properties[node3d.id].has("file_path"):
+			node3d.file_path = object_properties[node3d.id]["file_path"]
 		object_properties[node3d.id] = node3d.serialize()
+	parent_node.add_child(node3d)
 
 
 func remove_object(id: int) -> void:

@@ -253,4 +253,18 @@ suffix = "%"
 wait_time = 0.2
 one_shot = true
 
+[node name="LoadModelDialog" type="FileDialog" parent="."]
+margin_top = 590.0
+margin_right = 515.0
+margin_bottom = 938.0
+rect_min_size = Vector2( 515, 348 )
+window_title = "Open File(s)"
+resizable = true
+mode = 1
+access = 2
+filters = PoolStringArray( "*.obj" )
+show_hidden_files = true
+
 [connection signal="timeout" from="UndoRedoTimer" to="." method="_on_UndoRedoTimer_timeout"]
+[connection signal="files_selected" from="LoadModelDialog" to="." method="_on_LoadModelDialog_files_selected"]
+[connection signal="popup_hide" from="LoadModelDialog" to="." method="_on_LoadModelDialog_popup_hide"]
