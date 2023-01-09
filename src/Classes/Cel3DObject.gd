@@ -21,13 +21,14 @@ enum Gizmos { NONE, X_POS, Y_POS, Z_POS, X_ROT, Y_ROT, Z_ROT, X_SCALE, Y_SCALE, 
 
 var cel
 var id := -1
-var type: int = Type.CUBE
+var type: int = Type.CUBE setget _set_type
 var selected := false
 var hovered := false
 var box_shape: BoxShape
 var camera: Camera
-var file_path := ""  # Only useful for Type.IMPORTED
+var file_path := "" setget _set_file_path  # Only useful for Type.IMPORTED
 var applying_gizmos: int = Gizmos.NONE
+var node3d_type: VisualInstance
 
 var dir_light_texture := preload("res://assets/graphics/gizmos/directional_light.svg")
 var spot_light_texture := preload("res://assets/graphics/gizmos/spot_light.svg")
@@ -38,7 +39,125 @@ onready var gizmos_3d: Node2D = Global.canvas.gizmos_3d
 
 func _ready() -> void:
 	camera = get_viewport().get_camera()
-	var node3d_type: Spatial
+	var static_body := StaticBody.new()
+	var collision_shape := CollisionShape.new()
+	box_shape = BoxShape.new()
+	box_shape.extents = scale
+	collision_shape.shape = box_shape
+	static_body.add_child(collision_shape)
+	add_child(static_body)
+
+
+func find_cel() -> bool:
+	var project = Global.current_project
+	return cel == project.frames[project.current_frame].cels[project.current_layer]
+
+
+func serialize() -> Dictionary:
+	var dict := {"id": id, "type": type, "transform": transform, "file_path": file_path}
+	if _is_mesh():
+		var mesh: Mesh = node3d_type.mesh
+		match type:
+			Type.CUBE:
+				dict["mesh_size"] = mesh.size
+			Type.PLANE:
+				dict["mesh_sizev2"] = mesh.size
+				dict["mesh_center_offset"] = mesh.center_offset
+			Type.PRISM:
+				dict["mesh_size"] = mesh.size
+				dict["mesh_left_to_right"] = mesh.left_to_right
+			Type.SPHERE:
+				dict["mesh_radius"] = mesh.radius
+				dict["mesh_height"] = mesh.height
+				dict["mesh_radial_segments"] = mesh.radial_segments
+				dict["mesh_rings"] = mesh.rings
+				dict["mesh_is_hemisphere"] = mesh.is_hemisphere
+			Type.CAPSULE:
+				dict["mesh_radius"] = mesh.radius
+				dict["mesh_mid_height"] = mesh.mid_height
+				dict["mesh_radial_segments"] = mesh.radial_segments
+				dict["mesh_rings"] = mesh.rings
+			Type.CYLINDER:
+				dict["mesh_bottom_radius"] = mesh.bottom_radius
+				dict["mesh_top_radius"] = mesh.top_radius
+				dict["mesh_height"] = mesh.height
+				dict["mesh_radial_segments"] = mesh.radial_segments
+				dict["mesh_rings"] = mesh.rings
+			Type.TEXT:
+				dict["mesh_text"] = mesh.text
+	else:
+		dict["light_color"] = node3d_type.light_color
+		dict["light_energy"] = node3d_type.light_energy
+		dict["light_negative"] = node3d_type.light_negative
+		dict["shadow_enabled"] = node3d_type.shadow_enabled
+		dict["shadow_color"] = node3d_type.shadow_color
+		match type:
+			Type.OMNI_LIGHT:
+				dict["omni_range"] = node3d_type.omni_range
+			Type.SPOT_LIGHT:
+				dict["spot_range"] = node3d_type.spot_range
+				dict["spot_angle"] = node3d_type.spot_angle
+	return dict
+
+
+func deserialize(dict: Dictionary) -> void:
+	id = dict["id"]
+	self.type = dict["type"]
+	transform = dict["transform"]
+	self.file_path = dict["file_path"]
+	if _is_mesh():
+		var mesh: Mesh = node3d_type.mesh
+		match type:
+			Type.CUBE:
+				mesh.size = dict["mesh_size"]
+			Type.PLANE:
+				mesh.size = dict["mesh_sizev2"]
+				mesh.center_offset = dict["mesh_center_offset"]
+			Type.PRISM:
+				mesh.size = dict["mesh_size"]
+				mesh.left_to_right = dict["mesh_left_to_right"]
+			Type.SPHERE:
+				mesh.radius = dict["mesh_radius"]
+				mesh.height = dict["mesh_height"]
+				mesh.radial_segments = dict["mesh_radial_segments"]
+				mesh.rings = dict["mesh_rings"]
+				mesh.is_hemisphere = dict["mesh_is_hemisphere"]
+			Type.CAPSULE:
+				mesh.radius = dict["mesh_radius"]
+				mesh.mid_height = dict["mesh_mid_height"]
+				mesh.radial_segments = dict["mesh_radial_segments"]
+				mesh.rings = dict["mesh_rings"]
+			Type.CYLINDER:
+				mesh.bottom_radius = dict["mesh_bottom_radius"]
+				mesh.top_radius = dict["mesh_top_radius"]
+				mesh.height = dict["mesh_height"]
+				mesh.radial_segments = dict["mesh_radial_segments"]
+				mesh.rings = dict["mesh_rings"]
+			Type.TEXT:
+				mesh.text = dict["mesh_text"]
+	else:
+		node3d_type.light_color = dict["light_color"]
+		node3d_type.light_energy = dict["light_energy"]
+		node3d_type.light_negative = dict["light_negative"]
+		node3d_type.shadow_enabled = dict["shadow_enabled"]
+		node3d_type.shadow_color = dict["shadow_color"]
+		match type:
+			Type.OMNI_LIGHT:
+				node3d_type.omni_range = dict["omni_range"]
+			Type.SPOT_LIGHT:
+				node3d_type.spot_range = dict["spot_range"]
+				node3d_type.spot_angle = dict["spot_angle"]
+	change_property()
+
+
+func _is_mesh() -> bool:
+	return node3d_type is MeshInstance
+
+
+func _set_type(value: int) -> void:
+	type = value
+	if is_instance_valid(node3d_type):
+		node3d_type.queue_free()
 	match type:
 		Type.CUBE:
 			node3d_type = MeshInstance.new()
@@ -75,33 +194,19 @@ func _ready() -> void:
 			gizmos_3d.add_always_visible(self, omni_light_texture)
 		Type.IMPORTED:
 			node3d_type = MeshInstance.new()
-			var mesh := ObjParse.load_obj(file_path)
+			var mesh: Mesh
+			if not file_path.empty():
+				mesh = ObjParse.load_obj(file_path)
 			node3d_type.mesh = mesh
 	add_child(node3d_type)
-	var static_body := StaticBody.new()
-	var collision_shape := CollisionShape.new()
-	box_shape = BoxShape.new()
-	box_shape.extents = scale
-	collision_shape.shape = box_shape
-	static_body.add_child(collision_shape)
-	add_child(static_body)
 
 
-func find_cel() -> bool:
-	var project = Global.current_project
-	return cel == project.frames[project.current_frame].cels[project.current_layer]
-
-
-func serialize() -> Dictionary:
-	return {"id": id, "type": type, "transform": transform, "file_path": file_path}
-
-
-func deserialize(dict: Dictionary) -> void:
-	id = dict["id"]
-	type = dict["type"]
-	transform = dict["transform"]
-	file_path = dict["file_path"]
-	change_property()
+func _set_file_path(value: String) -> void:
+	file_path = value
+	if file_path.empty():
+		return
+	if type == Type.IMPORTED:
+		node3d_type.mesh = ObjParse.load_obj(file_path)
 
 
 func _notification(what: int) -> void:

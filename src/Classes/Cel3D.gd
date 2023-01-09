@@ -48,9 +48,9 @@ func _add_nodes() -> void:
 			Global.convert_dictionary_values(properties)
 			var node3d := Cel3DObject.new()
 			node3d.cel = self
-			node3d.deserialize(properties)
 			node3d.connect("property_finished_changing", self, "_object_property_changed", [node3d])
 			parent_node.add_child(node3d)
+			node3d.deserialize(properties)
 			object_properties.erase(id)
 			object_properties[node3d.id] = properties
 
@@ -112,8 +112,9 @@ func add_object(id: int) -> void:
 	var node3d := Cel3DObject.new()
 	node3d.id = id
 	node3d.cel = self
-	node3d.type = layer.objects[id]
 	node3d.connect("property_finished_changing", self, "_object_property_changed", [node3d])
+	parent_node.add_child(node3d)
+	node3d.type = layer.objects[id]
 	if id == 0:  # Directional light
 		node3d.translation = Vector3(-2.5, 0, 0)
 		node3d.rotate_y(-PI / 4)
@@ -123,7 +124,6 @@ func add_object(id: int) -> void:
 		if object_properties.has(node3d.id) and object_properties[node3d.id].has("file_path"):
 			node3d.file_path = object_properties[node3d.id]["file_path"]
 		object_properties[node3d.id] = node3d.serialize()
-	parent_node.add_child(node3d)
 
 
 func remove_object(id: int) -> void:

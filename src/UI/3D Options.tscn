@@ -167,32 +167,32 @@ margin_right = 1266.0
 margin_bottom = 664.0
 size_flags_vertical = 3
 
-[node name="CollapsibleContainer" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions" instance=ExtResource( 3 )]
+[node name="TransformOptions" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions" instance=ExtResource( 3 )]
 margin_right = 1266.0
 margin_bottom = 272.0
 text = "Transform"
 visible_content = true
 
-[node name="GridContainer" type="GridContainer" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions/CollapsibleContainer"]
+[node name="GridContainer" type="GridContainer" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions/TransformOptions"]
 margin_top = 24.0
 margin_right = 1266.0
 margin_bottom = 272.0
 columns = 2
 
-[node name="PositionLabel" type="Label" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions/CollapsibleContainer/GridContainer"]
+[node name="PositionLabel" type="Label" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions/TransformOptions/GridContainer"]
 margin_right = 631.0
 margin_bottom = 80.0
 size_flags_horizontal = 3
 size_flags_vertical = 1
 text = "Position"
 
-[node name="PositionContainer" type="VBoxContainer" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions/CollapsibleContainer/GridContainer"]
+[node name="PositionContainer" type="VBoxContainer" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions/TransformOptions/GridContainer"]
 margin_left = 635.0
 margin_right = 1266.0
 margin_bottom = 80.0
 size_flags_horizontal = 3
 
-[node name="ObjectPositionX" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions/CollapsibleContainer/GridContainer/PositionContainer" instance=ExtResource( 2 )]
+[node name="ObjectPositionX" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions/TransformOptions/GridContainer/PositionContainer" instance=ExtResource( 2 )]
 unique_name_in_owner = true
 margin_right = 631.0
 min_value = -20.0
@@ -203,7 +203,7 @@ allow_lesser = true
 prefix = "X"
 suffix = "m"
 
-[node name="ObjectPositionY" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions/CollapsibleContainer/GridContainer/PositionContainer" instance=ExtResource( 2 )]
+[node name="ObjectPositionY" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions/TransformOptions/GridContainer/PositionContainer" instance=ExtResource( 2 )]
 unique_name_in_owner = true
 margin_top = 28.0
 margin_right = 631.0
@@ -216,7 +216,7 @@ allow_lesser = true
 prefix = "Y"
 suffix = "m"
 
-[node name="ObjectPositionZ" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions/CollapsibleContainer/GridContainer/PositionContainer" instance=ExtResource( 2 )]
+[node name="ObjectPositionZ" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions/TransformOptions/GridContainer/PositionContainer" instance=ExtResource( 2 )]
 unique_name_in_owner = true
 margin_top = 56.0
 margin_right = 631.0
@@ -229,7 +229,7 @@ allow_lesser = true
 prefix = "Z"
 suffix = "m"
 
-[node name="RotationLabel" type="Label" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions/CollapsibleContainer/GridContainer"]
+[node name="RotationLabel" type="Label" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions/TransformOptions/GridContainer"]
 margin_top = 84.0
 margin_right = 631.0
 margin_bottom = 164.0
@@ -237,14 +237,14 @@ size_flags_horizontal = 3
 size_flags_vertical = 1
 text = "Rotation"
 
-[node name="RotationContainer" type="VBoxContainer" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions/CollapsibleContainer/GridContainer"]
+[node name="RotationContainer" type="VBoxContainer" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions/TransformOptions/GridContainer"]
 margin_left = 635.0
 margin_top = 84.0
 margin_right = 1266.0
 margin_bottom = 164.0
 size_flags_horizontal = 3
 
-[node name="ObjectRotationX" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions/CollapsibleContainer/GridContainer/RotationContainer" instance=ExtResource( 2 )]
+[node name="ObjectRotationX" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions/TransformOptions/GridContainer/RotationContainer" instance=ExtResource( 2 )]
 unique_name_in_owner = true
 margin_right = 631.0
 min_value = -180.0
@@ -253,7 +253,7 @@ step = 0.1
 prefix = "X"
 suffix = "°"
 
-[node name="ObjectRotationY" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions/CollapsibleContainer/GridContainer/RotationContainer" instance=ExtResource( 2 )]
+[node name="ObjectRotationY" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions/TransformOptions/GridContainer/RotationContainer" instance=ExtResource( 2 )]
 unique_name_in_owner = true
 margin_top = 28.0
 margin_right = 631.0
@@ -264,7 +264,7 @@ step = 0.1
 prefix = "Y"
 suffix = "°"
 
-[node name="ObjectRotationZ" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions/CollapsibleContainer/GridContainer/RotationContainer" instance=ExtResource( 2 )]
+[node name="ObjectRotationZ" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions/TransformOptions/GridContainer/RotationContainer" instance=ExtResource( 2 )]
 unique_name_in_owner = true
 margin_top = 56.0
 margin_right = 631.0
@@ -275,7 +275,7 @@ step = 0.1
 prefix = "Z"
 suffix = "°"
 
-[node name="ScaleLabel" type="Label" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions/CollapsibleContainer/GridContainer"]
+[node name="ScaleLabel" type="Label" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions/TransformOptions/GridContainer"]
 margin_top = 168.0
 margin_right = 631.0
 margin_bottom = 248.0
@@ -283,14 +283,14 @@ size_flags_horizontal = 3
 size_flags_vertical = 1
 text = "Scale"
 
-[node name="ScaleContainer" type="VBoxContainer" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions/CollapsibleContainer/GridContainer"]
+[node name="ScaleContainer" type="VBoxContainer" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions/TransformOptions/GridContainer"]
 margin_left = 635.0
 margin_top = 168.0
 margin_right = 1266.0
 margin_bottom = 248.0
 size_flags_horizontal = 3
 
-[node name="ObjectScaleX" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions/CollapsibleContainer/GridContainer/ScaleContainer" instance=ExtResource( 2 )]
+[node name="ObjectScaleX" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions/TransformOptions/GridContainer/ScaleContainer" instance=ExtResource( 2 )]
 unique_name_in_owner = true
 margin_right = 631.0
 step = 0.1
@@ -300,7 +300,7 @@ allow_lesser = true
 prefix = "X"
 suffix = "%"
 
-[node name="ObjectScaleY" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions/CollapsibleContainer/GridContainer/ScaleContainer" instance=ExtResource( 2 )]
+[node name="ObjectScaleY" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions/TransformOptions/GridContainer/ScaleContainer" instance=ExtResource( 2 )]
 unique_name_in_owner = true
 margin_top = 28.0
 margin_right = 631.0
@@ -312,7 +312,7 @@ allow_lesser = true
 prefix = "Y"
 suffix = "%"
 
-[node name="ObjectScaleZ" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions/CollapsibleContainer/GridContainer/ScaleContainer" instance=ExtResource( 2 )]
+[node name="ObjectScaleZ" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions/TransformOptions/GridContainer/ScaleContainer" instance=ExtResource( 2 )]
 unique_name_in_owner = true
 margin_top = 56.0
 margin_right = 631.0

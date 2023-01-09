@@ -576,28 +576,11 @@ func convert_dictionary_values(dict: Dictionary) -> void:
 		if typeof(dict[key]) != TYPE_STRING:
 			continue
 		if "transform" in key:  # Convert a String to a Transform
-			var basis_origin: PoolStringArray = dict[key].split(" - ")
-			var basis_props: PoolStringArray = basis_origin[0].split(",")
-			var origin_props: PoolStringArray = basis_origin[1].split(",")
-			var basis_x := Vector3(
-				str2var(basis_props[0]), str2var(basis_props[3]), str2var(basis_props[6])
-			)
-			var basis_y := Vector3(
-				str2var(basis_props[1]), str2var(basis_props[4]), str2var(basis_props[7])
-			)
-			var basis_z := Vector3(
-				str2var(basis_props[2]), str2var(basis_props[5]), str2var(basis_props[8])
-			)
-			var basis := Basis(basis_x, basis_y, basis_z)
-			var origin := Vector3(
-				str2var(origin_props[0]), str2var(origin_props[1]), str2var(origin_props[2])
-			)
-			dict[key] = Transform(basis, origin)
-		elif "color" in key:  # Convert a string to a Color
-			var color_props: PoolStringArray = dict[key].split(",")
-			dict[key] = Color(
-				str2var(color_props[0]),
-				str2var(color_props[1]),
-				str2var(color_props[2]),
-				str2var(color_props[3])
-			)
+			var transform_string: String = dict[key].replace(" - ", ", ")
+			dict[key] = str2var("Transform(" + transform_string + ")")
+		elif "color" in key:  # Convert a String to a Color
+			dict[key] = str2var("Color(" + dict[key] + ")")
+		elif "v2" in key:  # Convert a String to a Vector2
+			dict[key] = str2var("Vector2" + dict[key])
+		elif "size" in key:  # Convert a String to a Vector3
+			dict[key] = str2var("Vector3" + dict[key])
