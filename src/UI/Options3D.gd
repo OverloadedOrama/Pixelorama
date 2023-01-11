@@ -15,6 +15,7 @@ onready var layer_properties := {
 	"camera.rotation_degrees.y": $"%CameraRotationY",
 	"camera.rotation_degrees.z": $"%CameraRotationZ",
 	"viewport.world.environment.ambient_light_color": $"%AmbientColorPickerButton",
+	"viewport.world.environment.ambient_light_energy": $"%AmbientEnergy",
 }
 
 onready var object_properties := {

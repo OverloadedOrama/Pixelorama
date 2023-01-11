@@ -142,7 +142,7 @@ text = "Environment"
 visible = false
 margin_top = 24.0
 margin_right = 1266.0
-margin_bottom = 44.0
+margin_bottom = 72.0
 columns = 2
 
 [node name="AmbientColorLabel" type="Label" parent="VBoxContainer/ScrollContainer/VBoxContainer/LayerOptions/EnvironmentOptions/GridContainer"]
@@ -158,6 +158,24 @@ margin_left = 635.0
 margin_right = 1266.0
 margin_bottom = 20.0
 size_flags_horizontal = 3
+
+[node name="AmbientEnergyLabel" type="Label" parent="VBoxContainer/ScrollContainer/VBoxContainer/LayerOptions/EnvironmentOptions/GridContainer"]
+margin_top = 29.0
+margin_right = 631.0
+margin_bottom = 43.0
+size_flags_horizontal = 3
+text = "Ambient color energy"
+
+[node name="AmbientEnergy" parent="VBoxContainer/ScrollContainer/VBoxContainer/LayerOptions/EnvironmentOptions/GridContainer" instance=ExtResource( 2 )]
+unique_name_in_owner = true
+margin_left = 635.0
+margin_top = 24.0
+margin_right = 1266.0
+margin_bottom = 48.0
+max_value = 16.0
+step = 0.01
+value = 1.0
+allow_greater = true
 
 [node name="ObjectOptions" type="VBoxContainer" parent="VBoxContainer/ScrollContainer/VBoxContainer"]
 unique_name_in_owner = true
