@@ -63,20 +63,22 @@ func _get_image_texture() -> Texture:
 	return image_texture
 
 
-func serialize_layer_properties() -> Dictionary:
+func serialize_layer_properties() -> Dictionary:  # To layer
 	if not is_instance_valid(camera):
 		return {}
 	return {
 		"camera_transform": camera.transform,
 		"camera_projection": camera.projection,
-		"ambient_color": viewport.world.environment.ambient_light_color
+		"ambient_light_color": viewport.world.environment.ambient_light_color,
+		"ambient_light_energy": viewport.world.environment.ambient_light_energy
 	}
 
 
-func deserialize_layer_properties() -> void:
+func deserialize_layer_properties() -> void:  # From layer
 	camera.transform = layer.properties["camera_transform"]
 	camera.projection = layer.properties["camera_projection"]
-	viewport.world.environment.ambient_light_color = layer.properties["ambient_color"]
+	viewport.world.environment.ambient_light_color = layer.properties["ambient_light_color"]
+	viewport.world.environment.ambient_light_energy = layer.properties["ambient_light_energy"]
 
 
 func _object_property_changed(object: Cel3DObject) -> void:

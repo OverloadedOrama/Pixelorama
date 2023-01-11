@@ -54,7 +54,9 @@ func find_cel() -> bool:
 
 
 func serialize() -> Dictionary:
-	var dict := {"id": id, "type": type, "transform": transform, "file_path": file_path}
+	var dict := {
+		"id": id, "type": type, "transform": transform, "visible": visible, "file_path": file_path
+	}
 	if _is_mesh():
 		var mesh: Mesh = node3d_type.mesh
 		match type:
@@ -104,6 +106,7 @@ func deserialize(dict: Dictionary) -> void:
 	id = dict["id"]
 	self.type = dict["type"]
 	transform = dict["transform"]
+	visible = dict["visible"]
 	self.file_path = dict["file_path"]
 	if _is_mesh():
 		var mesh: Mesh = node3d_type.mesh

@@ -16,7 +16,8 @@ func _init(_project, _name := "") -> void:
 	properties = {
 		"camera_transform": camera_transform,
 		"camera_projection": Camera.PROJECTION_PERSPECTIVE,
-		"ambient_color": Color.black,
+		"ambient_light_color": Color.black,
+		"ambient_light_energy": 1,
 	}
 	add_object(Cel3DObject.Type.DIR_LIGHT, false)
 	add_object(Cel3DObject.Type.CUBE, false)
