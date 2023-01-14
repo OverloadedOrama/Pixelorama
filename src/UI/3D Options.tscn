@@ -2,7 +2,7 @@
 
 [ext_resource path="res://src/UI/Options3D.gd" type="Script" id=1]
 [ext_resource path="res://src/UI/Nodes/ValueSlider.tscn" type="PackedScene" id=2]
-[ext_resource path="res://src/UI/Nodes/CollapsibleContainer.tscn" type="PackedScene" id=3]
+[ext_resource path="res://src/UI/Nodes/CollapsibleContainer.gd" type="Script" id=4]
 
 [node name="3D Options" type="PanelContainer"]
 anchor_right = 1.0
@@ -56,9 +56,11 @@ margin_right = 1266.0
 margin_bottom = 664.0
 size_flags_vertical = 3
 
-[node name="CameraOptions" parent="VBoxContainer/ScrollContainer/VBoxContainer/LayerOptions" instance=ExtResource( 3 )]
+[node name="CameraOptions" type="VBoxContainer" parent="VBoxContainer/ScrollContainer/VBoxContainer/LayerOptions"]
 margin_right = 1266.0
 margin_bottom = 128.0
+theme_type_variation = "CollapsibleContainer"
+script = ExtResource( 4 )
 text = "Camera"
 visible_content = true
 
@@ -132,17 +134,18 @@ step = 0.1
 prefix = "Z"
 suffix = "°"
 
-[node name="EnvironmentOptions" parent="VBoxContainer/ScrollContainer/VBoxContainer/LayerOptions" instance=ExtResource( 3 )]
+[node name="EnvironmentOptions" type="VBoxContainer" parent="VBoxContainer/ScrollContainer/VBoxContainer/LayerOptions"]
 margin_top = 132.0
 margin_right = 1266.0
 margin_bottom = 152.0
+theme_type_variation = "CollapsibleContainer"
+script = ExtResource( 4 )
 text = "Environment"
 
 [node name="GridContainer" type="GridContainer" parent="VBoxContainer/ScrollContainer/VBoxContainer/LayerOptions/EnvironmentOptions"]
 visible = false
-margin_top = 24.0
 margin_right = 1266.0
-margin_bottom = 72.0
+margin_bottom = 48.0
 columns = 2
 
 [node name="AmbientColorLabel" type="Label" parent="VBoxContainer/ScrollContainer/VBoxContainer/LayerOptions/EnvironmentOptions/GridContainer"]
@@ -185,9 +188,11 @@ margin_right = 1266.0
 margin_bottom = 664.0
 size_flags_vertical = 3
 
-[node name="TransformOptions" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions" instance=ExtResource( 3 )]
-margin_right = 1266.0
-margin_bottom = 272.0
+[node name="TransformOptions" type="VBoxContainer" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions"]
+margin_right = 12.0
+margin_bottom = 20.0
+theme_type_variation = "CollapsibleContainer"
+script = ExtResource( 4 )
 text = "Transform"
 visible_content = true
 
