@@ -1,7 +1,8 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://src/UI/Options3D.gd" type="Script" id=1]
 [ext_resource path="res://src/UI/Nodes/ValueSlider.tscn" type="PackedScene" id=2]
+[ext_resource path="res://src/UI/Nodes/ValueSlider.gd" type="Script" id=3]
 [ext_resource path="res://src/UI/Nodes/CollapsibleContainer.gd" type="Script" id=4]
 
 [node name="3D Options" type="PanelContainer"]
@@ -189,8 +190,8 @@ margin_bottom = 664.0
 size_flags_vertical = 3
 
 [node name="TransformOptions" type="VBoxContainer" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions"]
-margin_right = 12.0
-margin_bottom = 20.0
+margin_right = 1266.0
+margin_bottom = 272.0
 theme_type_variation = "CollapsibleContainer"
 script = ExtResource( 4 )
 text = "Transform"
@@ -346,6 +347,90 @@ allow_greater = true
 allow_lesser = true
 prefix = "Z"
 suffix = "%"
+
+[node name="MeshOptions" type="VBoxContainer" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions"]
+margin_top = 276.0
+margin_right = 1266.0
+margin_bottom = 296.0
+theme_type_variation = "CollapsibleContainer"
+script = ExtResource( 4 )
+text = "Mesh"
+
+[node name="GridContainer" type="GridContainer" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions/MeshOptions"]
+visible = false
+margin_top = 24.0
+margin_right = 1266.0
+margin_bottom = 104.0
+columns = 2
+
+[node name="MeshSizeLabel" type="Label" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions/MeshOptions/GridContainer"]
+margin_top = 33.0
+margin_right = 631.0
+margin_bottom = 47.0
+size_flags_horizontal = 3
+text = "Size"
+
+[node name="MeshSizeContainer" type="VBoxContainer" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions/MeshOptions/GridContainer"]
+margin_left = 635.0
+margin_right = 1266.0
+margin_bottom = 80.0
+size_flags_horizontal = 3
+
+[node name="MeshSizeX" type="TextureProgress" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions/MeshOptions/GridContainer/MeshSizeContainer"]
+margin_right = 631.0
+margin_bottom = 24.0
+rect_min_size = Vector2( 0, 24 )
+mouse_default_cursor_shape = 2
+theme_type_variation = "ValueSlider"
+min_value = 0.1
+step = 0.01
+value = 2.0
+nine_patch_stretch = true
+stretch_margin_left = 3
+stretch_margin_top = 3
+stretch_margin_right = 3
+stretch_margin_bottom = 3
+script = ExtResource( 3 )
+prefix = "X"
+suffix = "m"
+
+[node name="MeshSizeY" type="TextureProgress" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions/MeshOptions/GridContainer/MeshSizeContainer"]
+margin_top = 28.0
+margin_right = 631.0
+margin_bottom = 52.0
+rect_min_size = Vector2( 0, 24 )
+mouse_default_cursor_shape = 2
+theme_type_variation = "ValueSlider"
+min_value = 0.1
+step = 0.01
+value = 2.0
+nine_patch_stretch = true
+stretch_margin_left = 3
+stretch_margin_top = 3
+stretch_margin_right = 3
+stretch_margin_bottom = 3
+script = ExtResource( 3 )
+prefix = "Y"
+suffix = "m"
+
+[node name="MeshSizeZ" type="TextureProgress" parent="VBoxContainer/ScrollContainer/VBoxContainer/ObjectOptions/MeshOptions/GridContainer/MeshSizeContainer"]
+margin_top = 56.0
+margin_right = 631.0
+margin_bottom = 80.0
+rect_min_size = Vector2( 0, 24 )
+mouse_default_cursor_shape = 2
+theme_type_variation = "ValueSlider"
+min_value = 0.1
+step = 0.01
+value = 2.0
+nine_patch_stretch = true
+stretch_margin_left = 3
+stretch_margin_top = 3
+stretch_margin_right = 3
+stretch_margin_bottom = 3
+script = ExtResource( 3 )
+prefix = "Z"
+suffix = "m"
 
 [node name="UndoRedoTimer" type="Timer" parent="."]
 wait_time = 0.2
