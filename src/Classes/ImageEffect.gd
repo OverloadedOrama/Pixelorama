@@ -41,6 +41,7 @@ class AnimatableProperty:
 		var checkbox := CheckBox.new()
 		checkbox.text = name
 		checkbox.connect("toggled", self, "_is_animating_changed")
+		checkbox.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 		checkbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		container.add_child(checkbox)
 		var value_slider: Control
@@ -59,6 +60,7 @@ class AnimatableProperty:
 		value_slider.value = initial_value_node.value
 		final_value = value_slider.value
 		value_slider.connect("value_changed", self, "_final_value_changed")
+		value_slider.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 		value_slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		var transition_types := OptionButton.new()
 		transition_types.add_item("Linear")
@@ -73,6 +75,7 @@ class AnimatableProperty:
 		transition_types.add_item("Bounce")
 		transition_types.add_item("Back")
 		transition_types.connect("item_selected", self, "_trans_type_changed")
+		transition_types.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 		transition_types.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		container.add_child(transition_types)
 		var ease_types := OptionButton.new()
@@ -81,6 +84,7 @@ class AnimatableProperty:
 		ease_types.add_item("Ease in out")
 		ease_types.add_item("Ease out in")
 		ease_types.connect("item_selected", self, "_ease_type_changed")
+		ease_types.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 		ease_types.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		container.add_child(ease_types)
 
@@ -148,12 +152,18 @@ func _confirmed() -> void:
 	var project: Project = Global.current_project
 	if affect == SELECTED_CELS:
 		var undo_data := _get_undo_data(project)
+		var frame_indices := []
 		for cel_index in project.selected_cels:
 			if !project.layers[cel_index[1]].can_layer_get_drawn():
 				continue
 			var cel: BaseCel = project.frames[cel_index[0]].cels[cel_index[1]]
 			if not cel is PixelCel:
 				continue
+			var f: int = cel_index[0]
+			if not f in frame_indices:
+				# Make sure to only increase selected_idx on cels of different frames
+				frame_indices.append(f)
+				selected_idx += 1
 			var cel_image: Image = cel.image
 			commit_action(cel_image)
 		_commit_undo("Draw", undo_data, project)
@@ -202,8 +212,7 @@ func _confirmed() -> void:
 
 
 func commit_action(_cel: Image, _project: Project = Global.current_project) -> void:
-	if confirmed and affect == SELECTED_CELS:
-		selected_idx += 1
+	pass
 
 
 func set_nodes() -> void:
