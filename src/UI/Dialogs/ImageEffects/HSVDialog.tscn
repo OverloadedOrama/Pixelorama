@@ -33,8 +33,8 @@ margin_bottom = 312.0
 min_value = -100.0
 prefix = "Value:"
 
-[node name="AffectOptionButton" parent="VBoxContainer/OptionsContainer" index="1"]
-items = [ "Selected cels", null, false, 0, null, "Current frame", null, false, 1, null, "All frames", null, false, 2, null, "All projects", null, false, 3, null ]
+[node name="GridContainer" parent="VBoxContainer/AnimationContainer" index="1"]
+visible = false
 
 [connection signal="value_changed" from="VBoxContainer/HueSlider" to="." method="_on_HueSlider_value_changed"]
 [connection signal="value_changed" from="VBoxContainer/SaturationSlider" to="." method="_on_SaturationSlider_value_changed"]

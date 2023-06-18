@@ -32,18 +32,8 @@ func _ready() -> void:
 	type_option_button.add_item("Rotxel", ROTXEL)
 	type_option_button.add_item("Upscale, Rotate and Downscale", URD)
 	type_option_button.emit_signal("item_selected", 0)
-
-
-func set_animate_menu(_elements) -> void:
-	# set as in enum
-	animate_menu.add_check_item("Angle", Animate.ANGLE)
-	animate_menu.add_check_item("Initial Angle", Animate.INITIAL_ANGLE)
-	.set_animate_menu(Animate.size())
-
-
-func set_initial_values() -> void:
-	initial_values[Animate.ANGLE] = deg2rad(angle_slider.value)
-	initial_values[Animate.INITIAL_ANGLE] = init_angle_slider.value
+	add_animatable_property(AnimatableProperty.new("Angle", angle_slider))
+	add_animatable_property(AnimatableProperty.new("Initial angle", init_angle_slider))
 
 
 func _about_to_show() -> void:
@@ -95,7 +85,7 @@ func _calculate_pivot() -> void:
 
 func commit_action(cel: Image, _project: Project = Global.current_project) -> void:
 	.commit_action(cel, _project)
-	var angle: float = get_animated_value(_project, deg2rad(angle_slider.value), Animate.ANGLE)
+	var angle: float = deg2rad(get_animated_value(_project, angle_slider.value, Animate.ANGLE))
 	var init_angle: float = get_animated_value(
 		_project, init_angle_slider.value, Animate.INITIAL_ANGLE
 	)

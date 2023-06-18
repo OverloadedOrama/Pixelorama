@@ -1,9 +1,11 @@
 class_name ImageEffect
 extends ConfirmationDialog
-# Parent class for all image effects
-# Methods that have "pass" are meant to be replaced by the inherited Scripts
+## Parent class for all image effects
+## Methods that only contain "pass" are meant to be replaced by the inherited scripts
 
 enum { SELECTED_CELS, FRAME, ALL_FRAMES, ALL_PROJECTS }
+
+const VALUE_SLIDER_V2_TSCN := preload("res://src/UI/Nodes/ValueSliderV2.tscn")
 
 var affect: int = SELECTED_CELS
 var selected_cels := Image.new()
@@ -13,13 +15,102 @@ var preview_texture := ImageTexture.new()
 var preview: TextureRect
 var selection_checkbox: CheckBox
 var affect_option_button: OptionButton
-var animate_options_container: Node
-var animate_menu: PopupMenu
-var initial_button: Button
-var animate_bool := []
-var initial_values: PoolRealArray = []
+var animatable_properties := []  # Array[AnimatebleProperty]
+var animation_container: CollapsibleContainer
+var animation_container_grid: GridContainer
+
 var selected_idx: int = 0  # the current selected cel to apply animation to
 var confirmed := false
+
+
+class AnimatableProperty:
+	var name := ""
+	var initial_value_node: Node
+	var is_animating := false
+	var initial_value
+	var final_value
+	var trans_type := Tween.TRANS_LINEAR
+	var ease_type := Tween.EASE_IN
+
+	func _init(_name: String, _initial_value_node) -> void:
+		name = _name
+		initial_value_node = _initial_value_node
+		initial_value = initial_value_node.value
+		initial_value_node.connect("value_changed", self, "_initial_value_changed")
+
+	func create_nodes(container: GridContainer) -> void:
+		var checkbox := CheckBox.new()
+		checkbox.text = name
+		checkbox.connect("toggled", self, "_is_animating_changed")
+		checkbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		container.add_child(checkbox)
+		var value_slider: Control
+		if initial_value_node is ValueSlider:
+			value_slider = ValueSlider.new()
+		elif initial_value_node is ValueSliderV2:
+			value_slider = VALUE_SLIDER_V2_TSCN.instance()
+		container.add_child(value_slider)
+		value_slider.min_value = initial_value_node.min_value
+		value_slider.max_value = initial_value_node.max_value
+		value_slider.allow_lesser = initial_value_node.allow_lesser
+		value_slider.allow_greater = initial_value_node.allow_greater
+		value_slider.step = initial_value_node.step
+		value_slider.snap_step = initial_value_node.snap_step
+		value_slider.snap_by_default = initial_value_node.snap_by_default
+		value_slider.value = initial_value_node.value
+		final_value = value_slider.value
+		value_slider.connect("value_changed", self, "_final_value_changed")
+		value_slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		var transition_types := OptionButton.new()
+		transition_types.add_item("Linear")
+		transition_types.add_item("Sine")
+		transition_types.add_item("Quint")
+		transition_types.add_item("Quart")
+		transition_types.add_item("Quad")
+		transition_types.add_item("Expo")
+		transition_types.add_item("Elastic")
+		transition_types.add_item("Cubic")
+		transition_types.add_item("Circ")
+		transition_types.add_item("Bounce")
+		transition_types.add_item("Back")
+		transition_types.connect("item_selected", self, "_trans_type_changed")
+		transition_types.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		container.add_child(transition_types)
+		var ease_types := OptionButton.new()
+		ease_types.add_item("Ease in")
+		ease_types.add_item("Ease out")
+		ease_types.add_item("Ease in out")
+		ease_types.add_item("Ease out in")
+		ease_types.connect("item_selected", self, "_ease_type_changed")
+		ease_types.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		container.add_child(ease_types)
+
+	func _is_animating_changed(value: bool) -> void:
+		is_animating = value
+
+	func _initial_value_changed(value) -> void:
+		initial_value = value
+
+	func _final_value_changed(value) -> void:
+		final_value = value
+
+	func _trans_type_changed(value: int) -> void:
+		trans_type = value
+
+	func _ease_type_changed(value: int) -> void:
+		ease_type = value
+
+	func tween(tw: SceneTreeTween, current_frame: int, frame_count: int):
+		var value = tw.interpolate_value(
+			initial_value,
+			final_value - initial_value,
+			current_frame,
+			frame_count,
+			trans_type,
+			ease_type
+		)
+		tw.kill()
+		return value
 
 
 func _ready() -> void:
@@ -39,11 +130,6 @@ func _ready() -> void:
 		selection_checkbox.connect("toggled", self, "_on_SelectionCheckBox_toggled")
 	if affect_option_button:
 		affect_option_button.connect("item_selected", self, "_on_AffectOptionButton_item_selected")
-	if animate_menu:
-		set_animate_menu(0)
-		animate_menu.connect("id_pressed", self, "_update_animate_flags")
-	if initial_button:
-		initial_button.connect("pressed", self, "set_initial_values")
 
 
 func _about_to_show() -> void:
@@ -58,6 +144,7 @@ func _about_to_show() -> void:
 	Export.blend_all_layers(current_frame, frame)
 	update_preview()
 	update_transparent_background_size()
+	animation_container.visible = not animatable_properties.empty()
 
 
 func _confirmed() -> void:
@@ -125,34 +212,23 @@ func set_nodes() -> void:
 	preview = $VBoxContainer/AspectRatioContainer/Preview
 	selection_checkbox = $VBoxContainer/OptionsContainer/SelectionCheckBox
 	affect_option_button = $VBoxContainer/OptionsContainer/AffectOptionButton
-	animate_options_container = $VBoxContainer/AnimationOptions
-	animate_menu = $"%AnimateMenu".get_popup()
-	initial_button = $"%InitalButton"
+	animation_container = $VBoxContainer/AnimationContainer
+	animation_container_grid = animation_container.get_node("GridContainer")
 
 
-func set_animate_menu(elements: int) -> void:
-	initial_values.resize(elements)
-	initial_values.fill(0)
-	animate_bool.resize(elements)
-	animate_bool.fill(false)
+func add_animatable_property(property: AnimatableProperty) -> void:
+	animatable_properties.append(property)
+	property.create_nodes(animation_container_grid)
 
 
-func set_initial_values() -> void:
-	pass
-
-
-func get_animated_value(project: Project, final: float, property_idx: int) -> float:
-	if animate_bool[property_idx] == true and confirmed:
-		var first := initial_values[property_idx]
-		var interpolation := float(selected_idx) / project.selected_cels.size()
-		return lerp(first, final, interpolation)
+func get_animated_value(project: Project, final, property_idx: int):
+	if animatable_properties.size() < property_idx + 1:
+		return final
+	var property: AnimatableProperty = animatable_properties[property_idx]
+	if property.is_animating and confirmed:
+		return property.tween(create_tween(), selected_idx, project.selected_cels.size())
 	else:
 		return final
-
-
-func _update_animate_flags(id: int) -> void:
-	animate_bool[id] = !animate_bool[id]
-	animate_menu.set_item_checked(id, animate_bool[id])
 
 
 func _commit_undo(action: String, undo_data: Dictionary, project: Project) -> void:
@@ -198,7 +274,7 @@ func _on_SelectionCheckBox_toggled(_button_pressed: bool) -> void:
 
 func _on_AffectOptionButton_item_selected(index: int) -> void:
 	affect = index
-	animate_options_container.visible = bool(affect == SELECTED_CELS)
+#	animate_options_container.visible = bool(affect == SELECTED_CELS)
 	update_preview()
 
 

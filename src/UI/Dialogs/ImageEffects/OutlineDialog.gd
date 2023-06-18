@@ -7,6 +7,7 @@ var pattern := 0
 var inside_image := false
 var shader: Shader
 
+onready var thick_value := $VBoxContainer/OutlineOptions/ThickValue as ValueSlider
 onready var outline_color := $VBoxContainer/OutlineOptions/OutlineColor as ColorPickerButton
 
 
@@ -20,16 +21,7 @@ func _ready() -> void:
 		preview.set_material(sm)
 	outline_color.get_picker().presets_visible = false
 	color = outline_color.color
-
-
-func set_animate_menu(_elements) -> void:
-	# set as in enum
-	animate_menu.add_check_item("Thickness", Animate.THICKNESS)
-	.set_animate_menu(Animate.size())
-
-
-func set_initial_values() -> void:
-	initial_values[Animate.THICKNESS] = thickness
+	add_animatable_property(AnimatableProperty.new("Thickness", thick_value))
 
 
 func commit_action(cel: Image, project: Project = Global.current_project) -> void:

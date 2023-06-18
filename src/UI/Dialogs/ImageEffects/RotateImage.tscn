@@ -206,22 +206,9 @@ margin_bottom = 412.0
 
 [node name="AffectOptionButton" parent="VBoxContainer/OptionsContainer" index="1"]
 margin_right = 278.0
-items = [ "Selected cels", null, false, 0, null, "Current frame", null, false, 1, null, "All frames", null, false, 2, null, "All projects", null, false, 3, null ]
 
-[node name="AnimationOptions" parent="VBoxContainer" index="12"]
-margin_top = 416.0
-margin_right = 278.0
-margin_bottom = 450.0
-
-[node name="PanelContainer" parent="VBoxContainer/AnimationOptions" index="1"]
-margin_right = 157.0
-
-[node name="AnimateMenu" parent="VBoxContainer/AnimationOptions/PanelContainer" index="0"]
-margin_right = 88.0
-
-[node name="InitalButton" parent="VBoxContainer/AnimationOptions" index="2"]
-margin_left = 161.0
-margin_right = 278.0
+[node name="GridContainer" parent="VBoxContainer/AnimationContainer" index="1"]
+visible = false
 
 [node name="WaitApply" type="Timer" parent="." index="4"]
 
