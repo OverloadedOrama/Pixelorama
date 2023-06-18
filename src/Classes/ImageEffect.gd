@@ -7,7 +7,7 @@ enum { SELECTED_CELS, FRAME, ALL_FRAMES, ALL_PROJECTS }
 
 const VALUE_SLIDER_V2_TSCN := preload("res://src/UI/Nodes/ValueSliderV2.tscn")
 
-var affect: int = SELECTED_CELS
+var affect := SELECTED_CELS
 var selected_cels := Image.new()
 var current_frame := Image.new()
 var preview_image := Image.new()
@@ -18,8 +18,7 @@ var affect_option_button: OptionButton
 var animatable_properties := []  # Array[AnimatebleProperty]
 var animation_container: CollapsibleContainer
 var animation_container_grid: GridContainer
-
-var selected_idx: int = 0  # the current selected cel to apply animation to
+var selected_idx := 0  # the current selected cel to apply animation to
 var confirmed := false
 
 
@@ -101,13 +100,9 @@ class AnimatableProperty:
 		ease_type = value
 
 	func tween(tw: SceneTreeTween, current_frame: int, frame_count: int):
+		var delta_value = final_value - initial_value
 		var value = tw.interpolate_value(
-			initial_value,
-			final_value - initial_value,
-			current_frame,
-			frame_count,
-			trans_type,
-			ease_type
+			initial_value, delta_value, current_frame, frame_count, trans_type, ease_type
 		)
 		tw.kill()
 		return value
@@ -186,10 +181,12 @@ func _confirmed() -> void:
 				if project.layers[i].can_layer_get_drawn():
 					commit_action(cel.image)
 				i += 1
+			selected_idx += 1
 		_commit_undo("Draw", undo_data, project)
 
 	elif affect == ALL_PROJECTS:
 		for _project in Global.projects:
+			selected_idx = 0
 			var undo_data := _get_undo_data(_project)
 			for frame in _project.frames:
 				var i := 0
@@ -200,6 +197,7 @@ func _confirmed() -> void:
 					if _project.layers[i].can_layer_get_drawn():
 						commit_action(cel.image, _project)
 					i += 1
+				selected_idx += 1
 			_commit_undo("Draw", undo_data, _project)
 
 
@@ -226,7 +224,10 @@ func get_animated_value(project: Project, final, property_idx: int):
 		return final
 	var property: AnimatableProperty = animatable_properties[property_idx]
 	if property.is_animating and confirmed:
-		return property.tween(create_tween(), selected_idx, project.selected_cels.size())
+		var frame_size := project.selected_cels.size()
+		if affect == ALL_FRAMES or affect == ALL_PROJECTS:
+			frame_size = project.frames.size()
+		return property.tween(create_tween(), selected_idx, frame_size)
 	else:
 		return final
 
@@ -274,7 +275,6 @@ func _on_SelectionCheckBox_toggled(_button_pressed: bool) -> void:
 
 func _on_AffectOptionButton_item_selected(index: int) -> void:
 	affect = index
-#	animate_options_container.visible = bool(affect == SELECTED_CELS)
 	update_preview()
 
 

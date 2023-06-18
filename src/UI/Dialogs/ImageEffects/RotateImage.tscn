@@ -207,9 +207,6 @@ margin_bottom = 412.0
 [node name="AffectOptionButton" parent="VBoxContainer/OptionsContainer" index="1"]
 margin_right = 278.0
 
-[node name="GridContainer" parent="VBoxContainer/AnimationContainer" index="1"]
-visible = false
-
 [node name="WaitApply" type="Timer" parent="." index="4"]
 
 [connection signal="draw" from="VBoxContainer/AspectRatioContainer/Indicator" to="." method="_on_Indicator_draw"]
