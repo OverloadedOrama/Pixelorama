@@ -199,6 +199,7 @@ Hold %s to displace the shape's origin""",
 			["shape_perfect", "shape_center", "shape_displace"]
 		)
 	),
+	"Text": Tool.new("Text", "Text", "text", "res://src/Tools/UtilityTools/Text.tscn", [Global.LayerTypes.PIXEL], ""),
 	"3DShapeEdit":
 	Tool.new(
 		"3DShapeEdit",
