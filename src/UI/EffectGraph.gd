@@ -20,12 +20,19 @@ var visual_shader: VisualShader:
 			return
 		visual_shader = value
 		add_node_button.disabled = not is_instance_valid(visual_shader)
-		# TODO: Clear previous nodes from the graphedit
+		for child in graph_edit.get_children():
+			if child.name != "_connection_layer":
+				graph_edit.remove_child(child)
+				child.queue_free()
 		if is_instance_valid(visual_shader):
 			var node_list := visual_shader.get_node_list(VisualShader.Type.TYPE_FRAGMENT)
 			for id in node_list:
 				var node := visual_shader.get_node(VisualShader.TYPE_FRAGMENT, id)
 				add_node(node, id)
+			for connection in visual_shader.get_node_connections(VisualShader.TYPE_FRAGMENT):
+				var from_node_name := str(connection.from_node)
+				var to_node_name := str(connection.to_node)
+				graph_edit.connect_node(from_node_name, connection.from_port, to_node_name, connection.to_port)
 
 var effects_button: MenuButton
 var add_node_button: Button
@@ -61,6 +68,12 @@ class AddOption:
 
 
 func _ready() -> void:
+	graph_edit.add_valid_connection_type(NodeTypes.VEC2, NodeTypes.VEC3)
+	graph_edit.add_valid_connection_type(NodeTypes.VEC2, NodeTypes.VEC4)
+	graph_edit.add_valid_connection_type(NodeTypes.VEC3, NodeTypes.VEC4)
+	graph_edit.add_valid_connection_type(NodeTypes.VEC3, NodeTypes.VEC2)
+	graph_edit.add_valid_connection_type(NodeTypes.VEC4, NodeTypes.VEC2)
+	graph_edit.add_valid_connection_type(NodeTypes.VEC4, NodeTypes.VEC3)
 	node_list_tree.get_window().get_ok_button().set_disabled(true)
 	effect_name_line_edit.get_window().get_ok_button().set_disabled(true)
 	effects_button = MenuButton.new()
@@ -142,7 +155,8 @@ func add_new_node(index: int) -> void:
 	var option := add_options[index]
 	if not option.type.is_empty():
 		var vsn := ClassDB.instantiate(option.type) as VisualShaderNode
-		var id := visual_shader.get_node_list(VisualShader.Type.TYPE_FRAGMENT).size()
+		var id := visual_shader.get_valid_node_id(VisualShader.TYPE_FRAGMENT)
+		visual_shader.add_node(VisualShader.TYPE_FRAGMENT, vsn, Vector2.ZERO, id)
 		add_node(vsn, id)
 
 
@@ -150,7 +164,7 @@ func add_node(vsn: VisualShaderNode, id: int) -> void:
 	if not is_instance_valid(vsn):
 		return
 	var parameter_list := vsn.get_default_input_values()
-	#print(vsn, " ", parameter_list)
+	print(vsn, " ", parameter_list)
 	var graph_node := GraphNode.new()
 	graph_node.title = vsn.get_class().replace("VisualShaderNode", "")
 	if vsn is VisualShaderNodeOutput:
@@ -164,11 +178,14 @@ func add_node(vsn: VisualShaderNode, id: int) -> void:
 		graph_node.set_slot(1, true, NodeTypes.SCALAR, slot_colors[NodeTypes.SCALAR], false, -1, Color.TRANSPARENT)
 	if vsn is VisualShaderNodeColorConstant:
 		var color_picker_button := ColorPickerButton.new()
-		color_picker_button.color = vsn.constant
 		color_picker_button.custom_minimum_size = Vector2(20, 20)
+		color_picker_button.color = vsn.constant
+		color_picker_button.color_changed.connect(func(color: Color): vsn.constant = color; ResourceSaver.save(visual_shader))
 		graph_node.add_child(color_picker_button)
 		graph_node.set_slot(0, false, -1, Color.TRANSPARENT, true, NodeTypes.VEC4, slot_colors[NodeTypes.VEC4])
 	#VisualShaderNodeParameterRef
+	graph_node.set_meta("visual_shader_node", vsn)
+	graph_node.name = str(id)
 	graph_node.position_offset = visual_shader.get_node_position(VisualShader.TYPE_FRAGMENT, id)
 	graph_edit.add_child(graph_node)
 
@@ -254,3 +271,23 @@ func _on_create_effect_dialog_confirmed() -> void:
 
 func _on_create_node_dialog_confirmed() -> void:
 	add_new_node(node_list_tree.get_selected().get_metadata(0))
+
+
+func _on_graph_edit_connection_request(from_node_name: String, from_port: int, to_node_name: String, to_port: int) -> void:
+	#var from_node := graph_edit.get_node(from_node_name) as GraphNode
+	#var to_node := graph_edit.get_node(to_node_name) as GraphNode
+	graph_edit.connect_node(from_node_name, from_port, to_node_name, to_port)
+	#var vs_from_node := from_node.get_meta("visual_shader_node") as VisualShaderNode
+	#var vs_to_node := to_node.get_meta("visual_shader_node") as VisualShaderNode
+	var vs_from_node_id := int(from_node_name)
+	var vs_to_node_id := int(to_node_name)
+	visual_shader.connect_nodes(VisualShader.TYPE_FRAGMENT, vs_from_node_id, from_port, vs_to_node_id, to_port)
+	ResourceSaver.save(visual_shader)
+
+
+func _on_graph_edit_disconnection_request(from_node_name: String, from_port: int, to_node_name: String, to_port: int) -> void:
+	graph_edit.disconnect_node(from_node_name, from_port, to_node_name, to_port)
+	var vs_from_node_id := int(from_node_name)
+	var vs_to_node_id := int(to_node_name)
+	visual_shader.disconnect_nodes(VisualShader.TYPE_FRAGMENT, vs_from_node_id, from_port, vs_to_node_id, to_port)
+	ResourceSaver.save(visual_shader)
