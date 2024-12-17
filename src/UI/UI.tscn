@@ -21,6 +21,7 @@
 [ext_resource type="PackedScene" uid="uid://wplk62pbgih4" path="res://src/Palette/PalettePanel.tscn" id="20"]
 [ext_resource type="Script" uid="uid://dqwin6fl5qqn0" path="res://src/UI/ViewportContainer.gd" id="23"]
 [ext_resource type="PackedScene" uid="uid://bfbragmmdwfbl" path="res://src/UI/TilesPanel.tscn" id="23_wyr78"]
+[ext_resource type="PackedScene" uid="uid://b8tk33y8uqvex" path="res://src/UI/EffectGraph.tscn" id="24_ypwxl"]
 [ext_resource type="Script" uid="uid://bvvbi3x82xnut" path="res://addons/dockable_container/layout_split.gd" id="27"]
 [ext_resource type="Script" uid="uid://bfi1mm158ge5l" path="res://addons/dockable_container/dockable_container.gd" id="35"]
 [ext_resource type="Script" uid="uid://da67x3ua6ietw" path="res://addons/dockable_container/layout_panel.gd" id="36"]
@@ -37,7 +38,7 @@ shader_parameter/size = Vector2(100, 100)
 [sub_resource type="Resource" id="Resource_xnnnd"]
 resource_name = "Tabs"
 script = ExtResource("36")
-names = PackedStringArray("Tools", "Reference Images", "Tiles")
+names = PackedStringArray("Tools", "Reference Images", "Tiles", "EffectGraph")
 
 [sub_resource type="Resource" id="Resource_34hle"]
 resource_name = "Tabs"
@@ -388,6 +389,10 @@ visible = false
 layout_mode = 2
 
 [node name="Reference Images" parent="DockableContainer" unique_id=116474698 instance=ExtResource("11")]
+visible = false
+layout_mode = 2
+
+[node name="EffectGraph" parent="DockableContainer" instance=ExtResource("24_ypwxl")]
 visible = false
 layout_mode = 2
 
