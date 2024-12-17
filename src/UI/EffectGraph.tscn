@@ -13,6 +13,7 @@ script = ExtResource("1_nlh42")
 [node name="GraphEdit" type="GraphEdit" parent="."]
 layout_mode = 2
 right_disconnects = true
+show_zoom_label = true
 
 [node name="CreateNodeDialog" type="ConfirmationDialog" parent="."]
 title = "Create node"
