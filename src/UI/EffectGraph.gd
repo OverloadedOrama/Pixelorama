@@ -176,18 +176,169 @@ func add_node(vsn: VisualShaderNode, id: int) -> void:
 		graph_node.add_child(alpha_label)
 		graph_node.set_slot(0, true, NodeTypes.VEC3, slot_colors[NodeTypes.VEC3], false, -1, Color.TRANSPARENT)
 		graph_node.set_slot(1, true, NodeTypes.SCALAR, slot_colors[NodeTypes.SCALAR], false, -1, Color.TRANSPARENT)
-	if vsn is VisualShaderNodeColorConstant:
+	elif vsn is VisualShaderNodeParameter:
+		var parameter_type := _get_parameter_type(vsn)
+		if vsn.parameter_name.begins_with("PXO_"):
+			_create_label(vsn.parameter_name, graph_node, NodeTypes.NONE, parameter_type)
+		else:
+			var line_edit := LineEdit.new()
+			line_edit.text = vsn.parameter_name
+			line_edit.text_changed.connect(func(text: String): vsn.parameter_name = text; ResourceSaver.save(visual_shader))
+			graph_node.add_child(line_edit)
+			graph_node.set_slot(0, false, -1, Color.TRANSPARENT, true, parameter_type, slot_colors[parameter_type])
+	elif vsn is VisualShaderNodeBooleanConstant:
+		var button := CheckBox.new()
+		button.text = "On"
+		button.button_pressed = vsn.constant
+		button.toggled.connect(func(toggled_on: bool): vsn.constant = toggled_on; ResourceSaver.save(visual_shader))
+		graph_node.add_child(button)
+		graph_node.set_slot(0, false, -1, Color.TRANSPARENT, true, NodeTypes.BOOL, slot_colors[NodeTypes.BOOL])
+	elif vsn is VisualShaderNodeIntConstant or vsn is VisualShaderNodeUIntConstant or vsn is VisualShaderNodeFloatConstant:
+		var slider := ValueSlider.new()
+		slider.value = vsn.constant
+		slider.value_changed.connect(func(value: float): vsn.constant = value; ResourceSaver.save(visual_shader))
+		graph_node.add_child(slider)
+		graph_node.set_slot(0, false, -1, Color.TRANSPARENT, true, NodeTypes.SCALAR, slot_colors[NodeTypes.SCALAR])
+	elif vsn is VisualShaderNodeVec2Constant:
+		var slider := ShaderLoader.VALUE_SLIDER_V2_TSCN.instantiate() as ValueSliderV2
+		slider.value = vsn.constant
+		slider.value_changed.connect(func(value: Vector2): vsn.constant = value; ResourceSaver.save(visual_shader))
+		graph_node.add_child(slider)
+		graph_node.set_slot(0, false, -1, Color.TRANSPARENT, true, NodeTypes.VEC2, slot_colors[NodeTypes.VEC2])
+	elif vsn is VisualShaderNodeVec3Constant:
+		var slider := ShaderLoader.VALUE_SLIDER_V3_TSCN.instantiate() as ValueSliderV3
+		slider.value = vsn.constant
+		slider.value_changed.connect(func(value: Vector3): vsn.constant = value; ResourceSaver.save(visual_shader))
+		graph_node.add_child(slider)
+		graph_node.set_slot(0, false, -1, Color.TRANSPARENT, true, NodeTypes.VEC3, slot_colors[NodeTypes.VEC3])
+	elif vsn is VisualShaderNodeColorConstant or vsn is VisualShaderNodeVec4Constant:
 		var color_picker_button := ColorPickerButton.new()
 		color_picker_button.custom_minimum_size = Vector2(20, 20)
 		color_picker_button.color = vsn.constant
 		color_picker_button.color_changed.connect(func(color: Color): vsn.constant = color; ResourceSaver.save(visual_shader))
 		graph_node.add_child(color_picker_button)
 		graph_node.set_slot(0, false, -1, Color.TRANSPARENT, true, NodeTypes.VEC4, slot_colors[NodeTypes.VEC4])
-	#VisualShaderNodeParameterRef
+	elif vsn is VisualShaderNodeTexture:
+		var texture_rect := TextureRect.new()
+		texture_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		texture_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		texture_rect.custom_minimum_size = Vector2(20, 20)
+		texture_rect.texture = vsn.texture
+		graph_node.add_child(texture_rect)
+		_create_label("uv", graph_node, NodeTypes.VEC2, NodeTypes.NONE)
+		_create_label("lod", graph_node, NodeTypes.SCALAR, NodeTypes.NONE)
+		_create_label("sampler2D", graph_node, NodeTypes.SAMPLER, NodeTypes.NONE)
+		_create_label("color", graph_node, NodeTypes.NONE, NodeTypes.VEC4)
+	elif vsn is VisualShaderNodeColorOp:
+		var option_button := OptionButton.new()
+		option_button.add_item("Screen", VisualShaderNodeColorOp.OP_SCREEN)
+		option_button.add_item("Difference", VisualShaderNodeColorOp.OP_DIFFERENCE)
+		option_button.add_item("Darken", VisualShaderNodeColorOp.OP_DARKEN)
+		option_button.add_item("Lighten", VisualShaderNodeColorOp.OP_LIGHTEN)
+		option_button.add_item("Overlay", VisualShaderNodeColorOp.OP_OVERLAY)
+		option_button.add_item("Dodge", VisualShaderNodeColorOp.OP_DODGE)
+		option_button.add_item("Burn", VisualShaderNodeColorOp.OP_BURN)
+		option_button.add_item("Soft light", VisualShaderNodeColorOp.OP_SOFT_LIGHT)
+		option_button.add_item("Hard light", VisualShaderNodeColorOp.OP_HARD_LIGHT)
+		option_button.select(vsn.operator)
+		option_button.item_selected.connect(func(id_selected: VisualShaderNodeColorOp.Operator): vsn.operator = id_selected; ResourceSaver.save(visual_shader))
+		graph_node.add_child(option_button)
+		_create_label("a", graph_node, NodeTypes.VEC3, NodeTypes.NONE)
+		_create_label("b", graph_node, NodeTypes.VEC3, NodeTypes.NONE)
+		_create_label("op", graph_node, NodeTypes.NONE, NodeTypes.VEC3)
+	elif vsn is VisualShaderNodeMix:
+		var op_type := (vsn as VisualShaderNodeMix).op_type
+		var option_button := OptionButton.new()
+		option_button.add_item("Scalar", VisualShaderNodeMix.OP_TYPE_SCALAR)
+		option_button.add_item("Vector2", VisualShaderNodeMix.OP_TYPE_VECTOR_2D)
+		option_button.add_item("Vector2Scalar", VisualShaderNodeMix.OP_TYPE_VECTOR_2D_SCALAR)
+		option_button.add_item("Vector3", VisualShaderNodeMix.OP_TYPE_VECTOR_3D)
+		option_button.add_item("Vector3Scalar", VisualShaderNodeMix.OP_TYPE_VECTOR_3D_SCALAR)
+		option_button.add_item("Vector4", VisualShaderNodeMix.OP_TYPE_VECTOR_4D)
+		option_button.add_item("Vector4Scalar", VisualShaderNodeMix.OP_TYPE_VECTOR_4D_SCALAR)
+		option_button.select(op_type)
+		option_button.item_selected.connect(func(id_selected: VisualShaderNodeMix.OpType): vsn.op_type = id_selected; ResourceSaver.save(visual_shader))
+		graph_node.add_child(option_button)
+		if op_type == VisualShaderNodeMix.OP_TYPE_SCALAR:
+			_create_label("a", graph_node, NodeTypes.SCALAR, NodeTypes.NONE)
+			_create_label("b", graph_node, NodeTypes.SCALAR, NodeTypes.NONE)
+			_create_label("weight", graph_node, NodeTypes.SCALAR, NodeTypes.NONE)
+			_create_label("mix", graph_node, NodeTypes.NONE, NodeTypes.SCALAR)
+		elif op_type == VisualShaderNodeMix.OP_TYPE_VECTOR_2D:
+			_create_label("a", graph_node, NodeTypes.VEC2, NodeTypes.NONE)
+			_create_label("b", graph_node, NodeTypes.VEC2, NodeTypes.NONE)
+			_create_label("weight", graph_node, NodeTypes.VEC2, NodeTypes.NONE)
+			_create_label("mix", graph_node, NodeTypes.NONE, NodeTypes.VEC2)
+		elif op_type == VisualShaderNodeMix.OP_TYPE_VECTOR_2D_SCALAR:
+			_create_label("a", graph_node, NodeTypes.VEC2, NodeTypes.NONE)
+			_create_label("b", graph_node, NodeTypes.VEC2, NodeTypes.NONE)
+			_create_label("weight", graph_node, NodeTypes.SCALAR, NodeTypes.NONE)
+			_create_label("mix", graph_node, NodeTypes.NONE, NodeTypes.VEC2)
+		elif op_type == VisualShaderNodeMix.OP_TYPE_VECTOR_3D:
+			_create_label("a", graph_node, NodeTypes.VEC3, NodeTypes.NONE)
+			_create_label("b", graph_node, NodeTypes.VEC3, NodeTypes.NONE)
+			_create_label("weight", graph_node, NodeTypes.VEC3, NodeTypes.NONE)
+			_create_label("mix", graph_node, NodeTypes.NONE, NodeTypes.VEC3)
+		elif op_type == VisualShaderNodeMix.OP_TYPE_VECTOR_3D_SCALAR:
+			_create_label("a", graph_node, NodeTypes.VEC3, NodeTypes.NONE)
+			_create_label("b", graph_node, NodeTypes.VEC3, NodeTypes.NONE)
+			_create_label("weight", graph_node, NodeTypes.SCALAR, NodeTypes.NONE)
+			_create_label("mix", graph_node, NodeTypes.NONE, NodeTypes.VEC3)
+		elif op_type == VisualShaderNodeMix.OP_TYPE_VECTOR_4D:
+			_create_label("a", graph_node, NodeTypes.VEC4, NodeTypes.NONE)
+			_create_label("b", graph_node, NodeTypes.VEC4, NodeTypes.NONE)
+			_create_label("weight", graph_node, NodeTypes.VEC4, NodeTypes.NONE)
+			_create_label("mix", graph_node, NodeTypes.NONE, NodeTypes.VEC4)
+		elif op_type == VisualShaderNodeMix.OP_TYPE_VECTOR_4D_SCALAR:
+			_create_label("a", graph_node, NodeTypes.VEC4, NodeTypes.NONE)
+			_create_label("b", graph_node, NodeTypes.VEC4, NodeTypes.NONE)
+			_create_label("weight", graph_node, NodeTypes.SCALAR, NodeTypes.NONE)
+			_create_label("mix", graph_node, NodeTypes.NONE, NodeTypes.VEC4)
+	elif vsn is VisualShaderNodeUVFunc:
+		_create_label("uv", graph_node, NodeTypes.VEC2, NodeTypes.NONE)
+		var scale_hbox := HBoxContainer.new()
+		var scale_v2 := ShaderLoader.VALUE_SLIDER_V2_TSCN.instantiate() as ValueSliderV2
+		scale_v2.value = Vector2.ONE
+		scale_v2.grid_columns = 2
+		scale_hbox.add_child(scale_v2)
+		var scale_label := Label.new()
+		scale_label.text = "scale"
+		scale_hbox.add_child(scale_label)
+		graph_node.add_child(scale_hbox)
+		graph_node.set_slot(1, true, NodeTypes.VEC2, slot_colors[NodeTypes.VEC2], false, -1, Color.TRANSPARENT)
+		_create_label("offset", graph_node, NodeTypes.VEC2, NodeTypes.NONE)
+		_create_label("uv", graph_node, NodeTypes.NONE, NodeTypes.VEC2)
+
 	graph_node.set_meta("visual_shader_node", vsn)
 	graph_node.name = str(id)
 	graph_node.position_offset = visual_shader.get_node_position(VisualShader.TYPE_FRAGMENT, id)
 	graph_edit.add_child(graph_node)
+
+
+func _create_label(text: String, graph_node: GraphNode, left_slot: NodeTypes, right_slot: NodeTypes) -> void:
+	var label := Label.new()
+	label.text = text
+	graph_node.add_child(label)
+	var slot_index := graph_node.get_child_count() - 1
+	graph_node.set_slot(slot_index, left_slot != NodeTypes.NONE, left_slot, get_color_type(left_slot), right_slot != NodeTypes.NONE, right_slot, get_color_type(right_slot))
+
+
+func _get_parameter_type(vsn: VisualShaderNodeParameter) -> NodeTypes:
+	if vsn is VisualShaderNodeBooleanParameter:
+		return NodeTypes.BOOL
+	elif vsn is VisualShaderNodeIntParameter or vsn is VisualShaderNodeUIntParameter or vsn is VisualShaderNodeFloatParameter:
+		return NodeTypes.SCALAR
+	elif vsn is VisualShaderNodeVec2Parameter:
+		return NodeTypes.VEC2
+	elif vsn is VisualShaderNodeVec3Parameter:
+		return NodeTypes.VEC3
+	elif vsn is VisualShaderNodeVec4Parameter or vsn is VisualShaderNodeColorParameter:
+		return NodeTypes.VEC4
+	elif vsn is VisualShaderNodeTransformParameter:
+		return NodeTypes.TRANSFORM
+	elif vsn is VisualShaderNodeTextureParameter:
+		return NodeTypes.SAMPLER
+	return NodeTypes.NONE
 
 
 func fill_add_options() -> void:
