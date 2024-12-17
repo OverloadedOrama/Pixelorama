@@ -51,6 +51,7 @@ text = "Alpha"
 
 [node name="CreateNodeDialog" type="ConfirmationDialog" parent="."]
 title = "Create node"
+size = Vector2i(200, 400)
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CreateNodeDialog"]
 offset_left = 8.0
@@ -64,5 +65,28 @@ layout_mode = 2
 size_flags_vertical = 3
 hide_root = true
 
+[node name="CreateEffectDialog" type="ConfirmationDialog" parent="."]
+title = "New effect"
+size = Vector2i(300, 100)
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CreateEffectDialog"]
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 292.0
+offset_bottom = 51.0
+
+[node name="Label" type="Label" parent="CreateEffectDialog/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Name:"
+
+[node name="EffectNameLineEdit" type="LineEdit" parent="CreateEffectDialog/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[connection signal="visibility_changed" from="." to="." method="_on_visibility_changed"]
 [connection signal="item_selected" from="CreateNodeDialog/VBoxContainer/NodeListTree" to="." method="_on_node_list_tree_item_selected"]
 [connection signal="nothing_selected" from="CreateNodeDialog/VBoxContainer/NodeListTree" to="." method="_on_node_list_tree_nothing_selected"]
+[connection signal="confirmed" from="CreateEffectDialog" to="." method="_on_create_effect_dialog_confirmed"]
+[connection signal="text_changed" from="CreateEffectDialog/HBoxContainer/EffectNameLineEdit" to="." method="_on_effect_name_line_edit_text_changed"]

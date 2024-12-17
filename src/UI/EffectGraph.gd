@@ -14,10 +14,13 @@ var slot_colors := PackedColorArray(
 	]
 )
 var add_options: Array[AddOption]
+var visual_shader: VisualShader
+var effects_button: MenuButton
 
 @onready var graph_edit := $GraphEdit as GraphEdit
 @onready var output: GraphNode = $GraphEdit/Output
 @onready var node_list_tree: Tree = %NodeListTree
+@onready var effect_name_line_edit: LineEdit = %EffectNameLineEdit
 
 
 class AddOption:
@@ -47,16 +50,76 @@ class AddOption:
 
 func _ready() -> void:
 	node_list_tree.get_window().get_ok_button().set_disabled(true)
-	fill_add_options()
-	update_options_menu()
+	effect_name_line_edit.get_window().get_ok_button().set_disabled(true)
+	effects_button = MenuButton.new()
+	effects_button.text = "Effects"
+	effects_button.flat = false
+	effects_button.get_popup().add_item("New")
+	effects_button.get_popup().id_pressed.connect(_on_effects_button_id_pressed)
+	_find_loaded_effects()
+	OpenSave.shader_copied.connect(_load_shader_file)
 	var add_node_button := Button.new()
 	add_node_button.text = "Add node"
 	add_node_button.pressed.connect(func(): node_list_tree.get_window().popup_centered())
 	var menu_hbox := graph_edit.get_menu_hbox()
 	menu_hbox.add_child(add_node_button)
 	menu_hbox.move_child(add_node_button, 0)
+	menu_hbox.add_child(effects_button)
+	menu_hbox.move_child(effects_button, 0)
+
+
+func _find_loaded_effects() -> void:
+	if not DirAccess.dir_exists_absolute(OpenSave.SHADERS_DIRECTORY):
+		DirAccess.make_dir_recursive_absolute(OpenSave.SHADERS_DIRECTORY)
+	var shader_files := DirAccess.get_files_at(OpenSave.SHADERS_DIRECTORY)
+	if shader_files.size() == 0:
+		return
+	for shader_file in shader_files:
+		_load_shader_file(OpenSave.SHADERS_DIRECTORY.path_join(shader_file))
+
+
+func _load_shader_file(file_path: String) -> void:
+	var file := load(file_path)
+	if file is not VisualShader:
+		return
+	var effect_name := file_path.get_file().get_basename()
+	var popup_menu := effects_button.get_popup()
+	popup_menu.add_item(effect_name)
+	var effect_index := popup_menu.item_count - 1
+	popup_menu.set_item_metadata(effect_index, file)
+
+
+func _on_effects_button_id_pressed(id: int) -> void:
+	if id == 0:
+		effect_name_line_edit.get_window().popup_centered()
+	else:
+		visual_shader = effects_button.get_popup().get_item_metadata(id)
+		# TODO: Add logic that adds the shader's nodes
+
+
+func new_effect(effect_name: String) -> void:
 	output.set_slot(0, true, NodeTypes.VEC3, slot_colors[NodeTypes.VEC3], false, -1, Color.TRANSPARENT)
 	output.set_slot(1, true, NodeTypes.SCALAR, slot_colors[NodeTypes.SCALAR], false, -1, Color.TRANSPARENT)
+	visual_shader = VisualShader.new()
+	visual_shader.set_mode(Shader.MODE_CANVAS_ITEM)
+	var file_name := effect_name + ".tres"
+	var file_path := OpenSave.SHADERS_DIRECTORY.path_join(file_name)
+	while FileAccess.file_exists(file_path):
+		effect_name += " (copy)"
+		file_name = effect_name + ".tres"
+		file_path = OpenSave.SHADERS_DIRECTORY.path_join(file_name)
+	ResourceSaver.save(visual_shader, file_path)
+	var popup_menu := effects_button.get_popup()
+	popup_menu.add_item(effect_name)
+	var effect_index := popup_menu.item_count - 1
+	popup_menu.set_item_metadata(effect_index, visual_shader)
+
+
+func _on_visibility_changed() -> void:
+	# Only fill the options when the panel first becomes visible.
+	if visible and add_options.size() == 0:
+		fill_add_options()
+		update_options_menu()
 
 
 func get_color_type(type: NodeTypes) -> Color:
@@ -140,3 +203,11 @@ func _on_node_list_tree_item_selected() -> void:
 
 func _on_node_list_tree_nothing_selected() -> void:
 	node_list_tree.get_window().get_ok_button().set_disabled(true)
+
+
+func _on_effect_name_line_edit_text_changed(new_text: String) -> void:
+	effect_name_line_edit.get_window().get_ok_button().set_disabled(new_text.is_empty())
+
+
+func _on_create_effect_dialog_confirmed() -> void:
+	new_effect(effect_name_line_edit.text)
