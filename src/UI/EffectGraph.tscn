@@ -12,6 +12,7 @@ script = ExtResource("1_nlh42")
 
 [node name="GraphEdit" type="GraphEdit" parent="."]
 layout_mode = 2
+right_disconnects = true
 
 [node name="CreateNodeDialog" type="ConfirmationDialog" parent="."]
 title = "Create node"
@@ -50,6 +51,8 @@ layout_mode = 2
 size_flags_horizontal = 3
 
 [connection signal="visibility_changed" from="." to="." method="_on_visibility_changed"]
+[connection signal="connection_request" from="GraphEdit" to="." method="_on_graph_edit_connection_request"]
+[connection signal="disconnection_request" from="GraphEdit" to="." method="_on_graph_edit_disconnection_request"]
 [connection signal="confirmed" from="CreateNodeDialog" to="." method="_on_create_node_dialog_confirmed"]
 [connection signal="item_selected" from="CreateNodeDialog/VBoxContainer/NodeListTree" to="." method="_on_node_list_tree_item_selected"]
 [connection signal="nothing_selected" from="CreateNodeDialog/VBoxContainer/NodeListTree" to="." method="_on_node_list_tree_nothing_selected"]
