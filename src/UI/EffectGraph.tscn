@@ -1,0 +1,68 @@
+[gd_scene load_steps=2 format=3 uid="uid://b8tk33y8uqvex"]
+
+[ext_resource type="Script" path="res://src/UI/EffectGraph.gd" id="1_nlh42"]
+
+[node name="EffectGraph" type="PanelContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_nlh42")
+
+[node name="GraphEdit" type="GraphEdit" parent="."]
+layout_mode = 2
+
+[node name="Output" type="GraphNode" parent="GraphEdit"]
+layout_mode = 0
+offset_left = 524.0
+offset_top = 276.0
+offset_right = 605.0
+offset_bottom = 379.0
+mouse_filter = 1
+position_offset = Vector2(524, 276)
+title = "Output"
+slot/0/left_enabled = false
+slot/0/left_type = 0
+slot/0/left_color = Color(0.294118, 0.623529, 1, 1)
+slot/0/left_icon = null
+slot/0/right_enabled = false
+slot/0/right_type = 0
+slot/0/right_color = Color(1, 1, 1, 1)
+slot/0/right_icon = null
+slot/0/draw_stylebox = true
+slot/1/left_enabled = false
+slot/1/left_type = 0
+slot/1/left_color = Color(1, 1, 1, 1)
+slot/1/left_icon = null
+slot/1/right_enabled = false
+slot/1/right_type = 0
+slot/1/right_color = Color(1, 1, 1, 1)
+slot/1/right_icon = null
+slot/1/draw_stylebox = true
+
+[node name="Label" type="Label" parent="GraphEdit/Output"]
+layout_mode = 2
+text = "Color"
+
+[node name="Label2" type="Label" parent="GraphEdit/Output"]
+layout_mode = 2
+text = "Alpha"
+
+[node name="CreateNodeDialog" type="ConfirmationDialog" parent="."]
+title = "Create node"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CreateNodeDialog"]
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 192.0
+offset_bottom = 51.0
+
+[node name="NodeListTree" type="Tree" parent="CreateNodeDialog/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+hide_root = true
+
+[connection signal="item_selected" from="CreateNodeDialog/VBoxContainer/NodeListTree" to="." method="_on_node_list_tree_item_selected"]
+[connection signal="nothing_selected" from="CreateNodeDialog/VBoxContainer/NodeListTree" to="." method="_on_node_list_tree_nothing_selected"]
