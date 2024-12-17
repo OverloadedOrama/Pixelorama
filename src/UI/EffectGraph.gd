@@ -14,11 +14,23 @@ var slot_colors := PackedColorArray(
 	]
 )
 var add_options: Array[AddOption]
-var visual_shader: VisualShader
+var visual_shader: VisualShader:
+	set(value):
+		if visual_shader == value:
+			return
+		visual_shader = value
+		add_node_button.disabled = not is_instance_valid(visual_shader)
+		# TODO: Clear previous nodes from the graphedit
+		if is_instance_valid(visual_shader):
+			var node_list := visual_shader.get_node_list(VisualShader.Type.TYPE_FRAGMENT)
+			for id in node_list:
+				var node := visual_shader.get_node(VisualShader.TYPE_FRAGMENT, id)
+				add_node(node, id)
+
 var effects_button: MenuButton
+var add_node_button: Button
 
 @onready var graph_edit := $GraphEdit as GraphEdit
-@onready var output: GraphNode = $GraphEdit/Output
 @onready var node_list_tree: Tree = %NodeListTree
 @onready var effect_name_line_edit: LineEdit = %EffectNameLineEdit
 
@@ -58,8 +70,9 @@ func _ready() -> void:
 	effects_button.get_popup().id_pressed.connect(_on_effects_button_id_pressed)
 	_find_loaded_effects()
 	OpenSave.shader_copied.connect(_load_shader_file)
-	var add_node_button := Button.new()
+	add_node_button = Button.new()
 	add_node_button.text = "Add node"
+	add_node_button.disabled = true
 	add_node_button.pressed.connect(func(): node_list_tree.get_window().popup_centered())
 	var menu_hbox := graph_edit.get_menu_hbox()
 	menu_hbox.add_child(add_node_button)
@@ -94,12 +107,9 @@ func _on_effects_button_id_pressed(id: int) -> void:
 		effect_name_line_edit.get_window().popup_centered()
 	else:
 		visual_shader = effects_button.get_popup().get_item_metadata(id)
-		# TODO: Add logic that adds the shader's nodes
 
 
 func new_effect(effect_name: String) -> void:
-	output.set_slot(0, true, NodeTypes.VEC3, slot_colors[NodeTypes.VEC3], false, -1, Color.TRANSPARENT)
-	output.set_slot(1, true, NodeTypes.SCALAR, slot_colors[NodeTypes.SCALAR], false, -1, Color.TRANSPARENT)
 	visual_shader = VisualShader.new()
 	visual_shader.set_mode(Shader.MODE_CANVAS_ITEM)
 	var file_name := effect_name + ".tres"
@@ -128,11 +138,39 @@ func get_color_type(type: NodeTypes) -> Color:
 	return slot_colors[type]
 
 
-func add_node(index: int) -> void:
+func add_new_node(index: int) -> void:
 	var option := add_options[index]
-	#if not option.type.is_empty():
-		#var vsn := ClassDB.instantiate(option.type) as VisualShaderNode
-		#VisualShaderNodeParameterRef
+	if not option.type.is_empty():
+		var vsn := ClassDB.instantiate(option.type) as VisualShaderNode
+		var id := visual_shader.get_node_list(VisualShader.Type.TYPE_FRAGMENT).size()
+		add_node(vsn, id)
+
+
+func add_node(vsn: VisualShaderNode, id: int) -> void:
+	if not is_instance_valid(vsn):
+		return
+	var parameter_list := vsn.get_default_input_values()
+	#print(vsn, " ", parameter_list)
+	var graph_node := GraphNode.new()
+	graph_node.title = vsn.get_class().replace("VisualShaderNode", "")
+	if vsn is VisualShaderNodeOutput:
+		var color_label := Label.new()
+		color_label.text = "Color"
+		graph_node.add_child(color_label)
+		var alpha_label := Label.new()
+		alpha_label.text = "Alpha"
+		graph_node.add_child(alpha_label)
+		graph_node.set_slot(0, true, NodeTypes.VEC3, slot_colors[NodeTypes.VEC3], false, -1, Color.TRANSPARENT)
+		graph_node.set_slot(1, true, NodeTypes.SCALAR, slot_colors[NodeTypes.SCALAR], false, -1, Color.TRANSPARENT)
+	if vsn is VisualShaderNodeColorConstant:
+		var color_picker_button := ColorPickerButton.new()
+		color_picker_button.color = vsn.constant
+		color_picker_button.custom_minimum_size = Vector2(20, 20)
+		graph_node.add_child(color_picker_button)
+		graph_node.set_slot(0, false, -1, Color.TRANSPARENT, true, NodeTypes.VEC4, slot_colors[NodeTypes.VEC4])
+	#VisualShaderNodeParameterRef
+	graph_node.position_offset = visual_shader.get_node_position(VisualShader.TYPE_FRAGMENT, id)
+	graph_edit.add_child(graph_node)
 
 
 func fill_add_options() -> void:
@@ -177,7 +215,7 @@ func update_options_menu() -> void:
 					category.set_selectable(0, false)
 					#category.set_collapsed(!use_filter)
 					category.set_text(0, subfolders[j])
-					folders[path_temp ]= category
+					folders[path_temp] = category
 				else:
 					category = folders[path_temp]
 		else:
@@ -189,6 +227,7 @@ func update_options_menu() -> void:
 			#item->set_custom_color(0, supported_color)
 		#}
 		item.set_text(0, option.option_name)
+		item.set_metadata(0, i)
 		#if (is_first_item && use_filter):
 			#item.select(0)
 			#node_desc.set_text(options[i].description)
@@ -211,3 +250,7 @@ func _on_effect_name_line_edit_text_changed(new_text: String) -> void:
 
 func _on_create_effect_dialog_confirmed() -> void:
 	new_effect(effect_name_line_edit.text)
+
+
+func _on_create_node_dialog_confirmed() -> void:
+	add_new_node(node_list_tree.get_selected().get_metadata(0))
