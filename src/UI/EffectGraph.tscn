@@ -13,42 +13,6 @@ script = ExtResource("1_nlh42")
 [node name="GraphEdit" type="GraphEdit" parent="."]
 layout_mode = 2
 
-[node name="Output" type="GraphNode" parent="GraphEdit"]
-layout_mode = 0
-offset_left = 524.0
-offset_top = 276.0
-offset_right = 605.0
-offset_bottom = 379.0
-mouse_filter = 1
-position_offset = Vector2(524, 276)
-title = "Output"
-slot/0/left_enabled = false
-slot/0/left_type = 0
-slot/0/left_color = Color(0.294118, 0.623529, 1, 1)
-slot/0/left_icon = null
-slot/0/right_enabled = false
-slot/0/right_type = 0
-slot/0/right_color = Color(1, 1, 1, 1)
-slot/0/right_icon = null
-slot/0/draw_stylebox = true
-slot/1/left_enabled = false
-slot/1/left_type = 0
-slot/1/left_color = Color(1, 1, 1, 1)
-slot/1/left_icon = null
-slot/1/right_enabled = false
-slot/1/right_type = 0
-slot/1/right_color = Color(1, 1, 1, 1)
-slot/1/right_icon = null
-slot/1/draw_stylebox = true
-
-[node name="Label" type="Label" parent="GraphEdit/Output"]
-layout_mode = 2
-text = "Color"
-
-[node name="Label2" type="Label" parent="GraphEdit/Output"]
-layout_mode = 2
-text = "Alpha"
-
 [node name="CreateNodeDialog" type="ConfirmationDialog" parent="."]
 title = "Create node"
 size = Vector2i(200, 400)
@@ -86,6 +50,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 
 [connection signal="visibility_changed" from="." to="." method="_on_visibility_changed"]
+[connection signal="confirmed" from="CreateNodeDialog" to="." method="_on_create_node_dialog_confirmed"]
 [connection signal="item_selected" from="CreateNodeDialog/VBoxContainer/NodeListTree" to="." method="_on_node_list_tree_item_selected"]
 [connection signal="nothing_selected" from="CreateNodeDialog/VBoxContainer/NodeListTree" to="." method="_on_node_list_tree_nothing_selected"]
 [connection signal="confirmed" from="CreateEffectDialog" to="." method="_on_create_effect_dialog_confirmed"]
