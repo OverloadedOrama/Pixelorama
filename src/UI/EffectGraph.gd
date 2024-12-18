@@ -305,6 +305,141 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		_create_label("lod", graph_node, VisualShaderNode.PORT_TYPE_SCALAR, VisualShaderNode.PORT_TYPE_MAX)
 		_create_label("sampler2D", graph_node, VisualShaderNode.PORT_TYPE_SAMPLER, VisualShaderNode.PORT_TYPE_MAX)
 		_create_multi_output("color", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_4D)
+	#region Integers
+	elif vsn is VisualShaderNodeIntOp:
+		if not ops.is_empty():
+			vsn.operator = ops[0]
+		var option_button := OptionButton.new()
+		option_button.add_item("Add", VisualShaderNodeIntOp.OP_ADD)
+		option_button.add_item("Subtract", VisualShaderNodeIntOp.OP_SUB)
+		option_button.add_item("Multiply", VisualShaderNodeIntOp.OP_MUL)
+		option_button.add_item("Divide", VisualShaderNodeIntOp.OP_DIV)
+		option_button.add_item("Remainder", VisualShaderNodeIntOp.OP_MOD)
+		option_button.add_item("Max", VisualShaderNodeIntOp.OP_MAX)
+		option_button.add_item("Min", VisualShaderNodeIntOp.OP_MIN)
+		option_button.add_item("Bitwise AND", VisualShaderNodeIntOp.OP_BITWISE_AND)
+		option_button.add_item("Bitwise OR", VisualShaderNodeIntOp.OP_BITWISE_OR)
+		option_button.add_item("Bitwise XOR", VisualShaderNodeIntOp.OP_BITWISE_XOR)
+		option_button.add_item("Bitwise Left Shift", VisualShaderNodeIntOp.OP_BITWISE_LEFT_SHIFT)
+		option_button.add_item("Bitwise Right Shift", VisualShaderNodeIntOp.OP_BITWISE_RIGHT_SHIFT)
+		option_button.select(vsn.operator)
+		option_button.item_selected.connect(func(id_selected: VisualShaderNodeIntOp.Operator): vsn.operator = id_selected; _on_effect_changed())
+		graph_node.add_child(option_button)
+		_create_label("a", graph_node, VisualShaderNode.PORT_TYPE_SCALAR_INT, VisualShaderNode.PORT_TYPE_MAX)
+		_create_label("b", graph_node, VisualShaderNode.PORT_TYPE_SCALAR_INT, VisualShaderNode.PORT_TYPE_MAX)
+		_create_multi_output("op", graph_node, VisualShaderNode.PORT_TYPE_SCALAR_INT)
+	elif vsn is VisualShaderNodeIntFunc:
+		if not ops.is_empty():
+			vsn.function = ops[0]
+		var option_button := OptionButton.new()
+		option_button.add_item("Abs", VisualShaderNodeIntFunc.FUNC_ABS)
+		option_button.add_item("Negate", VisualShaderNodeIntFunc.FUNC_NEGATE)
+		option_button.add_item("Sign", VisualShaderNodeIntFunc.FUNC_SIGN)
+		option_button.add_item("Bitwise NOT", VisualShaderNodeIntFunc.FUNC_BITWISE_NOT)
+		option_button.select(vsn.function)
+		option_button.item_selected.connect(func(id_selected: VisualShaderNodeIntFunc.Function): vsn.function = id_selected; _on_effect_changed())
+		graph_node.add_child(option_button)
+		_create_label("input", graph_node, VisualShaderNode.PORT_TYPE_SCALAR_INT, VisualShaderNode.PORT_TYPE_MAX)
+		_create_multi_output("output", graph_node, VisualShaderNode.PORT_TYPE_SCALAR_INT)
+	#endregion
+	#region Unsigned integers
+	elif vsn is VisualShaderNodeUIntOp:
+		if not ops.is_empty():
+			vsn.operator = ops[0]
+		var option_button := OptionButton.new()
+		option_button.add_item("Add", VisualShaderNodeUIntOp.OP_ADD)
+		option_button.add_item("Subtract", VisualShaderNodeUIntOp.OP_SUB)
+		option_button.add_item("Multiply", VisualShaderNodeUIntOp.OP_MUL)
+		option_button.add_item("Divide", VisualShaderNodeUIntOp.OP_DIV)
+		option_button.add_item("Remainder", VisualShaderNodeUIntOp.OP_MOD)
+		option_button.add_item("Max", VisualShaderNodeUIntOp.OP_MAX)
+		option_button.add_item("Min", VisualShaderNodeUIntOp.OP_MIN)
+		option_button.add_item("Bitwise AND", VisualShaderNodeUIntOp.OP_BITWISE_AND)
+		option_button.add_item("Bitwise OR", VisualShaderNodeUIntOp.OP_BITWISE_OR)
+		option_button.add_item("Bitwise XOR", VisualShaderNodeUIntOp.OP_BITWISE_XOR)
+		option_button.add_item("Bitwise Left Shift", VisualShaderNodeUIntOp.OP_BITWISE_LEFT_SHIFT)
+		option_button.add_item("Bitwise Right Shift", VisualShaderNodeUIntOp.OP_BITWISE_RIGHT_SHIFT)
+		option_button.select(vsn.operator)
+		option_button.item_selected.connect(func(id_selected: VisualShaderNodeUIntOp.Operator): vsn.operator = id_selected; _on_effect_changed())
+		graph_node.add_child(option_button)
+		_create_label("a", graph_node, VisualShaderNode.PORT_TYPE_SCALAR_UINT, VisualShaderNode.PORT_TYPE_MAX)
+		_create_label("b", graph_node, VisualShaderNode.PORT_TYPE_SCALAR_UINT, VisualShaderNode.PORT_TYPE_MAX)
+		_create_multi_output("op", graph_node, VisualShaderNode.PORT_TYPE_SCALAR_UINT)
+	elif vsn is VisualShaderNodeUIntFunc:
+		if not ops.is_empty():
+			vsn.function = ops[0]
+		var option_button := OptionButton.new()
+		option_button.add_item("Negate", VisualShaderNodeUIntFunc.FUNC_NEGATE)
+		option_button.add_item("Bitwise NOT", VisualShaderNodeUIntFunc.FUNC_BITWISE_NOT)
+		option_button.select(vsn.function)
+		option_button.item_selected.connect(func(id_selected: VisualShaderNodeUIntFunc.Function): vsn.function = id_selected; _on_effect_changed())
+		graph_node.add_child(option_button)
+		_create_label("input", graph_node, VisualShaderNode.PORT_TYPE_SCALAR_UINT, VisualShaderNode.PORT_TYPE_MAX)
+		_create_multi_output("output", graph_node, VisualShaderNode.PORT_TYPE_SCALAR_UINT)
+	#endregion
+	#region Floats
+	elif vsn is VisualShaderNodeFloatOp:
+		if not ops.is_empty():
+			vsn.operator = ops[0]
+		var option_button := OptionButton.new()
+		option_button.add_item("Add", VisualShaderNodeFloatOp.OP_ADD)
+		option_button.add_item("Subtract", VisualShaderNodeFloatOp.OP_SUB)
+		option_button.add_item("Multiply", VisualShaderNodeFloatOp.OP_MUL)
+		option_button.add_item("Divide", VisualShaderNodeFloatOp.OP_DIV)
+		option_button.add_item("Remainder", VisualShaderNodeFloatOp.OP_MOD)
+		option_button.add_item("Power", VisualShaderNodeFloatOp.OP_POW)
+		option_button.add_item("Max", VisualShaderNodeFloatOp.OP_MAX)
+		option_button.add_item("Min", VisualShaderNodeFloatOp.OP_MIN)
+		option_button.add_item("ATan2", VisualShaderNodeFloatOp.OP_ATAN2)
+		option_button.add_item("Step", VisualShaderNodeFloatOp.OP_STEP)
+		option_button.select(vsn.operator)
+		option_button.item_selected.connect(func(id_selected: VisualShaderNodeFloatOp.Operator): vsn.operator = id_selected; _on_effect_changed())
+		graph_node.add_child(option_button)
+		_create_label("a", graph_node, VisualShaderNode.PORT_TYPE_SCALAR, VisualShaderNode.PORT_TYPE_MAX)
+		_create_label("b", graph_node, VisualShaderNode.PORT_TYPE_SCALAR, VisualShaderNode.PORT_TYPE_MAX)
+		_create_multi_output("op", graph_node, VisualShaderNode.PORT_TYPE_SCALAR)
+	elif vsn is VisualShaderNodeFloatFunc:
+		if not ops.is_empty():
+			vsn.function = ops[0]
+		var option_button := OptionButton.new()
+		option_button.add_item("Sin", VisualShaderNodeFloatFunc.FUNC_SIN)
+		option_button.add_item("Cos", VisualShaderNodeFloatFunc.FUNC_COS)
+		option_button.add_item("Tan", VisualShaderNodeFloatFunc.FUNC_TAN)
+		option_button.add_item("ASin", VisualShaderNodeFloatFunc.FUNC_ASIN)
+		option_button.add_item("ACos", VisualShaderNodeFloatFunc.FUNC_ACOS)
+		option_button.add_item("ATan", VisualShaderNodeFloatFunc.FUNC_ATAN)
+		option_button.add_item("SinH", VisualShaderNodeFloatFunc.FUNC_SINH)
+		option_button.add_item("CosH", VisualShaderNodeFloatFunc.FUNC_COSH)
+		option_button.add_item("TanH", VisualShaderNodeFloatFunc.FUNC_TANH)
+		option_button.add_item("Log", VisualShaderNodeFloatFunc.FUNC_LOG)
+		option_button.add_item("Exp", VisualShaderNodeFloatFunc.FUNC_EXP)
+		option_button.add_item("Square root", VisualShaderNodeFloatFunc.FUNC_SQRT)
+		option_button.add_item("Abs", VisualShaderNodeFloatFunc.FUNC_ABS)
+		option_button.add_item("Sign", VisualShaderNodeFloatFunc.FUNC_SIGN)
+		option_button.add_item("Floor", VisualShaderNodeFloatFunc.FUNC_FLOOR)
+		option_button.add_item("Round", VisualShaderNodeFloatFunc.FUNC_ROUND)
+		option_button.add_item("Ceil", VisualShaderNodeFloatFunc.FUNC_CEIL)
+		option_button.add_item("Fract", VisualShaderNodeFloatFunc.FUNC_FRACT)
+		option_button.add_item("Saturate", VisualShaderNodeFloatFunc.FUNC_SATURATE)
+		option_button.add_item("Negate", VisualShaderNodeFloatFunc.FUNC_NEGATE)
+		option_button.add_item("ASinH", VisualShaderNodeFloatFunc.FUNC_ASINH)
+		option_button.add_item("ACosH", VisualShaderNodeFloatFunc.FUNC_ACOSH)
+		option_button.add_item("ATanH", VisualShaderNodeFloatFunc.FUNC_ATANH)
+		option_button.add_item("Degrees", VisualShaderNodeFloatFunc.FUNC_DEGREES)
+		option_button.add_item("Exp2", VisualShaderNodeFloatFunc.FUNC_EXP2)
+		option_button.add_item("Inverse square root", VisualShaderNodeFloatFunc.FUNC_INVERSE_SQRT)
+		option_button.add_item("Log2", VisualShaderNodeFloatFunc.FUNC_LOG2)
+		option_button.add_item("Radians", VisualShaderNodeFloatFunc.FUNC_RADIANS)
+		option_button.add_item("Reciprocal", VisualShaderNodeFloatFunc.FUNC_RECIPROCAL)
+		option_button.add_item("Roundeven", VisualShaderNodeFloatFunc.FUNC_ROUNDEVEN)
+		option_button.add_item("Trunc", VisualShaderNodeFloatFunc.FUNC_TRUNC)
+		option_button.add_item("One minus", VisualShaderNodeFloatFunc.FUNC_ONEMINUS)
+		option_button.select(vsn.function)
+		option_button.item_selected.connect(func(id_selected: VisualShaderNodeFloatFunc.Function): vsn.function = id_selected; _on_effect_changed())
+		graph_node.add_child(option_button)
+		_create_label("input", graph_node, VisualShaderNode.PORT_TYPE_SCALAR, VisualShaderNode.PORT_TYPE_MAX)
+		_create_multi_output("output", graph_node, VisualShaderNode.PORT_TYPE_SCALAR)
+	#endregion
 	#region Colors
 	elif vsn is VisualShaderNodeColorOp:
 		if not ops.is_empty():
@@ -334,7 +469,7 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		option_button.add_item("RGB to HSV", VisualShaderNodeColorFunc.FUNC_RGB2HSV)
 		option_button.add_item("Sepia", VisualShaderNodeColorFunc.FUNC_SEPIA)
 		option_button.select(vsn.function)
-		option_button.item_selected.connect(func(id_selected: VisualShaderNodeColorOp.Operator): vsn.function = id_selected; _on_effect_changed())
+		option_button.item_selected.connect(func(id_selected: VisualShaderNodeColorFunc.Function): vsn.function = id_selected; _on_effect_changed())
 		graph_node.add_child(option_button)
 		_create_label("input", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_3D, VisualShaderNode.PORT_TYPE_MAX)
 		_create_multi_output("output", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_3D)
@@ -347,7 +482,7 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 			port_type = VisualShaderNode.PORT_TYPE_VECTOR_4D
 		elif vsn.input_name in ["texture"]:
 			port_type = VisualShaderNode.PORT_TYPE_SAMPLER
-		_create_label("output", graph_node, VisualShaderNode.PORT_TYPE_MAX, port_type)
+		_create_label(vsn.input_name, graph_node, VisualShaderNode.PORT_TYPE_MAX, port_type)
 
 	elif vsn is VisualShaderNodeMix:
 		if not ops.is_empty():
@@ -535,6 +670,102 @@ func fill_add_options() -> void:
 
 	add_options.push_back(AddOption.new("ColorConstant", "Color/Variables", "VisualShaderNodeColorConstant", "Color constant.", [], VisualShaderNode.PORT_TYPE_VECTOR_4D))
 	add_options.push_back(AddOption.new("ColorParameter", "Color/Variables", "VisualShaderNodeColorParameter", "Color parameter.", [], VisualShaderNode.PORT_TYPE_VECTOR_4D))
+	#endregion
+	#region Scalar
+	add_options.push_back(AddOption.new("FloatFunc", "Scalar/Common", "VisualShaderNodeFloatFunc", ("Float function."), [], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("FloatOp", "Scalar/Common", "VisualShaderNodeFloatOp", ("Float operator."), [], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("IntFunc", "Scalar/Common", "VisualShaderNodeIntFunc", ("Integer function."), [], VisualShaderNode.PORT_TYPE_SCALAR_INT));
+	add_options.push_back(AddOption.new("IntOp", "Scalar/Common", "VisualShaderNodeIntOp", ("Integer operator."), [], VisualShaderNode.PORT_TYPE_SCALAR_INT));
+	add_options.push_back(AddOption.new("UIntFunc", "Scalar/Common", "VisualShaderNodeUIntFunc", ("Unsigned integer function."), [], VisualShaderNode.PORT_TYPE_SCALAR_UINT));
+	add_options.push_back(AddOption.new("UIntOp", "Scalar/Common", "VisualShaderNodeUIntOp", ("Unsigned integer operator."), [], VisualShaderNode.PORT_TYPE_SCALAR_UINT));
+	# FUNCTIONS
+	add_options.push_back(AddOption.new("Abs", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("Returns the absolute value of the parameter."), [ VisualShaderNodeFloatFunc.FUNC_ABS ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("Abs", "Scalar/Functions", "VisualShaderNodeIntFunc", ("Returns the absolute value of the parameter."), [ VisualShaderNodeIntFunc.FUNC_ABS ], VisualShaderNode.PORT_TYPE_SCALAR_INT));
+	add_options.push_back(AddOption.new("ACos", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("Returns the arc-cosine of the parameter."), [ VisualShaderNodeFloatFunc.FUNC_ACOS ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("ACosH", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("Returns the inverse hyperbolic cosine of the parameter."), [ VisualShaderNodeFloatFunc.FUNC_ACOSH ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("ASin", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("Returns the arc-sine of the parameter."), [ VisualShaderNodeFloatFunc.FUNC_ASIN ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("ASinH", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("Returns the inverse hyperbolic sine of the parameter."), [ VisualShaderNodeFloatFunc.FUNC_ASINH ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("ATan", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("Returns the arc-tangent of the parameter."), [ VisualShaderNodeFloatFunc.FUNC_ATAN ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("ATan2", "Scalar/Functions", "VisualShaderNodeFloatOp", ("Returns the arc-tangent of the parameters."), [ VisualShaderNodeFloatOp.OP_ATAN2 ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("ATanH", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("Returns the inverse hyperbolic tangent of the parameter."), [ VisualShaderNodeFloatFunc.FUNC_ATANH ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("BitwiseNOT", "Scalar/Functions", "VisualShaderNodeIntFunc", ("Returns the result of bitwise NOT (~a) operation on the integer."), [ VisualShaderNodeIntFunc.FUNC_BITWISE_NOT ], VisualShaderNode.PORT_TYPE_SCALAR_INT));
+	add_options.push_back(AddOption.new("BitwiseNOT", "Scalar/Functions", "VisualShaderNodeUIntFunc", ("Returns the result of bitwise NOT (~a) operation on the unsigned integer."), [ VisualShaderNodeUIntFunc.FUNC_BITWISE_NOT ], VisualShaderNode.PORT_TYPE_SCALAR_UINT));
+	add_options.push_back(AddOption.new("Ceil", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("Finds the nearest integer that is greater than or equal to the parameter."), [ VisualShaderNodeFloatFunc.FUNC_CEIL ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("Clamp", "Scalar/Functions", "VisualShaderNodeClamp", ("Constrains a value to lie between two further values."), [ VisualShaderNodeClamp.OP_TYPE_FLOAT ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("Clamp", "Scalar/Functions", "VisualShaderNodeClamp", ("Constrains a value to lie between two further values."), [ VisualShaderNodeClamp.OP_TYPE_INT ], VisualShaderNode.PORT_TYPE_SCALAR_INT));
+	add_options.push_back(AddOption.new("Clamp", "Scalar/Functions", "VisualShaderNodeClamp", ("Constrains a value to lie between two further values."), [ VisualShaderNodeClamp.OP_TYPE_UINT ], VisualShaderNode.PORT_TYPE_SCALAR_UINT));
+	add_options.push_back(AddOption.new("Cos", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("Returns the cosine of the parameter."), [ VisualShaderNodeFloatFunc.FUNC_COS ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("CosH", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("Returns the hyperbolic cosine of the parameter."), [ VisualShaderNodeFloatFunc.FUNC_COSH ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("Degrees", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("Converts a quantity in radians to degrees."), [ VisualShaderNodeFloatFunc.FUNC_DEGREES ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("DFdX", "Scalar/Functions", "VisualShaderNodeDerivativeFunc", ("(Fragment/Light mode only) (Scalar) Derivative in 'x' using local differencing."), [ VisualShaderNodeDerivativeFunc.FUNC_X, VisualShaderNodeDerivativeFunc.OP_TYPE_SCALAR ], VisualShaderNode.PORT_TYPE_SCALAR))
+	add_options.push_back(AddOption.new("DFdY", "Scalar/Functions", "VisualShaderNodeDerivativeFunc", ("(Fragment/Light mode only) (Scalar) Derivative in 'y' using local differencing."), [ VisualShaderNodeDerivativeFunc.FUNC_Y, VisualShaderNodeDerivativeFunc.OP_TYPE_SCALAR ], VisualShaderNode.PORT_TYPE_SCALAR))
+	add_options.push_back(AddOption.new("Exp", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("Base-e Exponential."), [ VisualShaderNodeFloatFunc.FUNC_EXP ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("Exp2", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("Base-2 Exponential."), [ VisualShaderNodeFloatFunc.FUNC_EXP2 ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("Floor", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("Finds the nearest integer less than or equal to the parameter."), [ VisualShaderNodeFloatFunc.FUNC_FLOOR ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("Fract", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("Computes the fractional part of the argument."), [ VisualShaderNodeFloatFunc.FUNC_FRACT ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("InverseSqrt", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("Returns the inverse of the square root of the parameter."), [ VisualShaderNodeFloatFunc.FUNC_INVERSE_SQRT ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("Log", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("Natural logarithm."), [ VisualShaderNodeFloatFunc.FUNC_LOG ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("Log2", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("Base-2 logarithm."), [ VisualShaderNodeFloatFunc.FUNC_LOG2 ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("Max", "Scalar/Functions", "VisualShaderNodeFloatOp", ("Returns the greater of two values."), [ VisualShaderNodeFloatOp.OP_MAX ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("Min", "Scalar/Functions", "VisualShaderNodeFloatOp", ("Returns the lesser of two values."), [ VisualShaderNodeFloatOp.OP_MIN ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("Mix", "Scalar/Functions", "VisualShaderNodeMix", ("Linear interpolation between two scalars."), [ VisualShaderNodeMix.OP_TYPE_SCALAR ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("MultiplyAdd (a * b + c)", "Scalar/Functions", "VisualShaderNodeMultiplyAdd", ("Performs a fused multiply-add operation (a * b + c) on scalars."), [ VisualShaderNodeMultiplyAdd.OP_TYPE_SCALAR ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("Negate (*-1)", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("Returns the opposite value of the parameter."), [ VisualShaderNodeFloatFunc.FUNC_NEGATE ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("Negate (*-1)", "Scalar/Functions", "VisualShaderNodeIntFunc", ("Returns the opposite value of the parameter."), [ VisualShaderNodeIntFunc.FUNC_NEGATE ], VisualShaderNode.PORT_TYPE_SCALAR_INT));
+	add_options.push_back(AddOption.new("Negate (*-1)", "Scalar/Functions", "VisualShaderNodeUIntFunc", ("Returns the opposite value of the parameter."), [ VisualShaderNodeUIntFunc.FUNC_NEGATE ], VisualShaderNode.PORT_TYPE_SCALAR_UINT));
+	add_options.push_back(AddOption.new("OneMinus (1-)", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("1.0 - scalar"), [ VisualShaderNodeFloatFunc.FUNC_ONEMINUS ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("Pow", "Scalar/Functions", "VisualShaderNodeFloatOp", ("Returns the value of the first parameter raised to the power of the second."), [ VisualShaderNodeFloatOp.OP_POW ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("Radians", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("Converts a quantity in degrees to radians."), [ VisualShaderNodeFloatFunc.FUNC_RADIANS ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("Reciprocal", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("1.0 / scalar"), [ VisualShaderNodeFloatFunc.FUNC_RECIPROCAL ], VisualShaderNode.PORT_TYPE_SCALAR));
+	#add_options.push_back(AddOption.new("Remap", "Scalar/Functions", "VisualShaderNodeRemap", ("Remaps a value from the input range to the output range."), [ VisualShaderNodeRemap.OP_TYPE_SCALAR ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("Round", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("Finds the nearest integer to the parameter."), [ VisualShaderNodeFloatFunc.FUNC_ROUND ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("RoundEven", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("Finds the nearest even integer to the parameter."), [ VisualShaderNodeFloatFunc.FUNC_ROUNDEVEN ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("Saturate", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("Clamps the value between 0.0 and 1.0."), [ VisualShaderNodeFloatFunc.FUNC_SATURATE ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("Sign", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("Extracts the sign of the parameter."), [ VisualShaderNodeFloatFunc.FUNC_SIGN ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("Sign", "Scalar/Functions", "VisualShaderNodeIntFunc", ("Extracts the sign of the parameter."), [ VisualShaderNodeIntFunc.FUNC_SIGN ], VisualShaderNode.PORT_TYPE_SCALAR_INT));
+	add_options.push_back(AddOption.new("Sin", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("Returns the sine of the parameter."), [ VisualShaderNodeFloatFunc.FUNC_SIN ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("SinH", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("Returns the hyperbolic sine of the parameter."), [ VisualShaderNodeFloatFunc.FUNC_SINH ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("Sqrt", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("Returns the square root of the parameter."), [ VisualShaderNodeFloatFunc.FUNC_SQRT ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("SmoothStep", "Scalar/Functions", "VisualShaderNodeSmoothStep", ("SmoothStep function( scalar(edge0), scalar(edge1), scalar(x) ).\n\nReturns 0.0 if 'x' is smaller than 'edge0' and 1.0 if x is larger than 'edge1'. Otherwise the return value is interpolated between 0.0 and 1.0 using Hermite polynomials."), [ VisualShaderNodeSmoothStep.OP_TYPE_SCALAR ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("Step", "Scalar/Functions", "VisualShaderNodeStep", ("Step function( scalar(edge), scalar(x) ).\n\nReturns 0.0 if 'x' is smaller than 'edge' and otherwise 1.0."), [ VisualShaderNodeStep.OP_TYPE_SCALAR ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("Sum", "Scalar/Functions", "VisualShaderNodeDerivativeFunc", ("(Fragment/Light mode only) (Scalar) Sum of absolute derivative in 'x' and 'y'."), [ VisualShaderNodeDerivativeFunc.FUNC_SUM, VisualShaderNodeDerivativeFunc.OP_TYPE_SCALAR ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("Tan", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("Returns the tangent of the parameter."), [ VisualShaderNodeFloatFunc.FUNC_TAN ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("TanH", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("Returns the hyperbolic tangent of the parameter."), [ VisualShaderNodeFloatFunc.FUNC_TANH ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("Trunc", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("Finds the truncated value of the parameter."), [ VisualShaderNodeFloatFunc.FUNC_TRUNC ], VisualShaderNode.PORT_TYPE_SCALAR));
+
+	add_options.push_back(AddOption.new("Add (+)", "Scalar/Operators", "VisualShaderNodeFloatOp", ("Sums two floating-point scalars."), [ VisualShaderNodeFloatOp.OP_ADD ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("Add (+)", "Scalar/Operators", "VisualShaderNodeIntOp", ("Sums two integer scalars."), [ VisualShaderNodeIntOp.OP_ADD ], VisualShaderNode.PORT_TYPE_SCALAR_INT));
+	add_options.push_back(AddOption.new("Add (+)", "Scalar/Operators", "VisualShaderNodeUIntOp", ("Sums two unsigned integer scalars."), [ VisualShaderNodeUIntOp.OP_ADD ], VisualShaderNode.PORT_TYPE_SCALAR_UINT));
+	add_options.push_back(AddOption.new("BitwiseAND (&)", "Scalar/Operators", "VisualShaderNodeIntOp", ("Returns the result of bitwise AND (a & b) operation for two integers."), [ VisualShaderNodeIntOp.OP_BITWISE_AND ], VisualShaderNode.PORT_TYPE_SCALAR_INT));
+	add_options.push_back(AddOption.new("BitwiseAND (&)", "Scalar/Operators", "VisualShaderNodeUIntOp", ("Returns the result of bitwise AND (a & b) operation for two unsigned integers."), [ VisualShaderNodeUIntOp.OP_BITWISE_AND ], VisualShaderNode.PORT_TYPE_SCALAR_UINT));
+	add_options.push_back(AddOption.new("BitwiseLeftShift (<<)", "Scalar/Operators", "VisualShaderNodeIntOp", ("Returns the result of bitwise left shift (a << b) operation on the integer."), [ VisualShaderNodeIntOp.OP_BITWISE_LEFT_SHIFT ], VisualShaderNode.PORT_TYPE_SCALAR_INT));
+	add_options.push_back(AddOption.new("BitwiseLeftShift (<<)", "Scalar/Operators", "VisualShaderNodeUIntOp", ("Returns the result of bitwise left shift (a << b) operation on the unsigned integer."), [ VisualShaderNodeUIntOp.OP_BITWISE_LEFT_SHIFT ], VisualShaderNode.PORT_TYPE_SCALAR_UINT));
+	add_options.push_back(AddOption.new("BitwiseOR (|)", "Scalar/Operators", "VisualShaderNodeIntOp", ("Returns the result of bitwise OR (a | b) operation for two integers."), [ VisualShaderNodeIntOp.OP_BITWISE_OR ], VisualShaderNode.PORT_TYPE_SCALAR_INT));
+	add_options.push_back(AddOption.new("BitwiseOR (|)", "Scalar/Operators", "VisualShaderNodeUIntOp", ("Returns the result of bitwise OR (a | b) operation for two unsigned integers."), [ VisualShaderNodeUIntOp.OP_BITWISE_OR ], VisualShaderNode.PORT_TYPE_SCALAR_UINT));
+	add_options.push_back(AddOption.new("BitwiseRightShift (>>)", "Scalar/Operators", "VisualShaderNodeIntOp", ("Returns the result of bitwise right shift (a >> b) operation on the integer."), [ VisualShaderNodeIntOp.OP_BITWISE_RIGHT_SHIFT ], VisualShaderNode.PORT_TYPE_SCALAR_INT));
+	add_options.push_back(AddOption.new("BitwiseRightShift (>>)", "Scalar/Operators", "VisualShaderNodeUIntOp", ("Returns the result of bitwise right shift (a >> b) operation on the unsigned integer."), [ VisualShaderNodeIntOp.OP_BITWISE_RIGHT_SHIFT ], VisualShaderNode.PORT_TYPE_SCALAR_UINT));
+	add_options.push_back(AddOption.new("BitwiseXOR (^)", "Scalar/Operators", "VisualShaderNodeIntOp", ("Returns the result of bitwise XOR (a ^ b) operation on the integer."), [ VisualShaderNodeIntOp.OP_BITWISE_XOR ], VisualShaderNode.PORT_TYPE_SCALAR_INT));
+	add_options.push_back(AddOption.new("BitwiseXOR (^)", "Scalar/Operators", "VisualShaderNodeUIntOp", ("Returns the result of bitwise XOR (a ^ b) operation on the unsigned integer."), [ VisualShaderNodeUIntOp.OP_BITWISE_XOR ], VisualShaderNode.PORT_TYPE_SCALAR_UINT));
+	add_options.push_back(AddOption.new("Divide (/)", "Scalar/Operators", "VisualShaderNodeFloatOp", ("Divides two floating-point scalars."), [ VisualShaderNodeFloatOp.OP_DIV ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("Divide (/)", "Scalar/Operators", "VisualShaderNodeIntOp", ("Divides two integer scalars."), [ VisualShaderNodeIntOp.OP_DIV ], VisualShaderNode.PORT_TYPE_SCALAR_INT));
+	add_options.push_back(AddOption.new("Divide (/)", "Scalar/Operators", "VisualShaderNodeUIntOp", ("Divides two unsigned integer scalars."), [ VisualShaderNodeUIntOp.OP_DIV ], VisualShaderNode.PORT_TYPE_SCALAR_UINT));
+	add_options.push_back(AddOption.new("Multiply (*)", "Scalar/Operators", "VisualShaderNodeFloatOp", ("Multiplies two floating-point scalars."), [ VisualShaderNodeFloatOp.OP_MUL ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("Multiply (*)", "Scalar/Operators", "VisualShaderNodeIntOp", ("Multiplies two integer scalars."), [ VisualShaderNodeIntOp.OP_MUL ], VisualShaderNode.PORT_TYPE_SCALAR_INT));
+	add_options.push_back(AddOption.new("Multiply (*)", "Scalar/Operators", "VisualShaderNodeUIntOp", ("Multiplies two unsigned integer scalars."), [ VisualShaderNodeUIntOp.OP_MUL ], VisualShaderNode.PORT_TYPE_SCALAR_UINT));
+	add_options.push_back(AddOption.new("Remainder (%)", "Scalar/Operators", "VisualShaderNodeFloatOp", ("Returns the remainder of the two floating-point scalars."), [ VisualShaderNodeFloatOp.OP_MOD ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("Remainder (%)", "Scalar/Operators", "VisualShaderNodeIntOp", ("Returns the remainder of the two integer scalars."), [ VisualShaderNodeIntOp.OP_MOD ], VisualShaderNode.PORT_TYPE_SCALAR_INT));
+	add_options.push_back(AddOption.new("Remainder (%)", "Scalar/Operators", "VisualShaderNodeUIntOp", ("Returns the remainder of the two unsigned integer scalars."), [ VisualShaderNodeUIntOp.OP_MOD ], VisualShaderNode.PORT_TYPE_SCALAR_UINT));
+	add_options.push_back(AddOption.new("Subtract (-)", "Scalar/Operators", "VisualShaderNodeFloatOp", ("Subtracts two floating-point scalars."), [ VisualShaderNodeFloatOp.OP_SUB ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("Subtract (-)", "Scalar/Operators", "VisualShaderNodeIntOp", ("Subtracts two integer scalars."), [ VisualShaderNodeIntOp.OP_SUB ], VisualShaderNode.PORT_TYPE_SCALAR_INT));
+	add_options.push_back(AddOption.new("Subtract (-)", "Scalar/Operators", "VisualShaderNodeUIntOp", ("Subtracts two unsigned integer scalars."), [ VisualShaderNodeUIntOp.OP_SUB ], VisualShaderNode.PORT_TYPE_SCALAR_UINT));
+
+	add_options.push_back(AddOption.new("FloatConstant", "Scalar/Variables", "VisualShaderNodeFloatConstant", ("Scalar floating-point constant."), [], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("IntConstant", "Scalar/Variables", "VisualShaderNodeIntConstant", ("Scalar integer constant."), [], VisualShaderNode.PORT_TYPE_SCALAR_INT));
+	add_options.push_back(AddOption.new("UIntConstant", "Scalar/Variables", "VisualShaderNodeUIntConstant", ("Scalar unsigned integer constant."), [], VisualShaderNode.PORT_TYPE_SCALAR_UINT));
+	add_options.push_back(AddOption.new("FloatParameter", "Scalar/Variables", "VisualShaderNodeFloatParameter", ("Scalar floating-point parameter."), [], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("IntParameter", "Scalar/Variables", "VisualShaderNodeIntParameter", ("Scalar integer parameter."), [], VisualShaderNode.PORT_TYPE_SCALAR_INT));
+	add_options.push_back(AddOption.new("UIntParameter", "Scalar/Variables", "VisualShaderNodeUIntParameter", ("Scalar unsigned integer parameter."), [], VisualShaderNode.PORT_TYPE_SCALAR_UINT));
+
 	#endregion
 	#region Input
 	add_options.push_back(AddOption.new("Color", "Input/All", "VisualShaderNodeInput", "", [ "color" ], VisualShaderNode.PORT_TYPE_VECTOR_4D, -1))
