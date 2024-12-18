@@ -2,6 +2,9 @@ extends PanelContainer
 
 enum NodeTypes { NONE = -1, BOOL, SCALAR, VEC2, VEC3, VEC4, TRANSFORM, SAMPLER }
 
+const VALUE_ARROW := preload("res://assets/graphics/misc/value_arrow.svg")
+const VALUE_ARROW_RIGHT := preload("res://assets/graphics/misc/value_arrow_right.svg")
+
 var slot_colors := PackedColorArray(
 	[
 		Color(0.243, 0.612, 0.349),  # Bool
@@ -94,6 +97,11 @@ func _ready() -> void:
 	menu_hbox.move_child(effects_button, 0)
 
 
+func _on_effect_changed() -> void:
+	ResourceSaver.save(visual_shader)
+	Global.canvas.queue_redraw()
+
+
 func _find_loaded_effects() -> void:
 	if not DirAccess.dir_exists_absolute(OpenSave.SHADERS_DIRECTORY):
 		DirAccess.make_dir_recursive_absolute(OpenSave.SHADERS_DIRECTORY)
@@ -183,42 +191,52 @@ func add_node(vsn: VisualShaderNode, id: int) -> void:
 		else:
 			var line_edit := LineEdit.new()
 			line_edit.text = vsn.parameter_name
-			line_edit.text_changed.connect(func(text: String): vsn.parameter_name = text; ResourceSaver.save(visual_shader))
+			line_edit.text_changed.connect(func(text: String): vsn.parameter_name = text; _on_effect_changed())
 			graph_node.add_child(line_edit)
 			graph_node.set_slot(0, false, -1, Color.TRANSPARENT, true, parameter_type, slot_colors[parameter_type])
 	elif vsn is VisualShaderNodeBooleanConstant:
 		var button := CheckBox.new()
 		button.text = "On"
 		button.button_pressed = vsn.constant
-		button.toggled.connect(func(toggled_on: bool): vsn.constant = toggled_on; ResourceSaver.save(visual_shader))
+		button.toggled.connect(func(toggled_on: bool): vsn.constant = toggled_on; _on_effect_changed())
 		graph_node.add_child(button)
 		graph_node.set_slot(0, false, -1, Color.TRANSPARENT, true, NodeTypes.BOOL, slot_colors[NodeTypes.BOOL])
-	elif vsn is VisualShaderNodeIntConstant or vsn is VisualShaderNodeUIntConstant or vsn is VisualShaderNodeFloatConstant:
+	elif vsn is VisualShaderNodeIntConstant or vsn is VisualShaderNodeUIntConstant:
 		var slider := ValueSlider.new()
+		slider.custom_minimum_size = Vector2(32, 32)
 		slider.value = vsn.constant
-		slider.value_changed.connect(func(value: float): vsn.constant = value; ResourceSaver.save(visual_shader))
+		slider.value_changed.connect(func(value: int): vsn.constant = value; _on_effect_changed())
+		graph_node.add_child(slider)
+		graph_node.set_slot(0, false, -1, Color.TRANSPARENT, true, NodeTypes.SCALAR, slot_colors[NodeTypes.SCALAR])
+	elif vsn is VisualShaderNodeFloatConstant:
+		var slider := ValueSlider.new()
+		slider.custom_minimum_size = Vector2(32, 32)
+		slider.step = 0.001
+		slider.value = vsn.constant
+		slider.value_changed.connect(func(value: float): vsn.constant = value; _on_effect_changed())
 		graph_node.add_child(slider)
 		graph_node.set_slot(0, false, -1, Color.TRANSPARENT, true, NodeTypes.SCALAR, slot_colors[NodeTypes.SCALAR])
 	elif vsn is VisualShaderNodeVec2Constant:
 		var slider := ShaderLoader.VALUE_SLIDER_V2_TSCN.instantiate() as ValueSliderV2
 		slider.value = vsn.constant
-		slider.value_changed.connect(func(value: Vector2): vsn.constant = value; ResourceSaver.save(visual_shader))
+		slider.value_changed.connect(func(value: Vector2): vsn.constant = value; _on_effect_changed())
 		graph_node.add_child(slider)
 		graph_node.set_slot(0, false, -1, Color.TRANSPARENT, true, NodeTypes.VEC2, slot_colors[NodeTypes.VEC2])
 	elif vsn is VisualShaderNodeVec3Constant:
 		var slider := ShaderLoader.VALUE_SLIDER_V3_TSCN.instantiate() as ValueSliderV3
 		slider.value = vsn.constant
-		slider.value_changed.connect(func(value: Vector3): vsn.constant = value; ResourceSaver.save(visual_shader))
+		slider.value_changed.connect(func(value: Vector3): vsn.constant = value; _on_effect_changed())
 		graph_node.add_child(slider)
 		graph_node.set_slot(0, false, -1, Color.TRANSPARENT, true, NodeTypes.VEC3, slot_colors[NodeTypes.VEC3])
 	elif vsn is VisualShaderNodeColorConstant or vsn is VisualShaderNodeVec4Constant:
 		var color_picker_button := ColorPickerButton.new()
 		color_picker_button.custom_minimum_size = Vector2(20, 20)
 		color_picker_button.color = vsn.constant
-		color_picker_button.color_changed.connect(func(color: Color): vsn.constant = color; ResourceSaver.save(visual_shader))
+		color_picker_button.color_changed.connect(func(color: Color): vsn.constant = color; _on_effect_changed())
 		graph_node.add_child(color_picker_button)
 		graph_node.set_slot(0, false, -1, Color.TRANSPARENT, true, NodeTypes.VEC4, slot_colors[NodeTypes.VEC4])
 	elif vsn is VisualShaderNodeTexture:
+		# TODO: Add texture changing logic
 		var texture_rect := TextureRect.new()
 		texture_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		texture_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
@@ -228,7 +246,7 @@ func add_node(vsn: VisualShaderNode, id: int) -> void:
 		_create_label("uv", graph_node, NodeTypes.VEC2, NodeTypes.NONE)
 		_create_label("lod", graph_node, NodeTypes.SCALAR, NodeTypes.NONE)
 		_create_label("sampler2D", graph_node, NodeTypes.SAMPLER, NodeTypes.NONE)
-		_create_label("color", graph_node, NodeTypes.NONE, NodeTypes.VEC4)
+		_create_multi_output("color", graph_node, NodeTypes.VEC4)
 	elif vsn is VisualShaderNodeColorOp:
 		var option_button := OptionButton.new()
 		option_button.add_item("Screen", VisualShaderNodeColorOp.OP_SCREEN)
@@ -241,7 +259,7 @@ func add_node(vsn: VisualShaderNode, id: int) -> void:
 		option_button.add_item("Soft light", VisualShaderNodeColorOp.OP_SOFT_LIGHT)
 		option_button.add_item("Hard light", VisualShaderNodeColorOp.OP_HARD_LIGHT)
 		option_button.select(vsn.operator)
-		option_button.item_selected.connect(func(id_selected: VisualShaderNodeColorOp.Operator): vsn.operator = id_selected; ResourceSaver.save(visual_shader))
+		option_button.item_selected.connect(func(id_selected: VisualShaderNodeColorOp.Operator): vsn.operator = id_selected; _on_effect_changed())
 		graph_node.add_child(option_button)
 		_create_label("a", graph_node, NodeTypes.VEC3, NodeTypes.NONE)
 		_create_label("b", graph_node, NodeTypes.VEC3, NodeTypes.NONE)
@@ -257,7 +275,8 @@ func add_node(vsn: VisualShaderNode, id: int) -> void:
 		option_button.add_item("Vector4", VisualShaderNodeMix.OP_TYPE_VECTOR_4D)
 		option_button.add_item("Vector4Scalar", VisualShaderNodeMix.OP_TYPE_VECTOR_4D_SCALAR)
 		option_button.select(op_type)
-		option_button.item_selected.connect(func(id_selected: VisualShaderNodeMix.OpType): vsn.op_type = id_selected; ResourceSaver.save(visual_shader))
+		# TODO: Add logic for what happens when changing the op type
+		option_button.item_selected.connect(func(id_selected: VisualShaderNodeMix.OpType): vsn.op_type = id_selected; _on_effect_changed())
 		graph_node.add_child(option_button)
 		if op_type == VisualShaderNodeMix.OP_TYPE_SCALAR:
 			_create_label("a", graph_node, NodeTypes.SCALAR, NodeTypes.NONE)
@@ -268,32 +287,32 @@ func add_node(vsn: VisualShaderNode, id: int) -> void:
 			_create_label("a", graph_node, NodeTypes.VEC2, NodeTypes.NONE)
 			_create_label("b", graph_node, NodeTypes.VEC2, NodeTypes.NONE)
 			_create_label("weight", graph_node, NodeTypes.VEC2, NodeTypes.NONE)
-			_create_label("mix", graph_node, NodeTypes.NONE, NodeTypes.VEC2)
+			_create_multi_output("mix", graph_node, NodeTypes.VEC2)
 		elif op_type == VisualShaderNodeMix.OP_TYPE_VECTOR_2D_SCALAR:
 			_create_label("a", graph_node, NodeTypes.VEC2, NodeTypes.NONE)
 			_create_label("b", graph_node, NodeTypes.VEC2, NodeTypes.NONE)
 			_create_label("weight", graph_node, NodeTypes.SCALAR, NodeTypes.NONE)
-			_create_label("mix", graph_node, NodeTypes.NONE, NodeTypes.VEC2)
+			_create_multi_output("mix", graph_node, NodeTypes.VEC2)
 		elif op_type == VisualShaderNodeMix.OP_TYPE_VECTOR_3D:
 			_create_label("a", graph_node, NodeTypes.VEC3, NodeTypes.NONE)
 			_create_label("b", graph_node, NodeTypes.VEC3, NodeTypes.NONE)
 			_create_label("weight", graph_node, NodeTypes.VEC3, NodeTypes.NONE)
-			_create_label("mix", graph_node, NodeTypes.NONE, NodeTypes.VEC3)
+			_create_multi_output("mix", graph_node, NodeTypes.VEC3)
 		elif op_type == VisualShaderNodeMix.OP_TYPE_VECTOR_3D_SCALAR:
 			_create_label("a", graph_node, NodeTypes.VEC3, NodeTypes.NONE)
 			_create_label("b", graph_node, NodeTypes.VEC3, NodeTypes.NONE)
 			_create_label("weight", graph_node, NodeTypes.SCALAR, NodeTypes.NONE)
-			_create_label("mix", graph_node, NodeTypes.NONE, NodeTypes.VEC3)
+			_create_multi_output("mix", graph_node, NodeTypes.VEC3)
 		elif op_type == VisualShaderNodeMix.OP_TYPE_VECTOR_4D:
 			_create_label("a", graph_node, NodeTypes.VEC4, NodeTypes.NONE)
 			_create_label("b", graph_node, NodeTypes.VEC4, NodeTypes.NONE)
 			_create_label("weight", graph_node, NodeTypes.VEC4, NodeTypes.NONE)
-			_create_label("mix", graph_node, NodeTypes.NONE, NodeTypes.VEC4)
+			_create_multi_output("mix", graph_node, NodeTypes.VEC4)
 		elif op_type == VisualShaderNodeMix.OP_TYPE_VECTOR_4D_SCALAR:
 			_create_label("a", graph_node, NodeTypes.VEC4, NodeTypes.NONE)
 			_create_label("b", graph_node, NodeTypes.VEC4, NodeTypes.NONE)
 			_create_label("weight", graph_node, NodeTypes.SCALAR, NodeTypes.NONE)
-			_create_label("mix", graph_node, NodeTypes.NONE, NodeTypes.VEC4)
+			_create_multi_output("mix", graph_node, NodeTypes.VEC4)
 	elif vsn is VisualShaderNodeUVFunc:
 		_create_label("uv", graph_node, NodeTypes.VEC2, NodeTypes.NONE)
 		var scale_hbox := HBoxContainer.new()
@@ -315,12 +334,46 @@ func add_node(vsn: VisualShaderNode, id: int) -> void:
 	graph_edit.add_child(graph_node)
 
 
-func _create_label(text: String, graph_node: GraphNode, left_slot: NodeTypes, right_slot: NodeTypes) -> void:
+func _create_label(text: String, graph_node: GraphNode, left_slot: NodeTypes, right_slot: NodeTypes) -> Label:
 	var label := Label.new()
 	label.text = text
 	graph_node.add_child(label)
 	var slot_index := graph_node.get_child_count() - 1
 	graph_node.set_slot(slot_index, left_slot != NodeTypes.NONE, left_slot, get_color_type(left_slot), right_slot != NodeTypes.NONE, right_slot, get_color_type(right_slot))
+	return label
+
+
+func _create_multi_output(text: String, graph_node: GraphNode, right_slot: NodeTypes) -> void:
+	var hbox := HBoxContainer.new()
+	var label := Label.new()
+	label.text = text
+	hbox.add_child(label)
+	var expand_button := TextureButton.new()
+	expand_button.toggle_mode = true
+	expand_button.texture_normal = VALUE_ARROW_RIGHT
+	expand_button.texture_pressed = VALUE_ARROW
+	hbox.add_child(expand_button)
+	graph_node.add_child(hbox)
+	var slot_index := graph_node.get_child_count() - 1
+	graph_node.set_slot(slot_index, false, NodeTypes.NONE, get_color_type(NodeTypes.NONE), right_slot != NodeTypes.NONE, right_slot, get_color_type(right_slot))
+	var labels: Array[Control]
+	var red := _create_label("red", graph_node, NodeTypes.NONE, NodeTypes.SCALAR)
+	labels.append(red)
+	var green := _create_label("green", graph_node, NodeTypes.NONE, NodeTypes.SCALAR)
+	labels.append(green)
+	if right_slot > NodeTypes.VEC2:
+		var blue := _create_label("blue", graph_node, NodeTypes.NONE, NodeTypes.SCALAR)
+		labels.append(blue)
+		if right_slot > NodeTypes.VEC3:
+			var alpha := _create_label("alpha", graph_node, NodeTypes.NONE, NodeTypes.SCALAR)
+			labels.append(alpha)
+	expand_button.toggled.connect(_handle_extra_control_visibility.bind(labels))
+	_handle_extra_control_visibility(expand_button.button_pressed, labels)
+
+
+func _handle_extra_control_visibility(toggled_on: bool, controls: Array[Control]) -> void:
+	for control in controls:
+		control.visible = toggled_on
 
 
 func _get_parameter_type(vsn: VisualShaderNodeParameter) -> NodeTypes:
@@ -433,7 +486,7 @@ func _on_graph_edit_connection_request(from_node_name: String, from_port: int, t
 	var vs_from_node_id := int(from_node_name)
 	var vs_to_node_id := int(to_node_name)
 	visual_shader.connect_nodes(VisualShader.TYPE_FRAGMENT, vs_from_node_id, from_port, vs_to_node_id, to_port)
-	ResourceSaver.save(visual_shader)
+	_on_effect_changed()
 
 
 func _on_graph_edit_disconnection_request(from_node_name: String, from_port: int, to_node_name: String, to_port: int) -> void:
@@ -441,4 +494,4 @@ func _on_graph_edit_disconnection_request(from_node_name: String, from_port: int
 	var vs_from_node_id := int(from_node_name)
 	var vs_to_node_id := int(to_node_name)
 	visual_shader.disconnect_nodes(VisualShader.TYPE_FRAGMENT, vs_from_node_id, from_port, vs_to_node_id, to_port)
-	ResourceSaver.save(visual_shader)
+	_on_effect_changed()
