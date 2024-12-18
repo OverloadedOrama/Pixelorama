@@ -52,15 +52,16 @@ class AddOption:
 	var description := ""
 	var ops := []
 	#Ref<Script> script
-	var mode := NodeTypes.BOOL
-	var return_type := 0
+	## TODO: Probably remove.
+	var mode: int
+	var return_type := VisualShaderNode.PortType
 	#int func = 0
 	#bool highend = false
 	#bool is_custom = false
 	#bool is_native = false
 	#int temp_idx = 0
 
-	func _init(_option_name: String, _category: String, _type: String, _description: String, _ops: Array, _return_type := -1, _mode := NodeTypes.NONE) -> void:
+	func _init(_option_name: String, _category: String, _type: String, _description: String, _ops: Array, _return_type := VisualShaderNode.PORT_TYPE_SCALAR, _mode := -1) -> void:
 		option_name = _option_name
 		type = _type
 		category = _category
@@ -140,10 +141,7 @@ func new_effect(effect_name: String) -> void:
 		file_name = effect_name + ".tres"
 		file_path = OpenSave.SHADERS_DIRECTORY.path_join(file_name)
 	ResourceSaver.save(visual_shader, file_path)
-	var popup_menu := effects_button.get_popup()
-	popup_menu.add_item(effect_name)
-	var effect_index := popup_menu.item_count - 1
-	popup_menu.set_item_metadata(effect_index, visual_shader)
+	OpenSave.shader_copied.emit(file_path)
 
 
 func _on_visibility_changed() -> void:
@@ -165,10 +163,10 @@ func add_new_node(index: int) -> void:
 		var vsn := ClassDB.instantiate(option.type) as VisualShaderNode
 		var id := visual_shader.get_valid_node_id(VisualShader.TYPE_FRAGMENT)
 		visual_shader.add_node(VisualShader.TYPE_FRAGMENT, vsn, Vector2.ZERO, id)
-		add_node(vsn, id)
+		add_node(vsn, id, option.ops)
 
 
-func add_node(vsn: VisualShaderNode, id: int) -> void:
+func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 	if not is_instance_valid(vsn):
 		return
 	var parameter_list := vsn.get_default_input_values()
@@ -194,6 +192,7 @@ func add_node(vsn: VisualShaderNode, id: int) -> void:
 			line_edit.text_changed.connect(func(text: String): vsn.parameter_name = text; _on_effect_changed())
 			graph_node.add_child(line_edit)
 			graph_node.set_slot(0, false, -1, Color.TRANSPARENT, true, parameter_type, slot_colors[parameter_type])
+	#region Constants
 	elif vsn is VisualShaderNodeBooleanConstant:
 		var button := CheckBox.new()
 		button.text = "On"
@@ -235,6 +234,7 @@ func add_node(vsn: VisualShaderNode, id: int) -> void:
 		color_picker_button.color_changed.connect(func(color: Color): vsn.constant = color; _on_effect_changed())
 		graph_node.add_child(color_picker_button)
 		graph_node.set_slot(0, false, -1, Color.TRANSPARENT, true, NodeTypes.VEC4, slot_colors[NodeTypes.VEC4])
+	#endregion
 	elif vsn is VisualShaderNodeTexture:
 		# TODO: Add texture changing logic
 		var texture_rect := TextureRect.new()
@@ -247,7 +247,10 @@ func add_node(vsn: VisualShaderNode, id: int) -> void:
 		_create_label("lod", graph_node, NodeTypes.SCALAR, NodeTypes.NONE)
 		_create_label("sampler2D", graph_node, NodeTypes.SAMPLER, NodeTypes.NONE)
 		_create_multi_output("color", graph_node, NodeTypes.VEC4)
+	#region Colors
 	elif vsn is VisualShaderNodeColorOp:
+		if not ops.is_empty():
+			vsn.operator = ops[0]
 		var option_button := OptionButton.new()
 		option_button.add_item("Screen", VisualShaderNodeColorOp.OP_SCREEN)
 		option_button.add_item("Difference", VisualShaderNodeColorOp.OP_DIFFERENCE)
@@ -263,7 +266,26 @@ func add_node(vsn: VisualShaderNode, id: int) -> void:
 		graph_node.add_child(option_button)
 		_create_label("a", graph_node, NodeTypes.VEC3, NodeTypes.NONE)
 		_create_label("b", graph_node, NodeTypes.VEC3, NodeTypes.NONE)
-		_create_label("op", graph_node, NodeTypes.NONE, NodeTypes.VEC3)
+		_create_multi_output("op", graph_node, NodeTypes.VEC3)
+	elif vsn is VisualShaderNodeColorFunc:
+		if not ops.is_empty():
+			vsn.function = ops[0]
+		var option_button := OptionButton.new()
+		option_button.add_item("Grayscale", VisualShaderNodeColorFunc.FUNC_GRAYSCALE)
+		option_button.add_item("HSV to RGB", VisualShaderNodeColorFunc.FUNC_HSV2RGB)
+		option_button.add_item("RGB to HSV", VisualShaderNodeColorFunc.FUNC_RGB2HSV)
+		option_button.add_item("Sepia", VisualShaderNodeColorFunc.FUNC_SEPIA)
+		option_button.select(vsn.function)
+		option_button.item_selected.connect(func(id_selected: VisualShaderNodeColorOp.Operator): vsn.function = id_selected; _on_effect_changed())
+		graph_node.add_child(option_button)
+		_create_label("input", graph_node, NodeTypes.VEC3, NodeTypes.NONE)
+		_create_multi_output("output", graph_node, NodeTypes.VEC3)
+	#endregion
+	elif vsn is VisualShaderNodeInput:
+		if not ops.is_empty():
+			vsn.input_name = ops[0]
+		_create_label("output", graph_node, NodeTypes.NONE, NodeTypes.VEC2)
+
 	elif vsn is VisualShaderNodeMix:
 		var op_type := (vsn as VisualShaderNodeMix).op_type
 		var option_button := OptionButton.new()
@@ -395,27 +417,34 @@ func _get_parameter_type(vsn: VisualShaderNodeParameter) -> NodeTypes:
 
 
 func fill_add_options() -> void:
-	# Color
-	add_options.push_back(AddOption.new("ColorFunc", "Color/Common", "VisualShaderNodeColorFunc", "Color function.", [], VisualShaderNode.PORT_TYPE_VECTOR_3D));
-	add_options.push_back(AddOption.new("ColorOp", "Color/Common", "VisualShaderNodeColorOp", "Color operator.", [], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	#region Color
+	add_options.push_back(AddOption.new("ColorFunc", "Color/Common", "VisualShaderNodeColorFunc", "Color function.", [], VisualShaderNode.PORT_TYPE_VECTOR_3D))
+	add_options.push_back(AddOption.new("ColorOp", "Color/Common", "VisualShaderNodeColorOp", "Color operator.", [], VisualShaderNode.PORT_TYPE_VECTOR_3D))
 
-	add_options.push_back(AddOption.new("Grayscale", "Color/Functions", "VisualShaderNodeColorFunc", "Grayscale function.", [ VisualShaderNodeColorFunc.FUNC_GRAYSCALE ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
-	add_options.push_back(AddOption.new("HSV2RGB", "Color/Functions", "VisualShaderNodeColorFunc", "Converts HSV vector to RGB equivalent.", [ VisualShaderNodeColorFunc.FUNC_HSV2RGB, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
-	add_options.push_back(AddOption.new("RGB2HSV", "Color/Functions", "VisualShaderNodeColorFunc", "Converts RGB vector to HSV equivalent.", [ VisualShaderNodeColorFunc.FUNC_RGB2HSV, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
-	add_options.push_back(AddOption.new("Sepia", "Color/Functions", "VisualShaderNodeColorFunc", "Sepia function.", [ VisualShaderNodeColorFunc.FUNC_SEPIA ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("Grayscale", "Color/Functions", "VisualShaderNodeColorFunc", "Grayscale function.", [ VisualShaderNodeColorFunc.FUNC_GRAYSCALE ], VisualShaderNode.PORT_TYPE_VECTOR_3D))
+	add_options.push_back(AddOption.new("HSV2RGB", "Color/Functions", "VisualShaderNodeColorFunc", "Converts HSV vector to RGB equivalent.", [ VisualShaderNodeColorFunc.FUNC_HSV2RGB, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D))
+	add_options.push_back(AddOption.new("RGB2HSV", "Color/Functions", "VisualShaderNodeColorFunc", "Converts RGB vector to HSV equivalent.", [ VisualShaderNodeColorFunc.FUNC_RGB2HSV, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D))
+	add_options.push_back(AddOption.new("Sepia", "Color/Functions", "VisualShaderNodeColorFunc", "Sepia function.", [ VisualShaderNodeColorFunc.FUNC_SEPIA ], VisualShaderNode.PORT_TYPE_VECTOR_3D))
 
-	add_options.push_back(AddOption.new("Burn", "Color/Operators", "VisualShaderNodeColorOp", "Burn operator.", [ VisualShaderNodeColorOp.OP_BURN ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
-	add_options.push_back(AddOption.new("Darken", "Color/Operators", "VisualShaderNodeColorOp", "Darken operator.", [ VisualShaderNodeColorOp.OP_DARKEN ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
-	add_options.push_back(AddOption.new("Difference", "Color/Operators", "VisualShaderNodeColorOp", "Difference operator.", [ VisualShaderNodeColorOp.OP_DIFFERENCE ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
-	add_options.push_back(AddOption.new("Dodge", "Color/Operators", "VisualShaderNodeColorOp", "Dodge operator.", [ VisualShaderNodeColorOp.OP_DODGE ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
-	add_options.push_back(AddOption.new("HardLight", "Color/Operators", "VisualShaderNodeColorOp", "HardLight operator.", [ VisualShaderNodeColorOp.OP_HARD_LIGHT ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
-	add_options.push_back(AddOption.new("Lighten", "Color/Operators", "VisualShaderNodeColorOp", "Lighten operator.", [ VisualShaderNodeColorOp.OP_LIGHTEN ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
-	add_options.push_back(AddOption.new("Overlay", "Color/Operators", "VisualShaderNodeColorOp", "Overlay operator.", [ VisualShaderNodeColorOp.OP_OVERLAY ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
-	add_options.push_back(AddOption.new("Screen", "Color/Operators", "VisualShaderNodeColorOp", "Screen operator.", [ VisualShaderNodeColorOp.OP_SCREEN ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
-	add_options.push_back(AddOption.new("SoftLight", "Color/Operators", "VisualShaderNodeColorOp", "SoftLight operator.", [ VisualShaderNodeColorOp.OP_SOFT_LIGHT ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("Burn", "Color/Operators", "VisualShaderNodeColorOp", "Burn operator.", [ VisualShaderNodeColorOp.OP_BURN ], VisualShaderNode.PORT_TYPE_VECTOR_3D))
+	add_options.push_back(AddOption.new("Darken", "Color/Operators", "VisualShaderNodeColorOp", "Darken operator.", [ VisualShaderNodeColorOp.OP_DARKEN ], VisualShaderNode.PORT_TYPE_VECTOR_3D))
+	add_options.push_back(AddOption.new("Difference", "Color/Operators", "VisualShaderNodeColorOp", "Difference operator.", [ VisualShaderNodeColorOp.OP_DIFFERENCE ], VisualShaderNode.PORT_TYPE_VECTOR_3D))
+	add_options.push_back(AddOption.new("Dodge", "Color/Operators", "VisualShaderNodeColorOp", "Dodge operator.", [ VisualShaderNodeColorOp.OP_DODGE ], VisualShaderNode.PORT_TYPE_VECTOR_3D))
+	add_options.push_back(AddOption.new("HardLight", "Color/Operators", "VisualShaderNodeColorOp", "HardLight operator.", [ VisualShaderNodeColorOp.OP_HARD_LIGHT ], VisualShaderNode.PORT_TYPE_VECTOR_3D))
+	add_options.push_back(AddOption.new("Lighten", "Color/Operators", "VisualShaderNodeColorOp", "Lighten operator.", [ VisualShaderNodeColorOp.OP_LIGHTEN ], VisualShaderNode.PORT_TYPE_VECTOR_3D))
+	add_options.push_back(AddOption.new("Overlay", "Color/Operators", "VisualShaderNodeColorOp", "Overlay operator.", [ VisualShaderNodeColorOp.OP_OVERLAY ], VisualShaderNode.PORT_TYPE_VECTOR_3D))
+	add_options.push_back(AddOption.new("Screen", "Color/Operators", "VisualShaderNodeColorOp", "Screen operator.", [ VisualShaderNodeColorOp.OP_SCREEN ], VisualShaderNode.PORT_TYPE_VECTOR_3D))
+	add_options.push_back(AddOption.new("SoftLight", "Color/Operators", "VisualShaderNodeColorOp", "SoftLight operator.", [ VisualShaderNodeColorOp.OP_SOFT_LIGHT ], VisualShaderNode.PORT_TYPE_VECTOR_3D))
 
-	add_options.push_back(AddOption.new("ColorConstant", "Color/Variables", "VisualShaderNodeColorConstant", "Color constant.", [], VisualShaderNode.PORT_TYPE_VECTOR_4D));
-	add_options.push_back(AddOption.new("ColorParameter", "Color/Variables", "VisualShaderNodeColorParameter", "Color parameter.", [], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("ColorConstant", "Color/Variables", "VisualShaderNodeColorConstant", "Color constant.", [], VisualShaderNode.PORT_TYPE_VECTOR_4D))
+	add_options.push_back(AddOption.new("ColorParameter", "Color/Variables", "VisualShaderNodeColorParameter", "Color parameter.", [], VisualShaderNode.PORT_TYPE_VECTOR_4D))
+	#endregion
+	#region Input
+	add_options.push_back(AddOption.new("Color", "Input/All", "VisualShaderNodeInput", "", [ "color" ], VisualShaderNode.PORT_TYPE_VECTOR_4D, -1))
+	add_options.push_back(AddOption.new("TexturePixelSize", "Input/All", "VisualShaderNodeInput", "", [ "texture_pixel_size" ], VisualShaderNode.PORT_TYPE_VECTOR_2D, -1))
+	add_options.push_back(AddOption.new("UV", "Input/All", "VisualShaderNodeInput", "", [ "uv" ], VisualShaderNode.PORT_TYPE_VECTOR_2D, -1))
+	add_options.push_back(AddOption.new("Texture", "Input/All", "VisualShaderNodeInput", "", [ "texture" ], VisualShaderNode.PORT_TYPE_SAMPLER, -1))
+	#endregion
 
 
 func update_options_menu() -> void:
