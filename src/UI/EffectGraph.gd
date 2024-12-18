@@ -75,6 +75,7 @@ class AddOption:
 
 
 func _ready() -> void:
+	#region add_valid_connection_types
 	graph_edit.add_valid_connection_type(VisualShaderNode.PortType.PORT_TYPE_SCALAR, VisualShaderNode.PortType.PORT_TYPE_SCALAR_INT)
 	graph_edit.add_valid_connection_type(VisualShaderNode.PortType.PORT_TYPE_SCALAR, VisualShaderNode.PortType.PORT_TYPE_SCALAR_UINT)
 	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_SCALAR, VisualShaderNode.PORT_TYPE_VECTOR_2D)
@@ -130,6 +131,7 @@ func _ready() -> void:
 
 	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_TRANSFORM, VisualShaderNode.PORT_TYPE_TRANSFORM)
 	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_SAMPLER, VisualShaderNode.PORT_TYPE_SAMPLER)
+	#endregion
 	node_list_tree.get_window().get_ok_button().set_disabled(true)
 	effect_name_line_edit.get_window().get_ok_button().set_disabled(true)
 	effects_button = MenuButton.new()
@@ -348,7 +350,8 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		_create_label("output", graph_node, VisualShaderNode.PORT_TYPE_MAX, port_type)
 
 	elif vsn is VisualShaderNodeMix:
-		var op_type := (vsn as VisualShaderNodeMix).op_type
+		if not ops.is_empty():
+			vsn.op_type = ops[0]
 		var option_button := OptionButton.new()
 		option_button.add_item("Scalar", VisualShaderNodeMix.OP_TYPE_SCALAR)
 		option_button.add_item("Vector2", VisualShaderNodeMix.OP_TYPE_VECTOR_2D)
@@ -357,45 +360,15 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		option_button.add_item("Vector3Scalar", VisualShaderNodeMix.OP_TYPE_VECTOR_3D_SCALAR)
 		option_button.add_item("Vector4", VisualShaderNodeMix.OP_TYPE_VECTOR_4D)
 		option_button.add_item("Vector4Scalar", VisualShaderNodeMix.OP_TYPE_VECTOR_4D_SCALAR)
-		option_button.select(op_type)
-		# TODO: Add logic for what happens when changing the op type
-		option_button.item_selected.connect(func(id_selected: VisualShaderNodeMix.OpType): vsn.op_type = id_selected; _on_effect_changed())
+		option_button.select(vsn.op_type)
+		option_button.item_selected.connect(
+			func(id_selected: VisualShaderNodeMix.OpType):
+				vsn.op_type = id_selected
+				_create_mix_node(graph_node, vsn)
+				_on_effect_changed()
+		)
 		graph_node.add_child(option_button)
-		if op_type == VisualShaderNodeMix.OP_TYPE_SCALAR:
-			_create_label("a", graph_node, VisualShaderNode.PORT_TYPE_SCALAR, VisualShaderNode.PORT_TYPE_MAX)
-			_create_label("b", graph_node, VisualShaderNode.PORT_TYPE_SCALAR, VisualShaderNode.PORT_TYPE_MAX)
-			_create_label("weight", graph_node, VisualShaderNode.PORT_TYPE_SCALAR, VisualShaderNode.PORT_TYPE_MAX)
-			_create_label("mix", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_SCALAR)
-		elif op_type == VisualShaderNodeMix.OP_TYPE_VECTOR_2D:
-			_create_label("a", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_2D, VisualShaderNode.PORT_TYPE_MAX)
-			_create_label("b", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_2D, VisualShaderNode.PORT_TYPE_MAX)
-			_create_label("weight", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_2D, VisualShaderNode.PORT_TYPE_MAX)
-			_create_multi_output("mix", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_2D)
-		elif op_type == VisualShaderNodeMix.OP_TYPE_VECTOR_2D_SCALAR:
-			_create_label("a", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_2D, VisualShaderNode.PORT_TYPE_MAX)
-			_create_label("b", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_2D, VisualShaderNode.PORT_TYPE_MAX)
-			_create_label("weight", graph_node, VisualShaderNode.PORT_TYPE_SCALAR, VisualShaderNode.PORT_TYPE_MAX)
-			_create_multi_output("mix", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_2D)
-		elif op_type == VisualShaderNodeMix.OP_TYPE_VECTOR_3D:
-			_create_label("a", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_3D, VisualShaderNode.PORT_TYPE_MAX)
-			_create_label("b", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_3D, VisualShaderNode.PORT_TYPE_MAX)
-			_create_label("weight", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_3D, VisualShaderNode.PORT_TYPE_MAX)
-			_create_multi_output("mix", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_3D)
-		elif op_type == VisualShaderNodeMix.OP_TYPE_VECTOR_3D_SCALAR:
-			_create_label("a", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_3D, VisualShaderNode.PORT_TYPE_MAX)
-			_create_label("b", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_3D, VisualShaderNode.PORT_TYPE_MAX)
-			_create_label("weight", graph_node, VisualShaderNode.PORT_TYPE_SCALAR, VisualShaderNode.PORT_TYPE_MAX)
-			_create_multi_output("mix", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_3D)
-		elif op_type == VisualShaderNodeMix.OP_TYPE_VECTOR_4D:
-			_create_label("a", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_4D, VisualShaderNode.PORT_TYPE_MAX)
-			_create_label("b", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_4D, VisualShaderNode.PORT_TYPE_MAX)
-			_create_label("weight", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_4D, VisualShaderNode.PORT_TYPE_MAX)
-			_create_multi_output("mix", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_4D)
-		elif op_type == VisualShaderNodeMix.OP_TYPE_VECTOR_4D_SCALAR:
-			_create_label("a", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_4D, VisualShaderNode.PORT_TYPE_MAX)
-			_create_label("b", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_4D, VisualShaderNode.PORT_TYPE_MAX)
-			_create_label("weight", graph_node, VisualShaderNode.PORT_TYPE_SCALAR, VisualShaderNode.PORT_TYPE_MAX)
-			_create_multi_output("mix", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_4D)
+		_create_mix_node(graph_node, vsn)
 	elif vsn is VisualShaderNodeUVFunc:
 		_create_label("uv", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_2D, VisualShaderNode.PORT_TYPE_MAX)
 		var scale_hbox := HBoxContainer.new()
@@ -486,6 +459,58 @@ func _get_parameter_type(vsn: VisualShaderNodeParameter) -> VisualShaderNode.Por
 	elif vsn is VisualShaderNodeTextureParameter:
 		return VisualShaderNode.PORT_TYPE_SAMPLER
 	return VisualShaderNode.PORT_TYPE_MAX
+
+
+func _create_mix_node(graph_node: GraphNode, vsn: VisualShaderNodeMix) -> void:
+	var children := graph_node.get_children(true)
+	for i in range(2, children.size()):
+		var child := children[i]
+		graph_node.remove_child(child)
+		child.queue_free()
+	var op_type := vsn.op_type
+	if op_type == VisualShaderNodeMix.OP_TYPE_SCALAR:
+		_create_label("a", graph_node, VisualShaderNode.PORT_TYPE_SCALAR, VisualShaderNode.PORT_TYPE_MAX)
+		_create_label("b", graph_node, VisualShaderNode.PORT_TYPE_SCALAR, VisualShaderNode.PORT_TYPE_MAX)
+		_create_label("weight", graph_node, VisualShaderNode.PORT_TYPE_SCALAR, VisualShaderNode.PORT_TYPE_MAX)
+		_create_label("mix", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_SCALAR)
+	elif op_type == VisualShaderNodeMix.OP_TYPE_VECTOR_2D:
+		_create_label("a", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_2D, VisualShaderNode.PORT_TYPE_MAX)
+		_create_label("b", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_2D, VisualShaderNode.PORT_TYPE_MAX)
+		_create_label("weight", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_2D, VisualShaderNode.PORT_TYPE_MAX)
+		_create_multi_output("mix", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_2D)
+	elif op_type == VisualShaderNodeMix.OP_TYPE_VECTOR_2D_SCALAR:
+		_create_label("a", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_2D, VisualShaderNode.PORT_TYPE_MAX)
+		_create_label("b", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_2D, VisualShaderNode.PORT_TYPE_MAX)
+		_create_label("weight", graph_node, VisualShaderNode.PORT_TYPE_SCALAR, VisualShaderNode.PORT_TYPE_MAX)
+		_create_multi_output("mix", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_2D)
+	elif op_type == VisualShaderNodeMix.OP_TYPE_VECTOR_3D:
+		_create_label("a", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_3D, VisualShaderNode.PORT_TYPE_MAX)
+		_create_label("b", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_3D, VisualShaderNode.PORT_TYPE_MAX)
+		_create_label("weight", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_3D, VisualShaderNode.PORT_TYPE_MAX)
+		_create_multi_output("mix", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_3D)
+	elif op_type == VisualShaderNodeMix.OP_TYPE_VECTOR_3D_SCALAR:
+		_create_label("a", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_3D, VisualShaderNode.PORT_TYPE_MAX)
+		_create_label("b", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_3D, VisualShaderNode.PORT_TYPE_MAX)
+		_create_label("weight", graph_node, VisualShaderNode.PORT_TYPE_SCALAR, VisualShaderNode.PORT_TYPE_MAX)
+		_create_multi_output("mix", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_3D)
+	elif op_type == VisualShaderNodeMix.OP_TYPE_VECTOR_4D:
+		_create_label("a", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_4D, VisualShaderNode.PORT_TYPE_MAX)
+		_create_label("b", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_4D, VisualShaderNode.PORT_TYPE_MAX)
+		_create_label("weight", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_4D, VisualShaderNode.PORT_TYPE_MAX)
+		_create_multi_output("mix", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_4D)
+	elif op_type == VisualShaderNodeMix.OP_TYPE_VECTOR_4D_SCALAR:
+		_create_label("a", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_4D, VisualShaderNode.PORT_TYPE_MAX)
+		_create_label("b", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_4D, VisualShaderNode.PORT_TYPE_MAX)
+		_create_label("weight", graph_node, VisualShaderNode.PORT_TYPE_SCALAR, VisualShaderNode.PORT_TYPE_MAX)
+		_create_multi_output("mix", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_4D)
+	var output_connections := graph_edit.get_connection_list().filter(func(dict: Dictionary): return dict.from_node == graph_node.name)
+	for output_connection in output_connections:
+		var from_port: int = output_connection.from_port
+		if from_port >= graph_node.get_output_port_count():  # The connection is no longer valid
+			graph_edit.disconnect_node(output_connection.from_node, from_port, output_connection.to_node, output_connection.to_port)
+			var vs_from_node_id := int(String(output_connection.from_node))
+			var vs_to_node_id := int(String(output_connection.to_node))
+			visual_shader.disconnect_nodes(VisualShader.TYPE_FRAGMENT, vs_from_node_id, from_port, vs_to_node_id, output_connection.to_port)
 
 
 func fill_add_options() -> void:
@@ -612,3 +637,9 @@ func _on_graph_edit_connection_to_empty(_from_node: StringName, _from_port: int,
 func _on_graph_edit_popup_request(at_position: Vector2) -> void:
 	node_list_tree.get_window().popup_centered()
 	spawn_node_in_position = at_position
+
+
+func _on_graph_edit_delete_nodes_request(node_names: Array[StringName]) -> void:
+	for node_name in node_names:
+		var node := graph_edit.get_node(String(node_name))
+		delete_node(node)
