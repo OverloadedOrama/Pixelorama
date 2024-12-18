@@ -234,7 +234,17 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 	#var parameter_list := vsn.get_default_input_values()
 	#print(vsn, " ", parameter_list, " ", vsn.get_input_port_default_value(6))
 	var graph_node := GraphNode.new()
+	graph_node.name = str(id)
 	graph_node.title = vsn.get_class().replace("VisualShaderNode", "")
+	graph_node.resizable = true
+	graph_node.set_meta("visual_shader_node", vsn)  # TODO: Remove if not needed
+	graph_node.position_offset = visual_shader.get_node_position(VisualShader.TYPE_FRAGMENT, id)
+	graph_node.dragged.connect(func(_from: Vector2, to: Vector2): visual_shader.set_node_position(VisualShader.TYPE_FRAGMENT, id, to))
+	if vsn is not VisualShaderNodeOutput:
+		var close_button := TextureButton.new()
+		close_button.texture_normal = CLOSE
+		close_button.pressed.connect(delete_node.bind(graph_node))
+		graph_node.get_titlebar_hbox().add_child(close_button)
 	if vsn is VisualShaderNodeOutput:
 		var color_label := Label.new()
 		color_label.text = "Color"
@@ -550,14 +560,6 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		_create_label("offset", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_2D, VisualShaderNode.PORT_TYPE_MAX)
 		_create_label("uv", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_VECTOR_2D)
 
-	graph_node.set_meta("visual_shader_node", vsn)  # TODO: Remove if not needed
-	graph_node.name = str(id)
-	graph_node.position_offset = visual_shader.get_node_position(VisualShader.TYPE_FRAGMENT, id)
-	if vsn is not VisualShaderNodeOutput:
-		var close_button := TextureButton.new()
-		close_button.texture_normal = CLOSE
-		close_button.pressed.connect(delete_node.bind(graph_node))
-		graph_node.get_titlebar_hbox().add_child(close_button)
 	graph_edit.add_child(graph_node)
 
 
