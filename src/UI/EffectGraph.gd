@@ -24,6 +24,7 @@ var visual_shader: VisualShader:
 			return
 		visual_shader = value
 		add_node_button.disabled = not is_instance_valid(visual_shader)
+		graph_edit.clear_connections()
 		for child in graph_edit.get_children():
 			if child.name != "_connection_layer":
 				graph_edit.remove_child(child)
@@ -32,8 +33,8 @@ var visual_shader: VisualShader:
 		if is_instance_valid(visual_shader):
 			var node_list := visual_shader.get_node_list(VisualShader.Type.TYPE_FRAGMENT)
 			for id in node_list:
-				var node := visual_shader.get_node(VisualShader.TYPE_FRAGMENT, id)
-				add_node(node, id)
+				var vsn := visual_shader.get_node(VisualShader.TYPE_FRAGMENT, id)
+				add_node(vsn, id)
 			for connection in visual_shader.get_node_connections(VisualShader.TYPE_FRAGMENT):
 				var from_node_name := str(connection.from_node)
 				var to_node_name := str(connection.to_node)
@@ -42,6 +43,11 @@ var visual_shader: VisualShader:
 				var to_node := graph_edit.get_node(to_node_name) as GraphNode
 				if to_node.has_meta(&"default_input_button_%s" % to_port):
 					to_node.get_meta(&"default_input_button_%s" % to_port).visible = false
+			for id in node_list:
+				var vsn := visual_shader.get_node(VisualShader.TYPE_FRAGMENT, id)
+				if vsn is VisualShaderNodeFrame:
+					for attached_node in vsn.attached_nodes:
+						graph_edit.attach_graph_element_to_frame(str(attached_node), str(id))
 
 var effects_button: MenuButton
 var add_node_button: Button
@@ -231,14 +237,18 @@ func add_new_node(index: int) -> void:
 func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 	if not is_instance_valid(vsn):
 		return
-	var graph_node := GraphNode.new()
+	var graph_node: GraphElement
+	if vsn is VisualShaderNodeFrame:
+		graph_node = GraphFrame.new()
+	else:
+		graph_node = GraphNode.new()
 	graph_node.name = str(id)
 	graph_node.title = vsn.get_class().replace("VisualShaderNode", "")
 	graph_node.resizable = true
 	graph_node.set_meta("visual_shader_node", vsn)  # TODO: Remove if not needed
 	graph_node.position_offset = visual_shader.get_node_position(VisualShader.TYPE_FRAGMENT, id)
 	graph_node.dragged.connect(func(_from: Vector2, to: Vector2): visual_shader.set_node_position(VisualShader.TYPE_FRAGMENT, id, to))
-	if vsn is not VisualShaderNodeOutput:
+	if vsn is not VisualShaderNodeOutput:  # Add a close button if the node can be deleted.
 		var close_button := TextureButton.new()
 		close_button.texture_normal = CLOSE
 		close_button.pressed.connect(delete_node.bind(graph_node))
@@ -266,6 +276,7 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 			vsn.parameter_name = ops[0]
 		var parameter_type := _get_parameter_type(vsn)
 		if vsn.parameter_name.begins_with("PXO_"):
+			graph_node.title = "Input"
 			_create_label(vsn.parameter_name, graph_node, VisualShaderNode.PORT_TYPE_MAX, parameter_type)
 		else:
 			var line_edit := LineEdit.new()
@@ -638,7 +649,7 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 	graph_edit.add_child(graph_node)
 
 
-func delete_node(graph_node: GraphNode) -> void:
+func delete_node(graph_node: GraphElement) -> void:
 	visual_shader.remove_node(VisualShader.TYPE_FRAGMENT, int(String(graph_node.name)))
 	graph_node.queue_free()
 	_on_effect_changed()
@@ -1392,6 +1403,9 @@ func fill_add_options() -> void:
 	add_options.push_back(AddOption.new("Vector4Constant", "Vector/Variables", "VisualShaderNodeVec4Constant", "4D vector constant.", [], VisualShaderNode.PORT_TYPE_VECTOR_4D));
 	add_options.push_back(AddOption.new("Vector4Parameter", "Vector/Variables", "VisualShaderNodeVec4Parameter", "4D vector parameter.", [], VisualShaderNode.PORT_TYPE_VECTOR_4D))
 	#endregion
+	#region Special
+	add_options.push_back(AddOption.new("Frame", "Special", "VisualShaderNodeFrame", "A rectangular area with a description string for better graph organization."))
+	#endregion
 
 
 func update_options_menu() -> void:
@@ -1503,3 +1517,13 @@ func _on_graph_edit_delete_nodes_request(node_names: Array[StringName]) -> void:
 	for node_name in node_names:
 		var node := graph_edit.get_node(String(node_name))
 		delete_node(node)
+
+
+func _on_graph_edit_graph_elements_linked_to_frame_request(elements: Array, frame: StringName) -> void:
+	#var frame_node := graph_edit.get_node(String(frame))
+	#var frame_vsn := frame_node.get_meta("visual_shader_node") as VisualShaderNodeFrame
+	for element in elements:
+		graph_edit.attach_graph_element_to_frame(element, frame)
+		visual_shader.attach_node_to_frame(VisualShader.TYPE_FRAGMENT, int(String(element)), int(String(frame)))
+		#frame_vsn.add_attached_node(int(String(element)))
+	_on_effect_changed()
