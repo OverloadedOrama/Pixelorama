@@ -440,6 +440,76 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		_create_label("input", graph_node, VisualShaderNode.PORT_TYPE_SCALAR, VisualShaderNode.PORT_TYPE_MAX)
 		_create_multi_output("output", graph_node, VisualShaderNode.PORT_TYPE_SCALAR)
 	#endregion
+	#region Vectors
+	elif vsn is VisualShaderNodeVectorBase:
+		if ops.size() > 1:
+			vsn.op_type = vsn.ops[1]
+		# TODO: Handle op_type changing.
+		if vsn is VisualShaderNodeVectorOp:
+			if not ops.is_empty():
+				vsn.operator = ops[0]
+			var option_button := OptionButton.new()
+			option_button.add_item("Add", VisualShaderNodeVectorOp.OP_ADD)
+			option_button.add_item("Subtract", VisualShaderNodeVectorOp.OP_SUB)
+			option_button.add_item("Multiply", VisualShaderNodeVectorOp.OP_MUL)
+			option_button.add_item("Divide", VisualShaderNodeVectorOp.OP_DIV)
+			option_button.add_item("Remainder", VisualShaderNodeVectorOp.OP_MOD)
+			option_button.add_item("Power", VisualShaderNodeVectorOp.OP_POW)
+			option_button.add_item("Max", VisualShaderNodeVectorOp.OP_MAX)
+			option_button.add_item("Min", VisualShaderNodeVectorOp.OP_MIN)
+			option_button.add_item("Cross", VisualShaderNodeVectorOp.OP_CROSS)
+			option_button.add_item("ATan2", VisualShaderNodeVectorOp.OP_ATAN2)
+			option_button.add_item("Reflect", VisualShaderNodeVectorOp.OP_REFLECT)
+			option_button.add_item("Step", VisualShaderNodeVectorOp.OP_STEP)
+			option_button.select(vsn.operator)
+			option_button.item_selected.connect(func(id_selected: VisualShaderNodeVectorOp.Operator): vsn.operator = id_selected; _on_effect_changed())
+			graph_node.add_child(option_button)
+			_create_label("a", graph_node, _get_vector_op_type(vsn), VisualShaderNode.PORT_TYPE_MAX)
+			_create_label("b", graph_node, _get_vector_op_type(vsn), VisualShaderNode.PORT_TYPE_MAX)
+			_create_multi_output("op", graph_node, _get_vector_op_type(vsn))
+		elif vsn is VisualShaderNodeVectorFunc:
+			if not ops.is_empty():
+				vsn.function = ops[0]
+			var option_button := OptionButton.new()
+			option_button.add_item("Normalize", VisualShaderNodeVectorFunc.FUNC_NORMALIZE)
+			option_button.add_item("Sin", VisualShaderNodeVectorFunc.FUNC_SIN)
+			option_button.add_item("Cos", VisualShaderNodeVectorFunc.FUNC_COS)
+			option_button.add_item("Tan", VisualShaderNodeVectorFunc.FUNC_TAN)
+			option_button.add_item("ASin", VisualShaderNodeVectorFunc.FUNC_ASIN)
+			option_button.add_item("ACos", VisualShaderNodeVectorFunc.FUNC_ACOS)
+			option_button.add_item("ATan", VisualShaderNodeVectorFunc.FUNC_ATAN)
+			option_button.add_item("SinH", VisualShaderNodeVectorFunc.FUNC_SINH)
+			option_button.add_item("CosH", VisualShaderNodeVectorFunc.FUNC_COSH)
+			option_button.add_item("TanH", VisualShaderNodeVectorFunc.FUNC_TANH)
+			option_button.add_item("Log", VisualShaderNodeVectorFunc.FUNC_LOG)
+			option_button.add_item("Exp", VisualShaderNodeVectorFunc.FUNC_EXP)
+			option_button.add_item("Square root", VisualShaderNodeVectorFunc.FUNC_SQRT)
+			option_button.add_item("Abs", VisualShaderNodeVectorFunc.FUNC_ABS)
+			option_button.add_item("Sign", VisualShaderNodeVectorFunc.FUNC_SIGN)
+			option_button.add_item("Floor", VisualShaderNodeVectorFunc.FUNC_FLOOR)
+			option_button.add_item("Round", VisualShaderNodeVectorFunc.FUNC_ROUND)
+			option_button.add_item("Ceil", VisualShaderNodeVectorFunc.FUNC_CEIL)
+			option_button.add_item("Fract", VisualShaderNodeVectorFunc.FUNC_FRACT)
+			option_button.add_item("Saturate", VisualShaderNodeVectorFunc.FUNC_SATURATE)
+			option_button.add_item("Negate", VisualShaderNodeVectorFunc.FUNC_NEGATE)
+			option_button.add_item("ASinH", VisualShaderNodeVectorFunc.FUNC_ASINH)
+			option_button.add_item("ACosH", VisualShaderNodeVectorFunc.FUNC_ACOSH)
+			option_button.add_item("ATanH", VisualShaderNodeVectorFunc.FUNC_ATANH)
+			option_button.add_item("Degrees", VisualShaderNodeVectorFunc.FUNC_DEGREES)
+			option_button.add_item("Exp2", VisualShaderNodeVectorFunc.FUNC_EXP2)
+			option_button.add_item("Inverse square root", VisualShaderNodeVectorFunc.FUNC_INVERSE_SQRT)
+			option_button.add_item("Log2", VisualShaderNodeVectorFunc.FUNC_LOG2)
+			option_button.add_item("Radians", VisualShaderNodeVectorFunc.FUNC_RADIANS)
+			option_button.add_item("Reciprocal", VisualShaderNodeVectorFunc.FUNC_RECIPROCAL)
+			option_button.add_item("Roundeven", VisualShaderNodeVectorFunc.FUNC_ROUNDEVEN)
+			option_button.add_item("Trunc", VisualShaderNodeVectorFunc.FUNC_TRUNC)
+			option_button.add_item("One minus", VisualShaderNodeVectorFunc.FUNC_ONEMINUS)
+			option_button.select(vsn.function)
+			option_button.item_selected.connect(func(id_selected: VisualShaderNodeFloatFunc.Function): vsn.function = id_selected; _on_effect_changed())
+			graph_node.add_child(option_button)
+			_create_label("input", graph_node, _get_vector_op_type(vsn), VisualShaderNode.PORT_TYPE_MAX)
+			_create_multi_output("output", graph_node, _get_vector_op_type(vsn))
+	#endregion
 	#region Colors
 	elif vsn is VisualShaderNodeColorOp:
 		if not ops.is_empty():
@@ -596,6 +666,17 @@ func _get_parameter_type(vsn: VisualShaderNodeParameter) -> VisualShaderNode.Por
 	return VisualShaderNode.PORT_TYPE_MAX
 
 
+func _get_vector_op_type(vsn: VisualShaderNodeVectorBase) -> VisualShaderNode.PortType:
+	var op_type := vsn.op_type
+	if op_type == VisualShaderNodeVectorBase.OP_TYPE_VECTOR_2D:
+		return VisualShaderNode.PORT_TYPE_VECTOR_2D
+	elif op_type == VisualShaderNodeVectorBase.OP_TYPE_VECTOR_3D:
+		return VisualShaderNode.PORT_TYPE_VECTOR_3D
+	elif op_type == VisualShaderNodeVectorBase.OP_TYPE_VECTOR_4D:
+		return VisualShaderNode.PORT_TYPE_VECTOR_4D
+	return VisualShaderNode.PORT_TYPE_MAX
+
+
 func _create_mix_node(graph_node: GraphNode, vsn: VisualShaderNodeMix) -> void:
 	var children := graph_node.get_children(true)
 	for i in range(2, children.size()):
@@ -670,6 +751,13 @@ func fill_add_options() -> void:
 
 	add_options.push_back(AddOption.new("ColorConstant", "Color/Variables", "VisualShaderNodeColorConstant", "Color constant.", [], VisualShaderNode.PORT_TYPE_VECTOR_4D))
 	add_options.push_back(AddOption.new("ColorParameter", "Color/Variables", "VisualShaderNodeColorParameter", "Color parameter.", [], VisualShaderNode.PORT_TYPE_VECTOR_4D))
+	#endregion
+	#region Input
+	add_options.push_back(AddOption.new("Color", "Input/All", "VisualShaderNodeInput", "", [ "color" ], VisualShaderNode.PORT_TYPE_VECTOR_4D, -1))
+	add_options.push_back(AddOption.new("TexturePixelSize", "Input/All", "VisualShaderNodeInput", "", [ "texture_pixel_size" ], VisualShaderNode.PORT_TYPE_VECTOR_2D, -1))
+	add_options.push_back(AddOption.new("Time", "Input/All", "VisualShaderNodeFloatParameter", "", [ "PXO_time" ], VisualShaderNode.PORT_TYPE_SCALAR, -1))
+	add_options.push_back(AddOption.new("UV", "Input/All", "VisualShaderNodeInput", "", [ "uv" ], VisualShaderNode.PORT_TYPE_VECTOR_2D, -1))
+	add_options.push_back(AddOption.new("Texture", "Input/Fragment", "VisualShaderNodeInput", "", [ "texture" ], VisualShaderNode.PORT_TYPE_SAMPLER, -1))
 	#endregion
 	#region Scalar
 	add_options.push_back(AddOption.new("FloatFunc", "Scalar/Common", "VisualShaderNodeFloatFunc", ("Float function."), [], VisualShaderNode.PORT_TYPE_SCALAR));
@@ -766,13 +854,6 @@ func fill_add_options() -> void:
 	add_options.push_back(AddOption.new("IntParameter", "Scalar/Variables", "VisualShaderNodeIntParameter", ("Scalar integer parameter."), [], VisualShaderNode.PORT_TYPE_SCALAR_INT));
 	add_options.push_back(AddOption.new("UIntParameter", "Scalar/Variables", "VisualShaderNodeUIntParameter", ("Scalar unsigned integer parameter."), [], VisualShaderNode.PORT_TYPE_SCALAR_UINT));
 
-	#endregion
-	#region Input
-	add_options.push_back(AddOption.new("Color", "Input/All", "VisualShaderNodeInput", "", [ "color" ], VisualShaderNode.PORT_TYPE_VECTOR_4D, -1))
-	add_options.push_back(AddOption.new("TexturePixelSize", "Input/All", "VisualShaderNodeInput", "", [ "texture_pixel_size" ], VisualShaderNode.PORT_TYPE_VECTOR_2D, -1))
-	add_options.push_back(AddOption.new("Time", "Input/All", "VisualShaderNodeFloatParameter", "", [ "PXO_time" ], VisualShaderNode.PORT_TYPE_SCALAR, -1))
-	add_options.push_back(AddOption.new("UV", "Input/All", "VisualShaderNodeInput", "", [ "uv" ], VisualShaderNode.PORT_TYPE_VECTOR_2D, -1))
-	add_options.push_back(AddOption.new("Texture", "Input/Fragment", "VisualShaderNodeInput", "", [ "texture" ], VisualShaderNode.PORT_TYPE_SAMPLER, -1))
 	#endregion
 
 
