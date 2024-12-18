@@ -52,8 +52,11 @@ layout_mode = 2
 size_flags_horizontal = 3
 
 [connection signal="visibility_changed" from="." to="." method="_on_visibility_changed"]
+[connection signal="connection_from_empty" from="GraphEdit" to="." method="_on_graph_edit_connection_from_empty"]
 [connection signal="connection_request" from="GraphEdit" to="." method="_on_graph_edit_connection_request"]
+[connection signal="connection_to_empty" from="GraphEdit" to="." method="_on_graph_edit_connection_to_empty"]
 [connection signal="disconnection_request" from="GraphEdit" to="." method="_on_graph_edit_disconnection_request"]
+[connection signal="popup_request" from="GraphEdit" to="." method="_on_graph_edit_popup_request"]
 [connection signal="confirmed" from="CreateNodeDialog" to="." method="_on_create_node_dialog_confirmed"]
 [connection signal="item_selected" from="CreateNodeDialog/VBoxContainer/NodeListTree" to="." method="_on_node_list_tree_item_selected"]
 [connection signal="nothing_selected" from="CreateNodeDialog/VBoxContainer/NodeListTree" to="." method="_on_node_list_tree_nothing_selected"]

@@ -2,6 +2,7 @@ extends PanelContainer
 
 const VALUE_ARROW := preload("res://assets/graphics/misc/value_arrow.svg")
 const VALUE_ARROW_RIGHT := preload("res://assets/graphics/misc/value_arrow_right.svg")
+const CLOSE := preload("res://assets/graphics/misc/close.svg")
 
 var slot_colors := PackedColorArray(
 	[
@@ -39,6 +40,7 @@ var visual_shader: VisualShader:
 
 var effects_button: MenuButton
 var add_node_button: Button
+var spawn_node_in_position := Vector2.ZERO
 
 @onready var graph_edit := $GraphEdit as GraphEdit
 @onready var node_list_tree: Tree = %NodeListTree
@@ -213,8 +215,9 @@ func add_new_node(index: int) -> void:
 	if not option.type.is_empty():
 		var vsn := ClassDB.instantiate(option.type) as VisualShaderNode
 		var id := visual_shader.get_valid_node_id(VisualShader.TYPE_FRAGMENT)
-		visual_shader.add_node(VisualShader.TYPE_FRAGMENT, vsn, Vector2.ZERO, id)
+		visual_shader.add_node(VisualShader.TYPE_FRAGMENT, vsn, spawn_node_in_position, id)
 		add_node(vsn, id, option.ops)
+		_on_effect_changed()
 
 
 func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
@@ -408,10 +411,21 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		_create_label("offset", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_2D, VisualShaderNode.PORT_TYPE_MAX)
 		_create_label("uv", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_VECTOR_2D)
 
-	graph_node.set_meta("visual_shader_node", vsn)
+	graph_node.set_meta("visual_shader_node", vsn)  # TODO: Remove if not needed
 	graph_node.name = str(id)
 	graph_node.position_offset = visual_shader.get_node_position(VisualShader.TYPE_FRAGMENT, id)
+	if vsn is not VisualShaderNodeOutput:
+		var close_button := TextureButton.new()
+		close_button.texture_normal = CLOSE
+		close_button.pressed.connect(delete_node.bind(graph_node))
+		graph_node.get_titlebar_hbox().add_child(close_button)
 	graph_edit.add_child(graph_node)
+
+
+func delete_node(graph_node: GraphNode) -> void:
+	visual_shader.remove_node(VisualShader.TYPE_FRAGMENT, int(String(graph_node.name)))
+	graph_node.queue_free()
+	_on_effect_changed()
 
 
 func _create_label(text: String, graph_node: GraphNode, left_slot: VisualShaderNode.PortType, right_slot: VisualShaderNode.PortType) -> Label:
@@ -583,3 +597,18 @@ func _on_graph_edit_disconnection_request(from_node_name: String, from_port: int
 	var vs_to_node_id := int(to_node_name)
 	visual_shader.disconnect_nodes(VisualShader.TYPE_FRAGMENT, vs_from_node_id, from_port, vs_to_node_id, to_port)
 	_on_effect_changed()
+
+
+func _on_graph_edit_connection_from_empty(_to_node: StringName, _to_port: int, release_position: Vector2) -> void:
+	node_list_tree.get_window().popup_centered()
+	spawn_node_in_position = release_position
+
+
+func _on_graph_edit_connection_to_empty(_from_node: StringName, _from_port: int, release_position: Vector2) -> void:
+	node_list_tree.get_window().popup_centered()
+	spawn_node_in_position = release_position
+
+
+func _on_graph_edit_popup_request(at_position: Vector2) -> void:
+	node_list_tree.get_window().popup_centered()
+	spawn_node_in_position = at_position
