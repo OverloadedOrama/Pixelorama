@@ -231,8 +231,6 @@ func add_new_node(index: int) -> void:
 func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 	if not is_instance_valid(vsn):
 		return
-	#var parameter_list := vsn.get_default_input_values()
-	#print(vsn, " ", parameter_list, " ", vsn.get_input_port_default_value(6))
 	var graph_node := GraphNode.new()
 	graph_node.name = str(id)
 	graph_node.title = vsn.get_class().replace("VisualShaderNode", "")
@@ -319,6 +317,50 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		graph_node.set_slot(0, false, VisualShaderNode.PORT_TYPE_MAX, Color.TRANSPARENT, true, VisualShaderNode.PORT_TYPE_VECTOR_4D, slot_colors[VisualShaderNode.PORT_TYPE_VECTOR_4D])
 	#endregion
 	#region Conditionals
+	elif vsn is VisualShaderNodeIs:
+		if not ops.is_empty():
+			vsn.function = ops[0]
+		var option_button := OptionButton.new()
+		option_button.add_item("Infinite", VisualShaderNodeIs.FUNC_IS_INF)
+		option_button.add_item("Not A Number", VisualShaderNodeIs.FUNC_IS_NAN)
+		option_button.select(vsn.function)
+		option_button.item_selected.connect(
+			func(id_selected: VisualShaderNodeIs.Function):
+				vsn.function = id_selected
+				_on_effect_changed()
+		)
+		graph_node.add_child(option_button)
+		_create_input("input", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 0)
+		_create_multi_output("output", graph_node, VisualShaderNode.PORT_TYPE_BOOLEAN)
+	elif vsn is VisualShaderNodeIf:
+		_create_input("a", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 0)
+		_create_input("b", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 1)
+		_create_input("tolerance", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 2)
+		_create_input("a == b", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 3)
+		_create_input("a > b", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 4)
+		_create_input("a < b", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 5)
+		_create_multi_output("result", graph_node, VisualShaderNode.PORT_TYPE_BOOLEAN)
+	elif vsn is VisualShaderNodeSwitch:
+		if not ops.is_empty():
+			vsn.op_type = ops[0]
+		var option_button := OptionButton.new()
+		option_button.add_item("Float", VisualShaderNodeSwitch.OP_TYPE_FLOAT)
+		option_button.add_item("Int", VisualShaderNodeSwitch.OP_TYPE_INT)
+		option_button.add_item("UInt", VisualShaderNodeSwitch.OP_TYPE_UINT)
+		option_button.add_item("Vector2", VisualShaderNodeSwitch.OP_TYPE_VECTOR_2D)
+		option_button.add_item("Vector3", VisualShaderNodeSwitch.OP_TYPE_VECTOR_3D)
+		option_button.add_item("Vector4", VisualShaderNodeSwitch.OP_TYPE_VECTOR_4D)
+		option_button.add_item("Boolean", VisualShaderNodeSwitch.OP_TYPE_BOOLEAN)
+		option_button.add_item("Transform", VisualShaderNodeSwitch.OP_TYPE_TRANSFORM)
+		option_button.select(vsn.op_type)
+		option_button.item_selected.connect(
+			func(id_selected: VisualShaderNodeSwitch.OpType):
+				vsn.op_type = id_selected
+				_create_switch_node(graph_node, vsn)
+				_on_effect_changed()
+		)
+		graph_node.add_child(option_button)
+		_create_switch_node(graph_node, vsn)
 	elif vsn is VisualShaderNodeCompare:
 		if not ops.is_empty():
 			vsn.function = ops[0]
@@ -664,19 +706,20 @@ func _create_multi_output(text: String, graph_node: GraphNode, right_slot: Visua
 	graph_node.add_child(hbox)
 	var slot_index := graph_node.get_child_count() - 1
 	graph_node.set_slot(slot_index, false, VisualShaderNode.PORT_TYPE_MAX, get_color_type(VisualShaderNode.PORT_TYPE_MAX), right_slot != VisualShaderNode.PORT_TYPE_MAX, right_slot, get_color_type(right_slot))
-	var labels: Array[Control]
-	var red := _create_label("red", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_SCALAR)
-	labels.append(red)
-	var green := _create_label("green", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_SCALAR)
-	labels.append(green)
-	if right_slot > VisualShaderNode.PORT_TYPE_VECTOR_2D:
-		var blue := _create_label("blue", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_SCALAR)
-		labels.append(blue)
-		if right_slot > VisualShaderNode.PORT_TYPE_VECTOR_3D:
-			var alpha := _create_label("alpha", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_SCALAR)
-			labels.append(alpha)
-	expand_button.toggled.connect(_handle_extra_control_visibility.bind(labels))
-	_handle_extra_control_visibility(expand_button.button_pressed, labels)
+	if right_slot >= VisualShaderNode.PORT_TYPE_VECTOR_2D and right_slot <= VisualShaderNode.PORT_TYPE_VECTOR_4D:
+		var labels: Array[Control]
+		var red := _create_label("red", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_SCALAR)
+		labels.append(red)
+		var green := _create_label("green", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_SCALAR)
+		labels.append(green)
+		if right_slot > VisualShaderNode.PORT_TYPE_VECTOR_2D:
+			var blue := _create_label("blue", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_SCALAR)
+			labels.append(blue)
+			if right_slot > VisualShaderNode.PORT_TYPE_VECTOR_3D:
+				var alpha := _create_label("alpha", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_SCALAR)
+				labels.append(alpha)
+		expand_button.toggled.connect(_handle_extra_control_visibility.bind(labels))
+		_handle_extra_control_visibility(expand_button.button_pressed, labels)
 
 
 func _handle_extra_control_visibility(toggled_on: bool, controls: Array[Control]) -> void:
@@ -755,6 +798,57 @@ func _create_mix_node(graph_node: GraphNode, vsn: VisualShaderNodeMix) -> void:
 		_create_input("b", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_4D, 1)
 		_create_input("weight", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 2)
 		_create_multi_output("mix", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_4D)
+
+	_check_output_connections_validity(graph_node)
+
+
+func _create_switch_node(graph_node: GraphNode, vsn: VisualShaderNodeSwitch) -> void:
+	var children := graph_node.get_children(true)
+	for i in range(2, children.size()):
+		var child := children[i]
+		graph_node.remove_child(child)
+		child.queue_free()
+	var op_type := vsn.op_type
+	if op_type == VisualShaderNodeSwitch.OP_TYPE_FLOAT:
+		_create_input("value", graph_node, vsn, VisualShaderNode.PORT_TYPE_BOOLEAN, 0)
+		_create_input("true", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 1)
+		_create_input("false", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 2)
+		_create_label("result", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_BOOLEAN)
+	elif op_type == VisualShaderNodeSwitch.OP_TYPE_INT:
+		_create_input("value", graph_node, vsn, VisualShaderNode.PORT_TYPE_BOOLEAN, 0)
+		_create_input("true", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR_INT, 1)
+		_create_input("false", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR_INT, 2)
+		_create_label("result", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_BOOLEAN)
+	elif op_type == VisualShaderNodeSwitch.OP_TYPE_UINT:
+		_create_input("value", graph_node, vsn, VisualShaderNode.PORT_TYPE_BOOLEAN, 0)
+		_create_input("true", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR_UINT, 1)
+		_create_input("false", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR_UINT, 2)
+		_create_label("result", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_BOOLEAN)
+	elif op_type == VisualShaderNodeSwitch.OP_TYPE_VECTOR_2D:
+		_create_input("value", graph_node, vsn, VisualShaderNode.PORT_TYPE_BOOLEAN, 0)
+		_create_input("true", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_2D, 1)
+		_create_input("false", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_2D, 2)
+		_create_label("result", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_BOOLEAN)
+	elif op_type == VisualShaderNodeSwitch.OP_TYPE_VECTOR_3D:
+		_create_input("value", graph_node, vsn, VisualShaderNode.PORT_TYPE_BOOLEAN, 0)
+		_create_input("true", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 1)
+		_create_input("false", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 2)
+		_create_label("result", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_BOOLEAN)
+	elif op_type == VisualShaderNodeSwitch.OP_TYPE_VECTOR_4D:
+		_create_input("value", graph_node, vsn, VisualShaderNode.PORT_TYPE_BOOLEAN, 0)
+		_create_input("true", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_4D, 1)
+		_create_input("false", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_4D, 2)
+		_create_label("result", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_BOOLEAN)
+	elif op_type == VisualShaderNodeSwitch.OP_TYPE_BOOLEAN:
+		_create_input("value", graph_node, vsn, VisualShaderNode.PORT_TYPE_BOOLEAN, 0)
+		_create_input("true", graph_node, vsn, VisualShaderNode.PORT_TYPE_BOOLEAN, 1)
+		_create_input("false", graph_node, vsn, VisualShaderNode.PORT_TYPE_BOOLEAN, 2)
+		_create_label("result", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_BOOLEAN)
+	elif op_type == VisualShaderNodeSwitch.OP_TYPE_TRANSFORM:
+		_create_input("value", graph_node, vsn, VisualShaderNode.PORT_TYPE_BOOLEAN, 0)
+		_create_input("true", graph_node, vsn, VisualShaderNode.PORT_TYPE_TRANSFORM, 1)
+		_create_input("false", graph_node, vsn, VisualShaderNode.PORT_TYPE_TRANSFORM, 2)
+		_create_label("result", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_BOOLEAN)
 
 	_check_output_connections_validity(graph_node)
 
