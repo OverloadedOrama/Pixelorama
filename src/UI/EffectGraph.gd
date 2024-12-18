@@ -240,6 +240,15 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		graph_node.add_child(alpha_label)
 		graph_node.set_slot(0, true, VisualShaderNode.PORT_TYPE_VECTOR_3D, slot_colors[VisualShaderNode.PORT_TYPE_VECTOR_3D], false, VisualShaderNode.PORT_TYPE_MAX, Color.TRANSPARENT)
 		graph_node.set_slot(1, true, VisualShaderNode.PORT_TYPE_SCALAR, slot_colors[VisualShaderNode.PORT_TYPE_SCALAR], false, VisualShaderNode.PORT_TYPE_MAX, Color.TRANSPARENT)
+	elif vsn is VisualShaderNodeInput:
+		if not ops.is_empty():
+			vsn.input_name = ops[0]
+		var port_type := VisualShaderNode.PORT_TYPE_VECTOR_2D
+		if vsn.input_name in ["color"]:
+			port_type = VisualShaderNode.PORT_TYPE_VECTOR_4D
+		elif vsn.input_name in ["texture"]:
+			port_type = VisualShaderNode.PORT_TYPE_SAMPLER
+		_create_label(vsn.input_name, graph_node, VisualShaderNode.PORT_TYPE_MAX, port_type)
 	elif vsn is VisualShaderNodeParameter:
 		if not ops.is_empty():
 			vsn.parameter_name = ops[0]
@@ -295,18 +304,11 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		graph_node.add_child(color_picker_button)
 		graph_node.set_slot(0, false, VisualShaderNode.PORT_TYPE_MAX, Color.TRANSPARENT, true, VisualShaderNode.PORT_TYPE_VECTOR_4D, slot_colors[VisualShaderNode.PORT_TYPE_VECTOR_4D])
 	#endregion
-	elif vsn is VisualShaderNodeTexture:
-		# TODO: Add texture changing logic
-		var texture_rect := TextureRect.new()
-		texture_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		texture_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		texture_rect.custom_minimum_size = Vector2(20, 20)
-		texture_rect.texture = vsn.texture
-		graph_node.add_child(texture_rect)
-		_create_label("uv", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_2D, VisualShaderNode.PORT_TYPE_MAX)
-		_create_label("lod", graph_node, VisualShaderNode.PORT_TYPE_SCALAR, VisualShaderNode.PORT_TYPE_MAX)
-		_create_label("sampler2D", graph_node, VisualShaderNode.PORT_TYPE_SAMPLER, VisualShaderNode.PORT_TYPE_MAX)
-		_create_multi_output("color", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_4D)
+	#region Conditionals
+	elif vsn is VisualShaderNodeCompare:
+		if not ops.is_empty():
+			vsn.function = ops[0]
+	#endregion
 	#region Integers
 	elif vsn is VisualShaderNodeIntOp:
 		if not ops.is_empty():
@@ -495,15 +497,6 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		_create_label("input", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_3D, VisualShaderNode.PORT_TYPE_MAX)
 		_create_multi_output("output", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_3D)
 	#endregion
-	elif vsn is VisualShaderNodeInput:
-		if not ops.is_empty():
-			vsn.input_name = ops[0]
-		var port_type := VisualShaderNode.PORT_TYPE_VECTOR_2D
-		if vsn.input_name in ["color"]:
-			port_type = VisualShaderNode.PORT_TYPE_VECTOR_4D
-		elif vsn.input_name in ["texture"]:
-			port_type = VisualShaderNode.PORT_TYPE_SAMPLER
-		_create_label(vsn.input_name, graph_node, VisualShaderNode.PORT_TYPE_MAX, port_type)
 
 	elif vsn is VisualShaderNodeMix:
 		vsn.set("expanded_output_ports", [0])
@@ -526,6 +519,18 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		)
 		graph_node.add_child(option_button)
 		_create_mix_node(graph_node, vsn)
+	elif vsn is VisualShaderNodeTexture:
+		# TODO: Add texture changing logic
+		var texture_rect := TextureRect.new()
+		texture_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		texture_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		texture_rect.custom_minimum_size = Vector2(20, 20)
+		texture_rect.texture = vsn.texture
+		graph_node.add_child(texture_rect)
+		_create_label("uv", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_2D, VisualShaderNode.PORT_TYPE_MAX)
+		_create_label("lod", graph_node, VisualShaderNode.PORT_TYPE_SCALAR, VisualShaderNode.PORT_TYPE_MAX)
+		_create_label("sampler2D", graph_node, VisualShaderNode.PORT_TYPE_SAMPLER, VisualShaderNode.PORT_TYPE_MAX)
+		_create_multi_output("color", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_4D)
 	elif vsn is VisualShaderNodeUVFunc:
 		_create_label("uv", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_2D, VisualShaderNode.PORT_TYPE_MAX)
 		var scale_hbox := HBoxContainer.new()
@@ -789,6 +794,33 @@ func fill_add_options() -> void:
 
 	add_options.push_back(AddOption.new("ColorConstant", "Color/Variables", "VisualShaderNodeColorConstant", "Color constant.", [], VisualShaderNode.PORT_TYPE_VECTOR_4D))
 	add_options.push_back(AddOption.new("ColorParameter", "Color/Variables", "VisualShaderNodeColorParameter", "Color parameter.", [], VisualShaderNode.PORT_TYPE_VECTOR_4D))
+	#endregion
+	#region Conditional
+	const compare_func_desc := "Returns the boolean result of the %s comparison between two parameters."
+
+	add_options.push_back(AddOption.new("Equal (==)", "Conditional/Functions", "VisualShaderNodeCompare", compare_func_desc % "Equal (==)", [ VisualShaderNodeCompare.FUNC_EQUAL ], VisualShaderNode.PORT_TYPE_BOOLEAN));
+	add_options.push_back(AddOption.new("GreaterThan (>)", "Conditional/Functions", "VisualShaderNodeCompare", compare_func_desc % "Greater Than (>)", [ VisualShaderNodeCompare.FUNC_GREATER_THAN ], VisualShaderNode.PORT_TYPE_BOOLEAN));
+	add_options.push_back(AddOption.new("GreaterThanEqual (>=)", "Conditional/Functions", "VisualShaderNodeCompare", compare_func_desc %  "Greater Than or Equal (>=)", [ VisualShaderNodeCompare.FUNC_GREATER_THAN_EQUAL ], VisualShaderNode.PORT_TYPE_BOOLEAN));
+	add_options.push_back(AddOption.new("If", "Conditional/Functions", "VisualShaderNodeIf", "Returns an associated vector if the provided scalars are equal, greater or less.", [], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("IsInf", "Conditional/Functions", "VisualShaderNodeIs", "Returns the boolean result of the comparison between INF and a scalar parameter.", [ VisualShaderNodeIs.FUNC_IS_INF ], VisualShaderNode.PORT_TYPE_BOOLEAN));
+	add_options.push_back(AddOption.new("IsNaN", "Conditional/Functions", "VisualShaderNodeIs", "Returns the boolean result of the comparison between NaN and a scalar parameter.", [ VisualShaderNodeIs.FUNC_IS_NAN ], VisualShaderNode.PORT_TYPE_BOOLEAN));
+	add_options.push_back(AddOption.new("LessThan (<)", "Conditional/Functions", "VisualShaderNodeCompare", compare_func_desc %  "Less Than (<)", [ VisualShaderNodeCompare.FUNC_LESS_THAN ], VisualShaderNode.PORT_TYPE_BOOLEAN));
+	add_options.push_back(AddOption.new("LessThanEqual (<=)", "Conditional/Functions", "VisualShaderNodeCompare", compare_func_desc %  "Less Than or Equal (<=)", [ VisualShaderNodeCompare.FUNC_LESS_THAN_EQUAL ], VisualShaderNode.PORT_TYPE_BOOLEAN));
+	add_options.push_back(AddOption.new("NotEqual (!=)", "Conditional/Functions", "VisualShaderNodeCompare", compare_func_desc %  "Not Equal (!=)", [ VisualShaderNodeCompare.FUNC_NOT_EQUAL ], VisualShaderNode.PORT_TYPE_BOOLEAN));
+	add_options.push_back(AddOption.new("SwitchVector2D (==)", "Conditional/Functions", "VisualShaderNodeSwitch", "Returns an associated 2D vector if the provided boolean value is true or false.", [ VisualShaderNodeSwitch.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("SwitchVector3D (==)", "Conditional/Functions", "VisualShaderNodeSwitch", "Returns an associated 3D vector if the provided boolean value is true or false.", [ VisualShaderNodeSwitch.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("SwitchVector4D (==)", "Conditional/Functions", "VisualShaderNodeSwitch", "Returns an associated 4D vector if the provided boolean value is true or false.", [ VisualShaderNodeSwitch.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("SwitchBool (==)", "Conditional/Functions", "VisualShaderNodeSwitch", "Returns an associated boolean if the provided boolean value is true or false.", [ VisualShaderNodeSwitch.OP_TYPE_BOOLEAN ], VisualShaderNode.PORT_TYPE_BOOLEAN));
+	add_options.push_back(AddOption.new("SwitchFloat (==)", "Conditional/Functions", "VisualShaderNodeSwitch", "Returns an associated floating-point scalar if the provided boolean value is true or false.", [ VisualShaderNodeSwitch.OP_TYPE_FLOAT ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("SwitchInt (==)", "Conditional/Functions", "VisualShaderNodeSwitch", "Returns an associated integer scalar if the provided boolean value is true or false.", [ VisualShaderNodeSwitch.OP_TYPE_INT ], VisualShaderNode.PORT_TYPE_SCALAR_INT));
+	add_options.push_back(AddOption.new("SwitchTransform (==)", "Conditional/Functions", "VisualShaderNodeSwitch", "Returns an associated transform if the provided boolean value is true or false.", [ VisualShaderNodeSwitch.OP_TYPE_TRANSFORM ], VisualShaderNode.PORT_TYPE_TRANSFORM));
+	add_options.push_back(AddOption.new("SwitchUInt (==)", "Conditional/Functions", "VisualShaderNodeSwitch", "Returns an associated unsigned integer scalar if the provided boolean value is true or false.", [ VisualShaderNodeSwitch.OP_TYPE_UINT ], VisualShaderNode.PORT_TYPE_SCALAR_UINT));
+
+	add_options.push_back(AddOption.new("Compare (==)", "Conditional/Common", "VisualShaderNodeCompare", "Returns the boolean result of the comparison between two parameters.", [], VisualShaderNode.PORT_TYPE_BOOLEAN));
+	add_options.push_back(AddOption.new("Is", "Conditional/Common", "VisualShaderNodeIs", "Returns the boolean result of the comparison between INF (or NaN) and a scalar parameter.", [], VisualShaderNode.PORT_TYPE_BOOLEAN));
+
+	add_options.push_back(AddOption.new("BooleanConstant", "Conditional/Variables", "VisualShaderNodeBooleanConstant", "Boolean constant.", [], VisualShaderNode.PORT_TYPE_BOOLEAN));
+	add_options.push_back(AddOption.new("BooleanParameter", "Conditional/Variables", "VisualShaderNodeBooleanParameter", "Boolean parameter.", [], VisualShaderNode.PORT_TYPE_BOOLEAN));
 	#endregion
 	#region Input
 	add_options.push_back(AddOption.new("Color", "Input/All", "VisualShaderNodeInput", "", [ "color" ], VisualShaderNode.PORT_TYPE_VECTOR_4D, -1))
