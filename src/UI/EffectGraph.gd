@@ -54,6 +54,7 @@ class AddOption:
 	#Ref<Script> script
 	## TODO: Probably remove.
 	var mode: int
+	## TODO: Probably remove.
 	var return_type: VisualShaderNode.PortType
 	#int func = 0
 	#bool highend = false
@@ -193,6 +194,8 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		graph_node.set_slot(0, true, VisualShaderNode.PORT_TYPE_VECTOR_3D, slot_colors[VisualShaderNode.PORT_TYPE_VECTOR_3D], false, VisualShaderNode.PORT_TYPE_MAX, Color.TRANSPARENT)
 		graph_node.set_slot(1, true, VisualShaderNode.PORT_TYPE_SCALAR, slot_colors[VisualShaderNode.PORT_TYPE_SCALAR], false, VisualShaderNode.PORT_TYPE_MAX, Color.TRANSPARENT)
 	elif vsn is VisualShaderNodeParameter:
+		if not ops.is_empty():
+			vsn.parameter_name = ops[0]
 		var parameter_type := _get_parameter_type(vsn)
 		if vsn.parameter_name.begins_with("PXO_"):
 			_create_label(vsn.parameter_name, graph_node, VisualShaderNode.PORT_TYPE_MAX, parameter_type)
@@ -294,7 +297,12 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 	elif vsn is VisualShaderNodeInput:
 		if not ops.is_empty():
 			vsn.input_name = ops[0]
-		_create_label("output", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_VECTOR_2D)
+		var port_type := VisualShaderNode.PORT_TYPE_VECTOR_2D
+		if vsn.input_name in ["color"]:
+			port_type = VisualShaderNode.PORT_TYPE_VECTOR_4D
+		elif vsn.input_name in ["texture"]:
+			port_type = VisualShaderNode.PORT_TYPE_SAMPLER
+		_create_label("output", graph_node, VisualShaderNode.PORT_TYPE_MAX, port_type)
 
 	elif vsn is VisualShaderNodeMix:
 		var op_type := (vsn as VisualShaderNodeMix).op_type
@@ -452,8 +460,9 @@ func fill_add_options() -> void:
 	#region Input
 	add_options.push_back(AddOption.new("Color", "Input/All", "VisualShaderNodeInput", "", [ "color" ], VisualShaderNode.PORT_TYPE_VECTOR_4D, -1))
 	add_options.push_back(AddOption.new("TexturePixelSize", "Input/All", "VisualShaderNodeInput", "", [ "texture_pixel_size" ], VisualShaderNode.PORT_TYPE_VECTOR_2D, -1))
+	add_options.push_back(AddOption.new("Time", "Input/All", "VisualShaderNodeFloatParameter", "", [ "PXO_time" ], VisualShaderNode.PORT_TYPE_SCALAR, -1))
 	add_options.push_back(AddOption.new("UV", "Input/All", "VisualShaderNodeInput", "", [ "uv" ], VisualShaderNode.PORT_TYPE_VECTOR_2D, -1))
-	add_options.push_back(AddOption.new("Texture", "Input/All", "VisualShaderNodeInput", "", [ "texture" ], VisualShaderNode.PORT_TYPE_SAMPLER, -1))
+	add_options.push_back(AddOption.new("Texture", "Input/Fragment", "VisualShaderNodeInput", "", [ "texture" ], VisualShaderNode.PORT_TYPE_SAMPLER, -1))
 	#endregion
 
 
