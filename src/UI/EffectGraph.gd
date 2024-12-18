@@ -60,12 +60,12 @@ class AddOption:
 	## TODO: Probably remove.
 	var return_type: VisualShaderNode.PortType
 	#int func = 0
-	#bool highend = false
+	var highend := false
 	#bool is_custom = false
 	#bool is_native = false
 	#int temp_idx = 0
 
-	func _init(_option_name: String, _category: String, _type: String, _description: String, _ops := [], _return_type := VisualShaderNode.PORT_TYPE_SCALAR, _mode := -1) -> void:
+	func _init(_option_name: String, _category: String, _type: String, _description: String, _ops := [], _return_type := VisualShaderNode.PORT_TYPE_SCALAR, _mode := -1, _highend := false) -> void:
 		option_name = _option_name
 		type = _type
 		category = _category
@@ -73,6 +73,7 @@ class AddOption:
 		ops = _ops
 		return_type = _return_type
 		mode = _mode
+		highend = _highend
 
 
 func _ready() -> void:
@@ -579,6 +580,7 @@ func _create_multi_output(text: String, graph_node: GraphNode, right_slot: Visua
 	label.text = text
 	hbox.add_child(label)
 	var expand_button := TextureButton.new()
+	expand_button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	expand_button.toggle_mode = true
 	expand_button.texture_normal = VALUE_ARROW_RIGHT
 	expand_button.texture_pressed = VALUE_ARROW
@@ -821,8 +823,8 @@ func fill_add_options() -> void:
 	add_options.push_back(AddOption.new("Cos", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("Returns the cosine of the parameter."), [ VisualShaderNodeFloatFunc.FUNC_COS ], VisualShaderNode.PORT_TYPE_SCALAR));
 	add_options.push_back(AddOption.new("CosH", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("Returns the hyperbolic cosine of the parameter."), [ VisualShaderNodeFloatFunc.FUNC_COSH ], VisualShaderNode.PORT_TYPE_SCALAR));
 	add_options.push_back(AddOption.new("Degrees", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("Converts a quantity in radians to degrees."), [ VisualShaderNodeFloatFunc.FUNC_DEGREES ], VisualShaderNode.PORT_TYPE_SCALAR));
-	add_options.push_back(AddOption.new("DFdX", "Scalar/Functions", "VisualShaderNodeDerivativeFunc", ("(Fragment/Light mode only) (Scalar) Derivative in 'x' using local differencing."), [ VisualShaderNodeDerivativeFunc.FUNC_X, VisualShaderNodeDerivativeFunc.OP_TYPE_SCALAR ], VisualShaderNode.PORT_TYPE_SCALAR))
-	add_options.push_back(AddOption.new("DFdY", "Scalar/Functions", "VisualShaderNodeDerivativeFunc", ("(Fragment/Light mode only) (Scalar) Derivative in 'y' using local differencing."), [ VisualShaderNodeDerivativeFunc.FUNC_Y, VisualShaderNodeDerivativeFunc.OP_TYPE_SCALAR ], VisualShaderNode.PORT_TYPE_SCALAR))
+	add_options.push_back(AddOption.new("DFdX", "Scalar/Functions", "VisualShaderNodeDerivativeFunc", ("(Fragment/Light mode only) (Scalar) Derivative in 'x' using local differencing."), [ VisualShaderNodeDerivativeFunc.FUNC_X, VisualShaderNodeDerivativeFunc.OP_TYPE_SCALAR ], VisualShaderNode.PORT_TYPE_SCALAR, -1, true))
+	add_options.push_back(AddOption.new("DFdY", "Scalar/Functions", "VisualShaderNodeDerivativeFunc", ("(Fragment/Light mode only) (Scalar) Derivative in 'y' using local differencing."), [ VisualShaderNodeDerivativeFunc.FUNC_Y, VisualShaderNodeDerivativeFunc.OP_TYPE_SCALAR ], VisualShaderNode.PORT_TYPE_SCALAR, -1, true))
 	add_options.push_back(AddOption.new("Exp", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("Base-e Exponential."), [ VisualShaderNodeFloatFunc.FUNC_EXP ], VisualShaderNode.PORT_TYPE_SCALAR));
 	add_options.push_back(AddOption.new("Exp2", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("Base-2 Exponential."), [ VisualShaderNodeFloatFunc.FUNC_EXP2 ], VisualShaderNode.PORT_TYPE_SCALAR));
 	add_options.push_back(AddOption.new("Floor", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("Finds the nearest integer less than or equal to the parameter."), [ VisualShaderNodeFloatFunc.FUNC_FLOOR ], VisualShaderNode.PORT_TYPE_SCALAR));
@@ -851,11 +853,11 @@ func fill_add_options() -> void:
 	add_options.push_back(AddOption.new("SinH", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("Returns the hyperbolic sine of the parameter."), [ VisualShaderNodeFloatFunc.FUNC_SINH ], VisualShaderNode.PORT_TYPE_SCALAR));
 	add_options.push_back(AddOption.new("Sqrt", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("Returns the square root of the parameter."), [ VisualShaderNodeFloatFunc.FUNC_SQRT ], VisualShaderNode.PORT_TYPE_SCALAR));
 	add_options.push_back(AddOption.new("SmoothStep", "Scalar/Functions", "VisualShaderNodeSmoothStep", ("SmoothStep function( scalar(edge0), scalar(edge1), scalar(x) ).\n\nReturns 0.0 if 'x' is smaller than 'edge0' and 1.0 if x is larger than 'edge1'. Otherwise the return value is interpolated between 0.0 and 1.0 using Hermite polynomials."), [ VisualShaderNodeSmoothStep.OP_TYPE_SCALAR ], VisualShaderNode.PORT_TYPE_SCALAR));
-	add_options.push_back(AddOption.new("Step", "Scalar/Functions", "VisualShaderNodeStep", ("Step function( scalar(edge), scalar(x) ).\n\nReturns 0.0 if 'x' is smaller than 'edge' and otherwise 1.0."), [ VisualShaderNodeStep.OP_TYPE_SCALAR ], VisualShaderNode.PORT_TYPE_SCALAR));
-	add_options.push_back(AddOption.new("Sum", "Scalar/Functions", "VisualShaderNodeDerivativeFunc", ("(Fragment/Light mode only) (Scalar) Sum of absolute derivative in 'x' and 'y'."), [ VisualShaderNodeDerivativeFunc.FUNC_SUM, VisualShaderNodeDerivativeFunc.OP_TYPE_SCALAR ], VisualShaderNode.PORT_TYPE_SCALAR));
-	add_options.push_back(AddOption.new("Tan", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("Returns the tangent of the parameter."), [ VisualShaderNodeFloatFunc.FUNC_TAN ], VisualShaderNode.PORT_TYPE_SCALAR));
-	add_options.push_back(AddOption.new("TanH", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("Returns the hyperbolic tangent of the parameter."), [ VisualShaderNodeFloatFunc.FUNC_TANH ], VisualShaderNode.PORT_TYPE_SCALAR));
-	add_options.push_back(AddOption.new("Trunc", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("Finds the truncated value of the parameter."), [ VisualShaderNodeFloatFunc.FUNC_TRUNC ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("Step", "Scalar/Functions", "VisualShaderNodeStep", ("Step function( scalar(edge), scalar(x) ).\n\nReturns 0.0 if 'x' is smaller than 'edge' and otherwise 1.0."), [ VisualShaderNodeStep.OP_TYPE_SCALAR ], VisualShaderNode.PORT_TYPE_SCALAR))
+	add_options.push_back(AddOption.new("Sum", "Scalar/Functions", "VisualShaderNodeDerivativeFunc", ("(Fragment/Light mode only) (Scalar) Sum of absolute derivative in 'x' and 'y'."), [ VisualShaderNodeDerivativeFunc.FUNC_SUM, VisualShaderNodeDerivativeFunc.OP_TYPE_SCALAR ], VisualShaderNode.PORT_TYPE_SCALAR, -1, true))
+	add_options.push_back(AddOption.new("Tan", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("Returns the tangent of the parameter."), [ VisualShaderNodeFloatFunc.FUNC_TAN ], VisualShaderNode.PORT_TYPE_SCALAR))
+	add_options.push_back(AddOption.new("TanH", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("Returns the hyperbolic tangent of the parameter."), [ VisualShaderNodeFloatFunc.FUNC_TANH ], VisualShaderNode.PORT_TYPE_SCALAR))
+	add_options.push_back(AddOption.new("Trunc", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("Finds the truncated value of the parameter."), [ VisualShaderNodeFloatFunc.FUNC_TRUNC ], VisualShaderNode.PORT_TYPE_SCALAR))
 
 	add_options.push_back(AddOption.new("Add (+)", "Scalar/Operators", "VisualShaderNodeFloatOp", ("Sums two floating-point scalars."), [ VisualShaderNodeFloatOp.OP_ADD ], VisualShaderNode.PORT_TYPE_SCALAR));
 	add_options.push_back(AddOption.new("Add (+)", "Scalar/Operators", "VisualShaderNodeIntOp", ("Sums two integer scalars."), [ VisualShaderNodeIntOp.OP_ADD ], VisualShaderNode.PORT_TYPE_SCALAR_INT));
@@ -944,12 +946,12 @@ func fill_add_options() -> void:
 	add_options.push_back(AddOption.new("Degrees", "Vector/Functions", "VisualShaderNodeVectorFunc", "Converts a quantity in radians to degrees.", [ VisualShaderNodeVectorFunc.FUNC_DEGREES, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
 	add_options.push_back(AddOption.new("Degrees", "Vector/Functions", "VisualShaderNodeVectorFunc", "Converts a quantity in radians to degrees.", [ VisualShaderNodeVectorFunc.FUNC_DEGREES, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
 	add_options.push_back(AddOption.new("Degrees", "Vector/Functions", "VisualShaderNodeVectorFunc", "Converts a quantity in radians to degrees.", [ VisualShaderNodeVectorFunc.FUNC_DEGREES, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
-	add_options.push_back(AddOption.new("DFdX", "Vector/Functions", "VisualShaderNodeDerivativeFunc", "(Fragment/Light mode only) (Vector) Derivative in 'x' using local differencing.", [ VisualShaderNodeDerivativeFunc.FUNC_X, VisualShaderNodeDerivativeFunc.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
-	add_options.push_back(AddOption.new("DFdX", "Vector/Functions", "VisualShaderNodeDerivativeFunc", "(Fragment/Light mode only) (Vector) Derivative in 'x' using local differencing.", [ VisualShaderNodeDerivativeFunc.FUNC_X, VisualShaderNodeDerivativeFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
-	add_options.push_back(AddOption.new("DFdX", "Vector/Functions", "VisualShaderNodeDerivativeFunc", "(Fragment/Light mode only) (Vector) Derivative in 'x' using local differencing.", [ VisualShaderNodeDerivativeFunc.FUNC_X, VisualShaderNodeDerivativeFunc.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
-	add_options.push_back(AddOption.new("DFdY", "Vector/Functions", "VisualShaderNodeDerivativeFunc", "(Fragment/Light mode only) (Vector) Derivative in 'y' using local differencing.", [ VisualShaderNodeDerivativeFunc.FUNC_Y, VisualShaderNodeDerivativeFunc.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
-	add_options.push_back(AddOption.new("DFdY", "Vector/Functions", "VisualShaderNodeDerivativeFunc", "(Fragment/Light mode only) (Vector) Derivative in 'y' using local differencing.", [ VisualShaderNodeDerivativeFunc.FUNC_Y, VisualShaderNodeDerivativeFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
-	add_options.push_back(AddOption.new("DFdY", "Vector/Functions", "VisualShaderNodeDerivativeFunc", "(Fragment/Light mode only) (Vector) Derivative in 'y' using local differencing.", [ VisualShaderNodeDerivativeFunc.FUNC_Y, VisualShaderNodeDerivativeFunc.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("DFdX", "Vector/Functions", "VisualShaderNodeDerivativeFunc", "(Fragment/Light mode only) (Vector) Derivative in 'x' using local differencing.", [ VisualShaderNodeDerivativeFunc.FUNC_X, VisualShaderNodeDerivativeFunc.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D, -1, true))
+	add_options.push_back(AddOption.new("DFdX", "Vector/Functions", "VisualShaderNodeDerivativeFunc", "(Fragment/Light mode only) (Vector) Derivative in 'x' using local differencing.", [ VisualShaderNodeDerivativeFunc.FUNC_X, VisualShaderNodeDerivativeFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D, -1, true))
+	add_options.push_back(AddOption.new("DFdX", "Vector/Functions", "VisualShaderNodeDerivativeFunc", "(Fragment/Light mode only) (Vector) Derivative in 'x' using local differencing.", [ VisualShaderNodeDerivativeFunc.FUNC_X, VisualShaderNodeDerivativeFunc.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D, -1, true))
+	add_options.push_back(AddOption.new("DFdY", "Vector/Functions", "VisualShaderNodeDerivativeFunc", "(Fragment/Light mode only) (Vector) Derivative in 'y' using local differencing.", [ VisualShaderNodeDerivativeFunc.FUNC_Y, VisualShaderNodeDerivativeFunc.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D, -1, true))
+	add_options.push_back(AddOption.new("DFdY", "Vector/Functions", "VisualShaderNodeDerivativeFunc", "(Fragment/Light mode only) (Vector) Derivative in 'y' using local differencing.", [ VisualShaderNodeDerivativeFunc.FUNC_Y, VisualShaderNodeDerivativeFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D, -1, true))
+	add_options.push_back(AddOption.new("DFdY", "Vector/Functions", "VisualShaderNodeDerivativeFunc", "(Fragment/Light mode only) (Vector) Derivative in 'y' using local differencing.", [ VisualShaderNodeDerivativeFunc.FUNC_Y, VisualShaderNodeDerivativeFunc.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D, -1, true))
 	add_options.push_back(AddOption.new("Distance2D", "Vector/Functions", "VisualShaderNodeVectorDistance", "Returns the distance between two points.", [ VisualShaderNodeVectorDistance.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_SCALAR));
 	add_options.push_back(AddOption.new("Distance3D", "Vector/Functions", "VisualShaderNodeVectorDistance", "Returns the distance between two points.", [ VisualShaderNodeVectorDistance.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_SCALAR));
 	add_options.push_back(AddOption.new("Distance4D", "Vector/Functions", "VisualShaderNodeVectorDistance", "Returns the distance between two points.", [ VisualShaderNodeVectorDistance.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_SCALAR));
@@ -1059,9 +1061,9 @@ func fill_add_options() -> void:
 	add_options.push_back(AddOption.new("StepS", "Vector/Functions", "VisualShaderNodeStep", "Step function( scalar(edge), vector(x) ).\n\nReturns 0.0 if 'x' is smaller than 'edge' and otherwise 1.0.", [ VisualShaderNodeStep.OP_TYPE_VECTOR_2D_SCALAR ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
 	add_options.push_back(AddOption.new("StepS", "Vector/Functions", "VisualShaderNodeStep", "Step function( scalar(edge), vector(x) ).\n\nReturns 0.0 if 'x' is smaller than 'edge' and otherwise 1.0.", [ VisualShaderNodeStep.OP_TYPE_VECTOR_3D_SCALAR ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
 	add_options.push_back(AddOption.new("StepS", "Vector/Functions", "VisualShaderNodeStep", "Step function( scalar(edge), vector(x) ).\n\nReturns 0.0 if 'x' is smaller than 'edge' and otherwise 1.0.", [ VisualShaderNodeStep.OP_TYPE_VECTOR_4D_SCALAR ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
-	add_options.push_back(AddOption.new("Sum (+)", "Vector/Functions", "VisualShaderNodeDerivativeFunc", "(Fragment/Light mode only) (Vector) Sum of absolute derivative in 'x' and 'y'.", [ VisualShaderNodeDerivativeFunc.FUNC_SUM, VisualShaderNodeDerivativeFunc.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
-	add_options.push_back(AddOption.new("Sum (+)", "Vector/Functions", "VisualShaderNodeDerivativeFunc", "(Fragment/Light mode only) (Vector) Sum of absolute derivative in 'x' and 'y'.", [ VisualShaderNodeDerivativeFunc.FUNC_SUM, VisualShaderNodeDerivativeFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
-	add_options.push_back(AddOption.new("Sum (+)", "Vector/Functions", "VisualShaderNodeDerivativeFunc", "(Fragment/Light mode only) (Vector) Sum of absolute derivative in 'x' and 'y'.", [ VisualShaderNodeDerivativeFunc.FUNC_SUM, VisualShaderNodeDerivativeFunc.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("Sum (+)", "Vector/Functions", "VisualShaderNodeDerivativeFunc", "(Fragment/Light mode only) (Vector) Sum of absolute derivative in 'x' and 'y'.", [ VisualShaderNodeDerivativeFunc.FUNC_SUM, VisualShaderNodeDerivativeFunc.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D, -1, true))
+	add_options.push_back(AddOption.new("Sum (+)", "Vector/Functions", "VisualShaderNodeDerivativeFunc", "(Fragment/Light mode only) (Vector) Sum of absolute derivative in 'x' and 'y'.", [ VisualShaderNodeDerivativeFunc.FUNC_SUM, VisualShaderNodeDerivativeFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D, -1, true))
+	add_options.push_back(AddOption.new("Sum (+)", "Vector/Functions", "VisualShaderNodeDerivativeFunc", "(Fragment/Light mode only) (Vector) Sum of absolute derivative in 'x' and 'y'.", [ VisualShaderNodeDerivativeFunc.FUNC_SUM, VisualShaderNodeDerivativeFunc.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D, -1, true))
 	add_options.push_back(AddOption.new("Tan", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the tangent of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_TAN, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
 	add_options.push_back(AddOption.new("Tan", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the tangent of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_TAN, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
 	add_options.push_back(AddOption.new("Tan", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the tangent of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_TAN, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
@@ -1102,6 +1104,8 @@ func update_options_menu() -> void:
 	var folders := {}  # String, TreeItem
 	for i in add_options.size():
 		var option := add_options[i]
+		if option.highend and not is_instance_valid(RenderingServer.get_rendering_device()):
+			continue
 		var path := option.category
 		var subfolders := path.split("/")
 		var category: TreeItem
