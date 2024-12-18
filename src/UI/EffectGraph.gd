@@ -1,17 +1,17 @@
 extends PanelContainer
 
-enum NodeTypes { NONE = -1, BOOL, SCALAR, VEC2, VEC3, VEC4, TRANSFORM, SAMPLER }
-
 const VALUE_ARROW := preload("res://assets/graphics/misc/value_arrow.svg")
 const VALUE_ARROW_RIGHT := preload("res://assets/graphics/misc/value_arrow_right.svg")
 
 var slot_colors := PackedColorArray(
 	[
-		Color(0.243, 0.612, 0.349),  # Bool
 		Color(0.55, 0.55, 0.55),  # Scalar
+		Color(0.55, 0.55, 0.55),  # Scalar int
+		Color(0.55, 0.55, 0.55),  # Scalar uint
 		Color(0.44, 0.43, 0.64),  # Vector2
 		Color(0.337, 0.314, 0.71),  # Vector3
 		Color(0.7, 0.65, 0.147),  # Vector4/Color
+		Color(0.243, 0.612, 0.349),  # Boolean
 		Color(0.71, 0.357, 0.64),  # Transform
 		Color(0.659, 0.4, 0.137)  # Sampler
 	]
@@ -54,7 +54,7 @@ class AddOption:
 	#Ref<Script> script
 	## TODO: Probably remove.
 	var mode: int
-	var return_type := VisualShaderNode.PortType
+	var return_type: VisualShaderNode.PortType
 	#int func = 0
 	#bool highend = false
 	#bool is_custom = false
@@ -72,12 +72,22 @@ class AddOption:
 
 
 func _ready() -> void:
-	graph_edit.add_valid_connection_type(NodeTypes.VEC2, NodeTypes.VEC3)
-	graph_edit.add_valid_connection_type(NodeTypes.VEC2, NodeTypes.VEC4)
-	graph_edit.add_valid_connection_type(NodeTypes.VEC3, NodeTypes.VEC4)
-	graph_edit.add_valid_connection_type(NodeTypes.VEC3, NodeTypes.VEC2)
-	graph_edit.add_valid_connection_type(NodeTypes.VEC4, NodeTypes.VEC2)
-	graph_edit.add_valid_connection_type(NodeTypes.VEC4, NodeTypes.VEC3)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PortType.PORT_TYPE_SCALAR, VisualShaderNode.PortType.PORT_TYPE_SCALAR_INT)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PortType.PORT_TYPE_SCALAR, VisualShaderNode.PortType.PORT_TYPE_SCALAR_UINT)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PortType.PORT_TYPE_SCALAR_INT, VisualShaderNode.PortType.PORT_TYPE_SCALAR)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PortType.PORT_TYPE_SCALAR_INT, VisualShaderNode.PortType.PORT_TYPE_SCALAR_UINT)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PortType.PORT_TYPE_SCALAR_UINT, VisualShaderNode.PortType.PORT_TYPE_SCALAR)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PortType.PORT_TYPE_SCALAR_UINT, VisualShaderNode.PortType.PORT_TYPE_SCALAR_INT)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PortType.PORT_TYPE_VECTOR_2D, VisualShaderNode.PortType.PORT_TYPE_VECTOR_3D)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PortType.PORT_TYPE_VECTOR_2D, VisualShaderNode.PortType.PORT_TYPE_VECTOR_4D)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PortType.PORT_TYPE_VECTOR_3D, VisualShaderNode.PortType.PORT_TYPE_VECTOR_4D)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PortType.PORT_TYPE_VECTOR_3D, VisualShaderNode.PortType.PORT_TYPE_VECTOR_2D)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PortType.PORT_TYPE_VECTOR_4D, VisualShaderNode.PortType.PORT_TYPE_VECTOR_2D)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PortType.PORT_TYPE_VECTOR_4D, VisualShaderNode.PortType.PORT_TYPE_VECTOR_3D)
+	#graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_VECTOR_3D, VisualShaderNode.PORT_TYPE_VECTOR_4D)
+	#graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_VECTOR_3D, VisualShaderNode.PORT_TYPE_VECTOR_2D)
+	#graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_VECTOR_4D, VisualShaderNode.PORT_TYPE_VECTOR_2D)
+	#graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_VECTOR_4D, VisualShaderNode.PORT_TYPE_VECTOR_3D)
 	node_list_tree.get_window().get_ok_button().set_disabled(true)
 	effect_name_line_edit.get_window().get_ok_button().set_disabled(true)
 	effects_button = MenuButton.new()
@@ -151,8 +161,8 @@ func _on_visibility_changed() -> void:
 		update_options_menu()
 
 
-func get_color_type(type: NodeTypes) -> Color:
-	if type == NodeTypes.NONE:
+func get_color_type(type: int) -> Color:
+	if type <= -1 or type >= VisualShaderNode.PortType.PORT_TYPE_MAX:
 		return Color.TRANSPARENT
 	return slot_colors[type]
 
@@ -180,12 +190,12 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		var alpha_label := Label.new()
 		alpha_label.text = "Alpha"
 		graph_node.add_child(alpha_label)
-		graph_node.set_slot(0, true, NodeTypes.VEC3, slot_colors[NodeTypes.VEC3], false, -1, Color.TRANSPARENT)
-		graph_node.set_slot(1, true, NodeTypes.SCALAR, slot_colors[NodeTypes.SCALAR], false, -1, Color.TRANSPARENT)
+		graph_node.set_slot(0, true, VisualShaderNode.PORT_TYPE_VECTOR_3D, slot_colors[VisualShaderNode.PORT_TYPE_VECTOR_3D], false, -1, Color.TRANSPARENT)
+		graph_node.set_slot(1, true, VisualShaderNode.PORT_TYPE_SCALAR, slot_colors[VisualShaderNode.PORT_TYPE_SCALAR], false, -1, Color.TRANSPARENT)
 	elif vsn is VisualShaderNodeParameter:
 		var parameter_type := _get_parameter_type(vsn)
 		if vsn.parameter_name.begins_with("PXO_"):
-			_create_label(vsn.parameter_name, graph_node, NodeTypes.NONE, parameter_type)
+			_create_label(vsn.parameter_name, graph_node, -1, parameter_type)
 		else:
 			var line_edit := LineEdit.new()
 			line_edit.text = vsn.parameter_name
@@ -199,14 +209,14 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		button.button_pressed = vsn.constant
 		button.toggled.connect(func(toggled_on: bool): vsn.constant = toggled_on; _on_effect_changed())
 		graph_node.add_child(button)
-		graph_node.set_slot(0, false, -1, Color.TRANSPARENT, true, NodeTypes.BOOL, slot_colors[NodeTypes.BOOL])
+		graph_node.set_slot(0, false, -1, Color.TRANSPARENT, true, VisualShaderNode.PORT_TYPE_BOOLEAN, slot_colors[VisualShaderNode.PORT_TYPE_BOOLEAN])
 	elif vsn is VisualShaderNodeIntConstant or vsn is VisualShaderNodeUIntConstant:
 		var slider := ValueSlider.new()
 		slider.custom_minimum_size = Vector2(32, 32)
 		slider.value = vsn.constant
 		slider.value_changed.connect(func(value: int): vsn.constant = value; _on_effect_changed())
 		graph_node.add_child(slider)
-		graph_node.set_slot(0, false, -1, Color.TRANSPARENT, true, NodeTypes.SCALAR, slot_colors[NodeTypes.SCALAR])
+		graph_node.set_slot(0, false, -1, Color.TRANSPARENT, true, VisualShaderNode.PORT_TYPE_SCALAR, slot_colors[VisualShaderNode.PORT_TYPE_SCALAR])
 	elif vsn is VisualShaderNodeFloatConstant:
 		var slider := ValueSlider.new()
 		slider.custom_minimum_size = Vector2(32, 32)
@@ -214,26 +224,26 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		slider.value = vsn.constant
 		slider.value_changed.connect(func(value: float): vsn.constant = value; _on_effect_changed())
 		graph_node.add_child(slider)
-		graph_node.set_slot(0, false, -1, Color.TRANSPARENT, true, NodeTypes.SCALAR, slot_colors[NodeTypes.SCALAR])
+		graph_node.set_slot(0, false, -1, Color.TRANSPARENT, true, VisualShaderNode.PORT_TYPE_SCALAR, slot_colors[VisualShaderNode.PORT_TYPE_SCALAR])
 	elif vsn is VisualShaderNodeVec2Constant:
 		var slider := ShaderLoader.VALUE_SLIDER_V2_TSCN.instantiate() as ValueSliderV2
 		slider.value = vsn.constant
 		slider.value_changed.connect(func(value: Vector2): vsn.constant = value; _on_effect_changed())
 		graph_node.add_child(slider)
-		graph_node.set_slot(0, false, -1, Color.TRANSPARENT, true, NodeTypes.VEC2, slot_colors[NodeTypes.VEC2])
+		graph_node.set_slot(0, false, -1, Color.TRANSPARENT, true, VisualShaderNode.PORT_TYPE_VECTOR_2D, slot_colors[VisualShaderNode.PORT_TYPE_VECTOR_2D])
 	elif vsn is VisualShaderNodeVec3Constant:
 		var slider := ShaderLoader.VALUE_SLIDER_V3_TSCN.instantiate() as ValueSliderV3
 		slider.value = vsn.constant
 		slider.value_changed.connect(func(value: Vector3): vsn.constant = value; _on_effect_changed())
 		graph_node.add_child(slider)
-		graph_node.set_slot(0, false, -1, Color.TRANSPARENT, true, NodeTypes.VEC3, slot_colors[NodeTypes.VEC3])
+		graph_node.set_slot(0, false, -1, Color.TRANSPARENT, true, VisualShaderNode.PORT_TYPE_VECTOR_3D, slot_colors[VisualShaderNode.PORT_TYPE_VECTOR_3D])
 	elif vsn is VisualShaderNodeColorConstant or vsn is VisualShaderNodeVec4Constant:
 		var color_picker_button := ColorPickerButton.new()
 		color_picker_button.custom_minimum_size = Vector2(20, 20)
 		color_picker_button.color = vsn.constant
 		color_picker_button.color_changed.connect(func(color: Color): vsn.constant = color; _on_effect_changed())
 		graph_node.add_child(color_picker_button)
-		graph_node.set_slot(0, false, -1, Color.TRANSPARENT, true, NodeTypes.VEC4, slot_colors[NodeTypes.VEC4])
+		graph_node.set_slot(0, false, -1, Color.TRANSPARENT, true, VisualShaderNode.PORT_TYPE_VECTOR_4D, slot_colors[VisualShaderNode.PORT_TYPE_VECTOR_4D])
 	#endregion
 	elif vsn is VisualShaderNodeTexture:
 		# TODO: Add texture changing logic
@@ -243,10 +253,10 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		texture_rect.custom_minimum_size = Vector2(20, 20)
 		texture_rect.texture = vsn.texture
 		graph_node.add_child(texture_rect)
-		_create_label("uv", graph_node, NodeTypes.VEC2, NodeTypes.NONE)
-		_create_label("lod", graph_node, NodeTypes.SCALAR, NodeTypes.NONE)
-		_create_label("sampler2D", graph_node, NodeTypes.SAMPLER, NodeTypes.NONE)
-		_create_multi_output("color", graph_node, NodeTypes.VEC4)
+		_create_label("uv", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_2D, -1)
+		_create_label("lod", graph_node, VisualShaderNode.PORT_TYPE_SCALAR, -1)
+		_create_label("sampler2D", graph_node, VisualShaderNode.PORT_TYPE_SAMPLER, -1)
+		_create_multi_output("color", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_4D)
 	#region Colors
 	elif vsn is VisualShaderNodeColorOp:
 		if not ops.is_empty():
@@ -264,9 +274,9 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		option_button.select(vsn.operator)
 		option_button.item_selected.connect(func(id_selected: VisualShaderNodeColorOp.Operator): vsn.operator = id_selected; _on_effect_changed())
 		graph_node.add_child(option_button)
-		_create_label("a", graph_node, NodeTypes.VEC3, NodeTypes.NONE)
-		_create_label("b", graph_node, NodeTypes.VEC3, NodeTypes.NONE)
-		_create_multi_output("op", graph_node, NodeTypes.VEC3)
+		_create_label("a", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_3D, -1)
+		_create_label("b", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_3D, -1)
+		_create_multi_output("op", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_3D)
 	elif vsn is VisualShaderNodeColorFunc:
 		if not ops.is_empty():
 			vsn.function = ops[0]
@@ -278,13 +288,13 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		option_button.select(vsn.function)
 		option_button.item_selected.connect(func(id_selected: VisualShaderNodeColorOp.Operator): vsn.function = id_selected; _on_effect_changed())
 		graph_node.add_child(option_button)
-		_create_label("input", graph_node, NodeTypes.VEC3, NodeTypes.NONE)
-		_create_multi_output("output", graph_node, NodeTypes.VEC3)
+		_create_label("input", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_3D, -1)
+		_create_multi_output("output", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_3D)
 	#endregion
 	elif vsn is VisualShaderNodeInput:
 		if not ops.is_empty():
 			vsn.input_name = ops[0]
-		_create_label("output", graph_node, NodeTypes.NONE, NodeTypes.VEC2)
+		_create_label("output", graph_node, -1, VisualShaderNode.PORT_TYPE_VECTOR_2D)
 
 	elif vsn is VisualShaderNodeMix:
 		var op_type := (vsn as VisualShaderNodeMix).op_type
@@ -301,42 +311,42 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		option_button.item_selected.connect(func(id_selected: VisualShaderNodeMix.OpType): vsn.op_type = id_selected; _on_effect_changed())
 		graph_node.add_child(option_button)
 		if op_type == VisualShaderNodeMix.OP_TYPE_SCALAR:
-			_create_label("a", graph_node, NodeTypes.SCALAR, NodeTypes.NONE)
-			_create_label("b", graph_node, NodeTypes.SCALAR, NodeTypes.NONE)
-			_create_label("weight", graph_node, NodeTypes.SCALAR, NodeTypes.NONE)
-			_create_label("mix", graph_node, NodeTypes.NONE, NodeTypes.SCALAR)
+			_create_label("a", graph_node, VisualShaderNode.PORT_TYPE_SCALAR, -1)
+			_create_label("b", graph_node, VisualShaderNode.PORT_TYPE_SCALAR, -1)
+			_create_label("weight", graph_node, VisualShaderNode.PORT_TYPE_SCALAR, -1)
+			_create_label("mix", graph_node, -1, VisualShaderNode.PORT_TYPE_SCALAR)
 		elif op_type == VisualShaderNodeMix.OP_TYPE_VECTOR_2D:
-			_create_label("a", graph_node, NodeTypes.VEC2, NodeTypes.NONE)
-			_create_label("b", graph_node, NodeTypes.VEC2, NodeTypes.NONE)
-			_create_label("weight", graph_node, NodeTypes.VEC2, NodeTypes.NONE)
-			_create_multi_output("mix", graph_node, NodeTypes.VEC2)
+			_create_label("a", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_2D, -1)
+			_create_label("b", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_2D, -1)
+			_create_label("weight", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_2D, -1)
+			_create_multi_output("mix", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_2D)
 		elif op_type == VisualShaderNodeMix.OP_TYPE_VECTOR_2D_SCALAR:
-			_create_label("a", graph_node, NodeTypes.VEC2, NodeTypes.NONE)
-			_create_label("b", graph_node, NodeTypes.VEC2, NodeTypes.NONE)
-			_create_label("weight", graph_node, NodeTypes.SCALAR, NodeTypes.NONE)
-			_create_multi_output("mix", graph_node, NodeTypes.VEC2)
+			_create_label("a", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_2D, -1)
+			_create_label("b", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_2D, -1)
+			_create_label("weight", graph_node, VisualShaderNode.PORT_TYPE_SCALAR, -1)
+			_create_multi_output("mix", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_2D)
 		elif op_type == VisualShaderNodeMix.OP_TYPE_VECTOR_3D:
-			_create_label("a", graph_node, NodeTypes.VEC3, NodeTypes.NONE)
-			_create_label("b", graph_node, NodeTypes.VEC3, NodeTypes.NONE)
-			_create_label("weight", graph_node, NodeTypes.VEC3, NodeTypes.NONE)
-			_create_multi_output("mix", graph_node, NodeTypes.VEC3)
+			_create_label("a", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_3D, -1)
+			_create_label("b", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_3D, -1)
+			_create_label("weight", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_3D, -1)
+			_create_multi_output("mix", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_3D)
 		elif op_type == VisualShaderNodeMix.OP_TYPE_VECTOR_3D_SCALAR:
-			_create_label("a", graph_node, NodeTypes.VEC3, NodeTypes.NONE)
-			_create_label("b", graph_node, NodeTypes.VEC3, NodeTypes.NONE)
-			_create_label("weight", graph_node, NodeTypes.SCALAR, NodeTypes.NONE)
-			_create_multi_output("mix", graph_node, NodeTypes.VEC3)
+			_create_label("a", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_3D, -1)
+			_create_label("b", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_3D, -1)
+			_create_label("weight", graph_node, VisualShaderNode.PORT_TYPE_SCALAR, -1)
+			_create_multi_output("mix", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_3D)
 		elif op_type == VisualShaderNodeMix.OP_TYPE_VECTOR_4D:
-			_create_label("a", graph_node, NodeTypes.VEC4, NodeTypes.NONE)
-			_create_label("b", graph_node, NodeTypes.VEC4, NodeTypes.NONE)
-			_create_label("weight", graph_node, NodeTypes.VEC4, NodeTypes.NONE)
-			_create_multi_output("mix", graph_node, NodeTypes.VEC4)
+			_create_label("a", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_4D, -1)
+			_create_label("b", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_4D, -1)
+			_create_label("weight", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_4D, -1)
+			_create_multi_output("mix", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_4D)
 		elif op_type == VisualShaderNodeMix.OP_TYPE_VECTOR_4D_SCALAR:
-			_create_label("a", graph_node, NodeTypes.VEC4, NodeTypes.NONE)
-			_create_label("b", graph_node, NodeTypes.VEC4, NodeTypes.NONE)
-			_create_label("weight", graph_node, NodeTypes.SCALAR, NodeTypes.NONE)
-			_create_multi_output("mix", graph_node, NodeTypes.VEC4)
+			_create_label("a", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_4D, -1)
+			_create_label("b", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_4D, -1)
+			_create_label("weight", graph_node, VisualShaderNode.PORT_TYPE_SCALAR, -1)
+			_create_multi_output("mix", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_4D)
 	elif vsn is VisualShaderNodeUVFunc:
-		_create_label("uv", graph_node, NodeTypes.VEC2, NodeTypes.NONE)
+		_create_label("uv", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_2D, -1)
 		var scale_hbox := HBoxContainer.new()
 		var scale_v2 := ShaderLoader.VALUE_SLIDER_V2_TSCN.instantiate() as ValueSliderV2
 		scale_v2.value = Vector2.ONE
@@ -346,9 +356,9 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		scale_label.text = "scale"
 		scale_hbox.add_child(scale_label)
 		graph_node.add_child(scale_hbox)
-		graph_node.set_slot(1, true, NodeTypes.VEC2, slot_colors[NodeTypes.VEC2], false, -1, Color.TRANSPARENT)
-		_create_label("offset", graph_node, NodeTypes.VEC2, NodeTypes.NONE)
-		_create_label("uv", graph_node, NodeTypes.NONE, NodeTypes.VEC2)
+		graph_node.set_slot(1, true, VisualShaderNode.PORT_TYPE_VECTOR_2D, slot_colors[VisualShaderNode.PORT_TYPE_VECTOR_2D], false, -1, Color.TRANSPARENT)
+		_create_label("offset", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_2D, -1)
+		_create_label("uv", graph_node, -1, VisualShaderNode.PORT_TYPE_VECTOR_2D)
 
 	graph_node.set_meta("visual_shader_node", vsn)
 	graph_node.name = str(id)
@@ -356,16 +366,16 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 	graph_edit.add_child(graph_node)
 
 
-func _create_label(text: String, graph_node: GraphNode, left_slot: NodeTypes, right_slot: NodeTypes) -> Label:
+func _create_label(text: String, graph_node: GraphNode, left_slot: VisualShaderNode.PortType, right_slot: VisualShaderNode.PortType) -> Label:
 	var label := Label.new()
 	label.text = text
 	graph_node.add_child(label)
 	var slot_index := graph_node.get_child_count() - 1
-	graph_node.set_slot(slot_index, left_slot != NodeTypes.NONE, left_slot, get_color_type(left_slot), right_slot != NodeTypes.NONE, right_slot, get_color_type(right_slot))
+	graph_node.set_slot(slot_index, left_slot != -1, left_slot, get_color_type(left_slot), right_slot != -1, right_slot, get_color_type(right_slot))
 	return label
 
 
-func _create_multi_output(text: String, graph_node: GraphNode, right_slot: NodeTypes) -> void:
+func _create_multi_output(text: String, graph_node: GraphNode, right_slot: VisualShaderNode.PortType) -> void:
 	var hbox := HBoxContainer.new()
 	var label := Label.new()
 	label.text = text
@@ -377,17 +387,17 @@ func _create_multi_output(text: String, graph_node: GraphNode, right_slot: NodeT
 	hbox.add_child(expand_button)
 	graph_node.add_child(hbox)
 	var slot_index := graph_node.get_child_count() - 1
-	graph_node.set_slot(slot_index, false, NodeTypes.NONE, get_color_type(NodeTypes.NONE), right_slot != NodeTypes.NONE, right_slot, get_color_type(right_slot))
+	graph_node.set_slot(slot_index, false, -1, get_color_type(-1), right_slot != -1, right_slot, get_color_type(right_slot))
 	var labels: Array[Control]
-	var red := _create_label("red", graph_node, NodeTypes.NONE, NodeTypes.SCALAR)
+	var red := _create_label("red", graph_node, -1, VisualShaderNode.PORT_TYPE_SCALAR)
 	labels.append(red)
-	var green := _create_label("green", graph_node, NodeTypes.NONE, NodeTypes.SCALAR)
+	var green := _create_label("green", graph_node, -1, VisualShaderNode.PORT_TYPE_SCALAR)
 	labels.append(green)
-	if right_slot > NodeTypes.VEC2:
-		var blue := _create_label("blue", graph_node, NodeTypes.NONE, NodeTypes.SCALAR)
+	if right_slot > VisualShaderNode.PORT_TYPE_VECTOR_2D:
+		var blue := _create_label("blue", graph_node, -1, VisualShaderNode.PORT_TYPE_SCALAR)
 		labels.append(blue)
-		if right_slot > NodeTypes.VEC3:
-			var alpha := _create_label("alpha", graph_node, NodeTypes.NONE, NodeTypes.SCALAR)
+		if right_slot > VisualShaderNode.PORT_TYPE_VECTOR_3D:
+			var alpha := _create_label("alpha", graph_node, -1, VisualShaderNode.PORT_TYPE_SCALAR)
 			labels.append(alpha)
 	expand_button.toggled.connect(_handle_extra_control_visibility.bind(labels))
 	_handle_extra_control_visibility(expand_button.button_pressed, labels)
@@ -398,22 +408,22 @@ func _handle_extra_control_visibility(toggled_on: bool, controls: Array[Control]
 		control.visible = toggled_on
 
 
-func _get_parameter_type(vsn: VisualShaderNodeParameter) -> NodeTypes:
+func _get_parameter_type(vsn: VisualShaderNodeParameter) -> VisualShaderNode.PortType:
 	if vsn is VisualShaderNodeBooleanParameter:
-		return NodeTypes.BOOL
+		return VisualShaderNode.PORT_TYPE_BOOLEAN
 	elif vsn is VisualShaderNodeIntParameter or vsn is VisualShaderNodeUIntParameter or vsn is VisualShaderNodeFloatParameter:
-		return NodeTypes.SCALAR
+		return VisualShaderNode.PORT_TYPE_SCALAR
 	elif vsn is VisualShaderNodeVec2Parameter:
-		return NodeTypes.VEC2
+		return VisualShaderNode.PORT_TYPE_VECTOR_2D
 	elif vsn is VisualShaderNodeVec3Parameter:
-		return NodeTypes.VEC3
+		return VisualShaderNode.PORT_TYPE_VECTOR_3D
 	elif vsn is VisualShaderNodeVec4Parameter or vsn is VisualShaderNodeColorParameter:
-		return NodeTypes.VEC4
+		return VisualShaderNode.PORT_TYPE_VECTOR_4D
 	elif vsn is VisualShaderNodeTransformParameter:
-		return NodeTypes.TRANSFORM
+		return VisualShaderNode.PORT_TYPE_TRANSFORM
 	elif vsn is VisualShaderNodeTextureParameter:
-		return NodeTypes.SAMPLER
-	return NodeTypes.NONE
+		return VisualShaderNode.PORT_TYPE_SAMPLER
+	return -1
 
 
 func fill_add_options() -> void:
