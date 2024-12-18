@@ -1311,6 +1311,31 @@ func _create_vector_node(graph_node: GraphNode, vsn: VisualShaderNodeVectorBase,
 				_create_multi_output("z", graph_node, VisualShaderNode.PORT_TYPE_SCALAR)
 				if vsn.op_type == VisualShaderNodeVectorBase.OP_TYPE_VECTOR_4D:
 					_create_multi_output("w", graph_node, VisualShaderNode.PORT_TYPE_SCALAR)
+	elif vsn is VisualShaderNodeVectorLen:
+		if not ops.is_empty():
+			vsn.op_type = ops[0]
+		_create_input("vec", graph_node, vsn, _get_vector_op_type(vsn), 0)
+		_create_multi_output("length", graph_node, VisualShaderNode.PORT_TYPE_SCALAR)
+	elif vsn is VisualShaderNodeVectorDistance:
+		if not ops.is_empty():
+			vsn.op_type = ops[0]
+		_create_input("a", graph_node, vsn, _get_vector_op_type(vsn), 0)
+		_create_input("b", graph_node, vsn, _get_vector_op_type(vsn), 1)
+		_create_multi_output("distance", graph_node, VisualShaderNode.PORT_TYPE_SCALAR)
+	elif vsn is VisualShaderNodeFaceForward:
+		if not ops.is_empty():
+			vsn.op_type = ops[0]
+		_create_input("N", graph_node, vsn, _get_vector_op_type(vsn), 0)
+		_create_input("I", graph_node, vsn, _get_vector_op_type(vsn), 1)
+		_create_input("Nref", graph_node, vsn, _get_vector_op_type(vsn), 2)
+		_create_multi_output("", graph_node, _get_vector_op_type(vsn))
+	elif vsn is VisualShaderNodeVectorRefract:
+		if not ops.is_empty():
+			vsn.op_type = ops[0]
+		_create_input("I", graph_node, vsn, _get_vector_op_type(vsn), 0)
+		_create_input("N", graph_node, vsn, _get_vector_op_type(vsn), 1)
+		_create_input("eta", graph_node, vsn, _get_vector_op_type(vsn), 2)
+		_create_multi_output("", graph_node, _get_vector_op_type(vsn))
 
 	_check_output_connections_validity(graph_node)
 
