@@ -28,6 +28,7 @@ var visual_shader: VisualShader:
 			if child.name != "_connection_layer":
 				graph_edit.remove_child(child)
 				child.queue_free()
+		await get_tree().process_frame
 		if is_instance_valid(visual_shader):
 			var node_list := visual_shader.get_node_list(VisualShader.Type.TYPE_FRAGMENT)
 			for id in node_list:
@@ -64,7 +65,7 @@ class AddOption:
 	#bool is_native = false
 	#int temp_idx = 0
 
-	func _init(_option_name: String, _category: String, _type: String, _description: String, _ops: Array, _return_type := VisualShaderNode.PORT_TYPE_SCALAR, _mode := -1) -> void:
+	func _init(_option_name: String, _category: String, _type: String, _description: String, _ops := [], _return_type := VisualShaderNode.PORT_TYPE_SCALAR, _mode := -1) -> void:
 		option_name = _option_name
 		type = _type
 		category = _category
@@ -225,8 +226,8 @@ func add_new_node(index: int) -> void:
 func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 	if not is_instance_valid(vsn):
 		return
-	var parameter_list := vsn.get_default_input_values()
-	print(vsn, " ", parameter_list)
+	#var parameter_list := vsn.get_default_input_values()
+	#print(vsn, " ", parameter_list)
 	var graph_node := GraphNode.new()
 	graph_node.title = vsn.get_class().replace("VisualShaderNode", "")
 	if vsn is VisualShaderNodeOutput:
@@ -442,73 +443,22 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 	#endregion
 	#region Vectors
 	elif vsn is VisualShaderNodeVectorBase:
+		vsn.set("expanded_output_ports", [0])
 		if ops.size() > 1:
 			vsn.op_type = vsn.ops[1]
-		# TODO: Handle op_type changing.
-		if vsn is VisualShaderNodeVectorOp:
-			if not ops.is_empty():
-				vsn.operator = ops[0]
-			var option_button := OptionButton.new()
-			option_button.add_item("Add", VisualShaderNodeVectorOp.OP_ADD)
-			option_button.add_item("Subtract", VisualShaderNodeVectorOp.OP_SUB)
-			option_button.add_item("Multiply", VisualShaderNodeVectorOp.OP_MUL)
-			option_button.add_item("Divide", VisualShaderNodeVectorOp.OP_DIV)
-			option_button.add_item("Remainder", VisualShaderNodeVectorOp.OP_MOD)
-			option_button.add_item("Power", VisualShaderNodeVectorOp.OP_POW)
-			option_button.add_item("Max", VisualShaderNodeVectorOp.OP_MAX)
-			option_button.add_item("Min", VisualShaderNodeVectorOp.OP_MIN)
-			option_button.add_item("Cross", VisualShaderNodeVectorOp.OP_CROSS)
-			option_button.add_item("ATan2", VisualShaderNodeVectorOp.OP_ATAN2)
-			option_button.add_item("Reflect", VisualShaderNodeVectorOp.OP_REFLECT)
-			option_button.add_item("Step", VisualShaderNodeVectorOp.OP_STEP)
-			option_button.select(vsn.operator)
-			option_button.item_selected.connect(func(id_selected: VisualShaderNodeVectorOp.Operator): vsn.operator = id_selected; _on_effect_changed())
-			graph_node.add_child(option_button)
-			_create_label("a", graph_node, _get_vector_op_type(vsn), VisualShaderNode.PORT_TYPE_MAX)
-			_create_label("b", graph_node, _get_vector_op_type(vsn), VisualShaderNode.PORT_TYPE_MAX)
-			_create_multi_output("op", graph_node, _get_vector_op_type(vsn))
-		elif vsn is VisualShaderNodeVectorFunc:
-			if not ops.is_empty():
-				vsn.function = ops[0]
-			var option_button := OptionButton.new()
-			option_button.add_item("Normalize", VisualShaderNodeVectorFunc.FUNC_NORMALIZE)
-			option_button.add_item("Sin", VisualShaderNodeVectorFunc.FUNC_SIN)
-			option_button.add_item("Cos", VisualShaderNodeVectorFunc.FUNC_COS)
-			option_button.add_item("Tan", VisualShaderNodeVectorFunc.FUNC_TAN)
-			option_button.add_item("ASin", VisualShaderNodeVectorFunc.FUNC_ASIN)
-			option_button.add_item("ACos", VisualShaderNodeVectorFunc.FUNC_ACOS)
-			option_button.add_item("ATan", VisualShaderNodeVectorFunc.FUNC_ATAN)
-			option_button.add_item("SinH", VisualShaderNodeVectorFunc.FUNC_SINH)
-			option_button.add_item("CosH", VisualShaderNodeVectorFunc.FUNC_COSH)
-			option_button.add_item("TanH", VisualShaderNodeVectorFunc.FUNC_TANH)
-			option_button.add_item("Log", VisualShaderNodeVectorFunc.FUNC_LOG)
-			option_button.add_item("Exp", VisualShaderNodeVectorFunc.FUNC_EXP)
-			option_button.add_item("Square root", VisualShaderNodeVectorFunc.FUNC_SQRT)
-			option_button.add_item("Abs", VisualShaderNodeVectorFunc.FUNC_ABS)
-			option_button.add_item("Sign", VisualShaderNodeVectorFunc.FUNC_SIGN)
-			option_button.add_item("Floor", VisualShaderNodeVectorFunc.FUNC_FLOOR)
-			option_button.add_item("Round", VisualShaderNodeVectorFunc.FUNC_ROUND)
-			option_button.add_item("Ceil", VisualShaderNodeVectorFunc.FUNC_CEIL)
-			option_button.add_item("Fract", VisualShaderNodeVectorFunc.FUNC_FRACT)
-			option_button.add_item("Saturate", VisualShaderNodeVectorFunc.FUNC_SATURATE)
-			option_button.add_item("Negate", VisualShaderNodeVectorFunc.FUNC_NEGATE)
-			option_button.add_item("ASinH", VisualShaderNodeVectorFunc.FUNC_ASINH)
-			option_button.add_item("ACosH", VisualShaderNodeVectorFunc.FUNC_ACOSH)
-			option_button.add_item("ATanH", VisualShaderNodeVectorFunc.FUNC_ATANH)
-			option_button.add_item("Degrees", VisualShaderNodeVectorFunc.FUNC_DEGREES)
-			option_button.add_item("Exp2", VisualShaderNodeVectorFunc.FUNC_EXP2)
-			option_button.add_item("Inverse square root", VisualShaderNodeVectorFunc.FUNC_INVERSE_SQRT)
-			option_button.add_item("Log2", VisualShaderNodeVectorFunc.FUNC_LOG2)
-			option_button.add_item("Radians", VisualShaderNodeVectorFunc.FUNC_RADIANS)
-			option_button.add_item("Reciprocal", VisualShaderNodeVectorFunc.FUNC_RECIPROCAL)
-			option_button.add_item("Roundeven", VisualShaderNodeVectorFunc.FUNC_ROUNDEVEN)
-			option_button.add_item("Trunc", VisualShaderNodeVectorFunc.FUNC_TRUNC)
-			option_button.add_item("One minus", VisualShaderNodeVectorFunc.FUNC_ONEMINUS)
-			option_button.select(vsn.function)
-			option_button.item_selected.connect(func(id_selected: VisualShaderNodeFloatFunc.Function): vsn.function = id_selected; _on_effect_changed())
-			graph_node.add_child(option_button)
-			_create_label("input", graph_node, _get_vector_op_type(vsn), VisualShaderNode.PORT_TYPE_MAX)
-			_create_multi_output("output", graph_node, _get_vector_op_type(vsn))
+		var option_button := OptionButton.new()
+		option_button.add_item("Vector2", VisualShaderNodeVectorBase.OP_TYPE_VECTOR_2D)
+		option_button.add_item("Vector3", VisualShaderNodeVectorBase.OP_TYPE_VECTOR_3D)
+		option_button.add_item("Vector4", VisualShaderNodeVectorBase.OP_TYPE_VECTOR_4D)
+		option_button.select(vsn.op_type)
+		option_button.item_selected.connect(
+			func(id_selected: VisualShaderNodeVectorBase.OpType):
+				vsn.op_type = id_selected
+				_create_vector_node(graph_node, vsn)
+				_on_effect_changed()
+		)
+		graph_node.add_child(option_button)
+		_create_vector_node(graph_node, vsn, ops)
 	#endregion
 	#region Colors
 	elif vsn is VisualShaderNodeColorOp:
@@ -555,6 +505,7 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		_create_label(vsn.input_name, graph_node, VisualShaderNode.PORT_TYPE_MAX, port_type)
 
 	elif vsn is VisualShaderNodeMix:
+		vsn.set("expanded_output_ports", [0])
 		if not ops.is_empty():
 			vsn.op_type = ops[0]
 		var option_button := OptionButton.new()
@@ -609,6 +560,11 @@ func delete_node(graph_node: GraphNode) -> void:
 func _create_label(text: String, graph_node: GraphNode, left_slot: VisualShaderNode.PortType, right_slot: VisualShaderNode.PortType) -> Label:
 	var label := Label.new()
 	label.text = text
+	if right_slot != VisualShaderNode.PORT_TYPE_MAX:
+		if left_slot != VisualShaderNode.PORT_TYPE_MAX:
+			label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		else:
+			label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	graph_node.add_child(label)
 	var slot_index := graph_node.get_child_count() - 1
 	graph_node.set_slot(slot_index, left_slot != VisualShaderNode.PORT_TYPE_MAX, left_slot, get_color_type(left_slot), right_slot != VisualShaderNode.PORT_TYPE_MAX, right_slot, get_color_type(right_slot))
@@ -617,7 +573,9 @@ func _create_label(text: String, graph_node: GraphNode, left_slot: VisualShaderN
 
 func _create_multi_output(text: String, graph_node: GraphNode, right_slot: VisualShaderNode.PortType) -> void:
 	var hbox := HBoxContainer.new()
+	hbox.alignment = BoxContainer.ALIGNMENT_END
 	var label := Label.new()
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	label.text = text
 	hbox.add_child(label)
 	var expand_button := TextureButton.new()
@@ -719,6 +677,11 @@ func _create_mix_node(graph_node: GraphNode, vsn: VisualShaderNodeMix) -> void:
 		_create_label("b", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_4D, VisualShaderNode.PORT_TYPE_MAX)
 		_create_label("weight", graph_node, VisualShaderNode.PORT_TYPE_SCALAR, VisualShaderNode.PORT_TYPE_MAX)
 		_create_multi_output("mix", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_4D)
+
+	_check_output_connections_validity(graph_node)
+
+
+func _check_output_connections_validity(graph_node: GraphNode) -> void:
 	var output_connections := graph_edit.get_connection_list().filter(func(dict: Dictionary): return dict.from_node == graph_node.name)
 	for output_connection in output_connections:
 		var from_port: int = output_connection.from_port
@@ -727,6 +690,79 @@ func _create_mix_node(graph_node: GraphNode, vsn: VisualShaderNodeMix) -> void:
 			var vs_from_node_id := int(String(output_connection.from_node))
 			var vs_to_node_id := int(String(output_connection.to_node))
 			visual_shader.disconnect_nodes(VisualShader.TYPE_FRAGMENT, vs_from_node_id, from_port, vs_to_node_id, output_connection.to_port)
+
+
+func _create_vector_node(graph_node: GraphNode, vsn: VisualShaderNodeVectorBase, ops := []) -> void:
+	var children := graph_node.get_children(true)
+	for i in range(2, children.size()):
+		var child := children[i]
+		graph_node.remove_child(child)
+		child.queue_free()
+	if vsn is VisualShaderNodeVectorOp:
+		if not ops.is_empty():
+			vsn.operator = ops[0]
+		var option_button := OptionButton.new()
+		option_button.add_item("Add", VisualShaderNodeVectorOp.OP_ADD)
+		option_button.add_item("Subtract", VisualShaderNodeVectorOp.OP_SUB)
+		option_button.add_item("Multiply", VisualShaderNodeVectorOp.OP_MUL)
+		option_button.add_item("Divide", VisualShaderNodeVectorOp.OP_DIV)
+		option_button.add_item("Remainder", VisualShaderNodeVectorOp.OP_MOD)
+		option_button.add_item("Power", VisualShaderNodeVectorOp.OP_POW)
+		option_button.add_item("Max", VisualShaderNodeVectorOp.OP_MAX)
+		option_button.add_item("Min", VisualShaderNodeVectorOp.OP_MIN)
+		option_button.add_item("Cross", VisualShaderNodeVectorOp.OP_CROSS)
+		option_button.add_item("ATan2", VisualShaderNodeVectorOp.OP_ATAN2)
+		option_button.add_item("Reflect", VisualShaderNodeVectorOp.OP_REFLECT)
+		option_button.add_item("Step", VisualShaderNodeVectorOp.OP_STEP)
+		option_button.select(vsn.operator)
+		option_button.item_selected.connect(func(id_selected: VisualShaderNodeVectorOp.Operator): vsn.operator = id_selected; _on_effect_changed())
+		graph_node.add_child(option_button)
+		_create_label("a", graph_node, _get_vector_op_type(vsn), VisualShaderNode.PORT_TYPE_MAX)
+		_create_label("b", graph_node, _get_vector_op_type(vsn), VisualShaderNode.PORT_TYPE_MAX)
+		_create_multi_output("op", graph_node, _get_vector_op_type(vsn))
+	elif vsn is VisualShaderNodeVectorFunc:
+		if not ops.is_empty():
+			vsn.function = ops[0]
+		var option_button := OptionButton.new()
+		option_button.add_item("Normalize", VisualShaderNodeVectorFunc.FUNC_NORMALIZE)
+		option_button.add_item("Sin", VisualShaderNodeVectorFunc.FUNC_SIN)
+		option_button.add_item("Cos", VisualShaderNodeVectorFunc.FUNC_COS)
+		option_button.add_item("Tan", VisualShaderNodeVectorFunc.FUNC_TAN)
+		option_button.add_item("ASin", VisualShaderNodeVectorFunc.FUNC_ASIN)
+		option_button.add_item("ACos", VisualShaderNodeVectorFunc.FUNC_ACOS)
+		option_button.add_item("ATan", VisualShaderNodeVectorFunc.FUNC_ATAN)
+		option_button.add_item("SinH", VisualShaderNodeVectorFunc.FUNC_SINH)
+		option_button.add_item("CosH", VisualShaderNodeVectorFunc.FUNC_COSH)
+		option_button.add_item("TanH", VisualShaderNodeVectorFunc.FUNC_TANH)
+		option_button.add_item("Log", VisualShaderNodeVectorFunc.FUNC_LOG)
+		option_button.add_item("Exp", VisualShaderNodeVectorFunc.FUNC_EXP)
+		option_button.add_item("Square root", VisualShaderNodeVectorFunc.FUNC_SQRT)
+		option_button.add_item("Abs", VisualShaderNodeVectorFunc.FUNC_ABS)
+		option_button.add_item("Sign", VisualShaderNodeVectorFunc.FUNC_SIGN)
+		option_button.add_item("Floor", VisualShaderNodeVectorFunc.FUNC_FLOOR)
+		option_button.add_item("Round", VisualShaderNodeVectorFunc.FUNC_ROUND)
+		option_button.add_item("Ceil", VisualShaderNodeVectorFunc.FUNC_CEIL)
+		option_button.add_item("Fract", VisualShaderNodeVectorFunc.FUNC_FRACT)
+		option_button.add_item("Saturate", VisualShaderNodeVectorFunc.FUNC_SATURATE)
+		option_button.add_item("Negate", VisualShaderNodeVectorFunc.FUNC_NEGATE)
+		option_button.add_item("ASinH", VisualShaderNodeVectorFunc.FUNC_ASINH)
+		option_button.add_item("ACosH", VisualShaderNodeVectorFunc.FUNC_ACOSH)
+		option_button.add_item("ATanH", VisualShaderNodeVectorFunc.FUNC_ATANH)
+		option_button.add_item("Degrees", VisualShaderNodeVectorFunc.FUNC_DEGREES)
+		option_button.add_item("Exp2", VisualShaderNodeVectorFunc.FUNC_EXP2)
+		option_button.add_item("Inverse square root", VisualShaderNodeVectorFunc.FUNC_INVERSE_SQRT)
+		option_button.add_item("Log2", VisualShaderNodeVectorFunc.FUNC_LOG2)
+		option_button.add_item("Radians", VisualShaderNodeVectorFunc.FUNC_RADIANS)
+		option_button.add_item("Reciprocal", VisualShaderNodeVectorFunc.FUNC_RECIPROCAL)
+		option_button.add_item("Roundeven", VisualShaderNodeVectorFunc.FUNC_ROUNDEVEN)
+		option_button.add_item("Trunc", VisualShaderNodeVectorFunc.FUNC_TRUNC)
+		option_button.add_item("One minus", VisualShaderNodeVectorFunc.FUNC_ONEMINUS)
+		option_button.select(vsn.function)
+		option_button.item_selected.connect(func(id_selected: VisualShaderNodeFloatFunc.Function): vsn.function = id_selected; _on_effect_changed())
+		graph_node.add_child(option_button)
+		_create_label("input", graph_node, _get_vector_op_type(vsn), VisualShaderNode.PORT_TYPE_MAX)
+		_create_multi_output("output", graph_node, _get_vector_op_type(vsn))
+	_check_output_connections_validity(graph_node)
 
 
 func fill_add_options() -> void:
@@ -855,6 +891,210 @@ func fill_add_options() -> void:
 	add_options.push_back(AddOption.new("UIntParameter", "Scalar/Variables", "VisualShaderNodeUIntParameter", ("Scalar unsigned integer parameter."), [], VisualShaderNode.PORT_TYPE_SCALAR_UINT));
 
 	#endregion
+	#region Vector
+	add_options.push_back(AddOption.new("VectorFunc", "Vector/Common", "VisualShaderNodeVectorFunc", "Vector function.", [], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("VectorOp", "Vector/Common", "VisualShaderNodeVectorOp", "Vector operator.", [], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("VectorCompose", "Vector/Common", "VisualShaderNodeVectorCompose", "Composes vector from scalars."));
+	add_options.push_back(AddOption.new("VectorDecompose", "Vector/Common", "VisualShaderNodeVectorDecompose", "Decomposes vector to scalars."));
+
+	add_options.push_back(AddOption.new("Vector2Compose", "Vector/Composition", "VisualShaderNodeVectorCompose", "Composes 2D vector from two scalars.", [ VisualShaderNodeVectorCompose.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("Vector2Decompose", "Vector/Composition", "VisualShaderNodeVectorDecompose", "Decomposes 2D vector to two scalars.", [ VisualShaderNodeVectorDecompose.OP_TYPE_VECTOR_2D ]));
+	add_options.push_back(AddOption.new("Vector3Compose", "Vector/Composition", "VisualShaderNodeVectorCompose", "Composes 3D vector from three scalars.", [ VisualShaderNodeVectorCompose.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("Vector3Decompose", "Vector/Composition", "VisualShaderNodeVectorDecompose", "Decomposes 3D vector to three scalars.", [ VisualShaderNodeVectorDecompose.OP_TYPE_VECTOR_3D ]));
+	add_options.push_back(AddOption.new("Vector4Compose", "Vector/Composition", "VisualShaderNodeVectorCompose", "Composes 4D vector from four scalars.", [ VisualShaderNodeVectorCompose.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("Vector4Decompose", "Vector/Composition", "VisualShaderNodeVectorDecompose", "Decomposes 4D vector to four scalars.", [ VisualShaderNodeVectorDecompose.OP_TYPE_VECTOR_4D ]));
+
+	add_options.push_back(AddOption.new("Abs", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the absolute value of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_ABS, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("Abs", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the absolute value of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_ABS, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("Abs", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the absolute value of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_ABS, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("ACos", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the arc-cosine of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_ACOS, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("ACos", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the arc-cosine of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_ACOS, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("ACos", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the arc-cosine of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_ACOS, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("ACosH", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the inverse hyperbolic cosine of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_ACOSH, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("ACosH", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the inverse hyperbolic cosine of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_ACOSH, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("ACosH", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the inverse hyperbolic cosine of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_ACOSH, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("ASin", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the arc-sine of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_ASIN, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("ASin", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the arc-sine of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_ASIN, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("ASin", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the arc-sine of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_ASIN, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("ASinH", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the inverse hyperbolic sine of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_ASINH, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("ASinH", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the inverse hyperbolic sine of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_ASINH, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("ASinH", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the inverse hyperbolic sine of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_ASINH, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("ATan", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the arc-tangent of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_ATAN, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("ATan", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the arc-tangent of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_ATAN, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("ATan", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the arc-tangent of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_ATAN, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("ATan2", "Vector/Functions", "VisualShaderNodeVectorOp", "Returns the arc-tangent of the parameters.", [ VisualShaderNodeVectorOp.OP_ATAN2, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("ATan2", "Vector/Functions", "VisualShaderNodeVectorOp", "Returns the arc-tangent of the parameters.", [ VisualShaderNodeVectorOp.OP_ATAN2, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("ATan2", "Vector/Functions", "VisualShaderNodeVectorOp", "Returns the arc-tangent of the parameters.", [ VisualShaderNodeVectorOp.OP_ATAN2, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("ATanH", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the inverse hyperbolic tangent of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_ATANH, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("ATanH", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the inverse hyperbolic tangent of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_ATANH, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("ATanH", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the inverse hyperbolic tangent of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_ATANH, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("Ceil", "Vector/Functions", "VisualShaderNodeVectorFunc", "Finds the nearest integer that is greater than or equal to the parameter.", [ VisualShaderNodeVectorFunc.FUNC_CEIL, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("Ceil", "Vector/Functions", "VisualShaderNodeVectorFunc", "Finds the nearest integer that is greater than or equal to the parameter.", [ VisualShaderNodeVectorFunc.FUNC_CEIL, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("Ceil", "Vector/Functions", "VisualShaderNodeVectorFunc", "Finds the nearest integer that is greater than or equal to the parameter.", [ VisualShaderNodeVectorFunc.FUNC_CEIL, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("Clamp", "Vector/Functions", "VisualShaderNodeClamp", "Constrains a value to lie between two further values.", [ VisualShaderNodeClamp.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("Clamp", "Vector/Functions", "VisualShaderNodeClamp", "Constrains a value to lie between two further values.", [ VisualShaderNodeClamp.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("Clamp", "Vector/Functions", "VisualShaderNodeClamp", "Constrains a value to lie between two further values.", [ VisualShaderNodeClamp.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("Cos", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the cosine of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_COS, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("Cos", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the cosine of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_COS, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("Cos", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the cosine of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_COS, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("CosH", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the hyperbolic cosine of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_COSH, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("CosH", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the hyperbolic cosine of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_COSH, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("CosH", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the hyperbolic cosine of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_COSH, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("Cross", "Vector/Functions", "VisualShaderNodeVectorOp", "Calculates the cross product of two vectors.", [ VisualShaderNodeVectorOp.OP_CROSS, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("Degrees", "Vector/Functions", "VisualShaderNodeVectorFunc", "Converts a quantity in radians to degrees.", [ VisualShaderNodeVectorFunc.FUNC_DEGREES, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("Degrees", "Vector/Functions", "VisualShaderNodeVectorFunc", "Converts a quantity in radians to degrees.", [ VisualShaderNodeVectorFunc.FUNC_DEGREES, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("Degrees", "Vector/Functions", "VisualShaderNodeVectorFunc", "Converts a quantity in radians to degrees.", [ VisualShaderNodeVectorFunc.FUNC_DEGREES, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("DFdX", "Vector/Functions", "VisualShaderNodeDerivativeFunc", "(Fragment/Light mode only) (Vector) Derivative in 'x' using local differencing.", [ VisualShaderNodeDerivativeFunc.FUNC_X, VisualShaderNodeDerivativeFunc.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("DFdX", "Vector/Functions", "VisualShaderNodeDerivativeFunc", "(Fragment/Light mode only) (Vector) Derivative in 'x' using local differencing.", [ VisualShaderNodeDerivativeFunc.FUNC_X, VisualShaderNodeDerivativeFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("DFdX", "Vector/Functions", "VisualShaderNodeDerivativeFunc", "(Fragment/Light mode only) (Vector) Derivative in 'x' using local differencing.", [ VisualShaderNodeDerivativeFunc.FUNC_X, VisualShaderNodeDerivativeFunc.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("DFdY", "Vector/Functions", "VisualShaderNodeDerivativeFunc", "(Fragment/Light mode only) (Vector) Derivative in 'y' using local differencing.", [ VisualShaderNodeDerivativeFunc.FUNC_Y, VisualShaderNodeDerivativeFunc.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("DFdY", "Vector/Functions", "VisualShaderNodeDerivativeFunc", "(Fragment/Light mode only) (Vector) Derivative in 'y' using local differencing.", [ VisualShaderNodeDerivativeFunc.FUNC_Y, VisualShaderNodeDerivativeFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("DFdY", "Vector/Functions", "VisualShaderNodeDerivativeFunc", "(Fragment/Light mode only) (Vector) Derivative in 'y' using local differencing.", [ VisualShaderNodeDerivativeFunc.FUNC_Y, VisualShaderNodeDerivativeFunc.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("Distance2D", "Vector/Functions", "VisualShaderNodeVectorDistance", "Returns the distance between two points.", [ VisualShaderNodeVectorDistance.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("Distance3D", "Vector/Functions", "VisualShaderNodeVectorDistance", "Returns the distance between two points.", [ VisualShaderNodeVectorDistance.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("Distance4D", "Vector/Functions", "VisualShaderNodeVectorDistance", "Returns the distance between two points.", [ VisualShaderNodeVectorDistance.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("Dot", "Vector/Functions", "VisualShaderNodeDotProduct", "Calculates the dot product of two vectors.", [], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("Exp", "Vector/Functions", "VisualShaderNodeVectorFunc", "Base-e Exponential.", [ VisualShaderNodeVectorFunc.FUNC_EXP, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("Exp", "Vector/Functions", "VisualShaderNodeVectorFunc", "Base-e Exponential.", [ VisualShaderNodeVectorFunc.FUNC_EXP, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("Exp", "Vector/Functions", "VisualShaderNodeVectorFunc", "Base-e Exponential.", [ VisualShaderNodeVectorFunc.FUNC_EXP, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("Exp2", "Vector/Functions", "VisualShaderNodeVectorFunc", "Base-2 Exponential.", [ VisualShaderNodeVectorFunc.FUNC_EXP2, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("Exp2", "Vector/Functions", "VisualShaderNodeVectorFunc", "Base-2 Exponential.", [ VisualShaderNodeVectorFunc.FUNC_EXP2, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("Exp2", "Vector/Functions", "VisualShaderNodeVectorFunc", "Base-2 Exponential.", [ VisualShaderNodeVectorFunc.FUNC_EXP2, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("FaceForward", "Vector/Functions", "VisualShaderNodeFaceForward", "Returns the vector that points in the same direction as a reference vector. The function has three vector parameters : N, the vector to orient, I, the incident vector, and Nref, the reference vector. If the dot product of I and Nref is smaller than zero the return value is N. Otherwise -N is returned.", [ VisualShaderNodeFaceForward.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("FaceForward", "Vector/Functions", "VisualShaderNodeFaceForward", "Returns the vector that points in the same direction as a reference vector. The function has three vector parameters : N, the vector to orient, I, the incident vector, and Nref, the reference vector. If the dot product of I and Nref is smaller than zero the return value is N. Otherwise -N is returned.", [ VisualShaderNodeFaceForward.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("FaceForward", "Vector/Functions", "VisualShaderNodeFaceForward", "Returns the vector that points in the same direction as a reference vector. The function has three vector parameters : N, the vector to orient, I, the incident vector, and Nref, the reference vector. If the dot product of I and Nref is smaller than zero the return value is N. Otherwise -N is returned.", [ VisualShaderNodeFaceForward.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("Floor", "Vector/Functions", "VisualShaderNodeVectorFunc", "Finds the nearest integer less than or equal to the parameter.", [ VisualShaderNodeVectorFunc.FUNC_FLOOR, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("Floor", "Vector/Functions", "VisualShaderNodeVectorFunc", "Finds the nearest integer less than or equal to the parameter.", [ VisualShaderNodeVectorFunc.FUNC_FLOOR, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("Floor", "Vector/Functions", "VisualShaderNodeVectorFunc", "Finds the nearest integer less than or equal to the parameter.", [ VisualShaderNodeVectorFunc.FUNC_FLOOR, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("Fract", "Vector/Functions", "VisualShaderNodeVectorFunc", "Computes the fractional part of the argument.", [ VisualShaderNodeVectorFunc.FUNC_FRACT, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("Fract", "Vector/Functions", "VisualShaderNodeVectorFunc", "Computes the fractional part of the argument.", [ VisualShaderNodeVectorFunc.FUNC_FRACT, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("Fract", "Vector/Functions", "VisualShaderNodeVectorFunc", "Computes the fractional part of the argument.", [ VisualShaderNodeVectorFunc.FUNC_FRACT, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("Fresnel", "Vector/Functions", "VisualShaderNodeFresnel", "Returns falloff based on the dot product of surface normal and view direction of camera (pass associated inputs to it).", [], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("InverseSqrt", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the inverse of the square root of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_INVERSE_SQRT, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("InverseSqrt", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the inverse of the square root of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_INVERSE_SQRT, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("InverseSqrt", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the inverse of the square root of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_INVERSE_SQRT, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("Length2D", "Vector/Functions", "VisualShaderNodeVectorLen", "Calculates the length of a vector.", [ VisualShaderNodeVectorLen.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("Length3D", "Vector/Functions", "VisualShaderNodeVectorLen", "Calculates the length of a vector.", [ VisualShaderNodeVectorLen.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("Length4D", "Vector/Functions", "VisualShaderNodeVectorLen", "Calculates the length of a vector.", [ VisualShaderNodeVectorLen.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("Log", "Vector/Functions", "VisualShaderNodeVectorFunc", "Natural logarithm.", [ VisualShaderNodeVectorFunc.FUNC_LOG, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("Log", "Vector/Functions", "VisualShaderNodeVectorFunc", "Natural logarithm.", [ VisualShaderNodeVectorFunc.FUNC_LOG, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("Log", "Vector/Functions", "VisualShaderNodeVectorFunc", "Natural logarithm.", [ VisualShaderNodeVectorFunc.FUNC_LOG, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("Log2", "Vector/Functions", "VisualShaderNodeVectorFunc", "Base-2 logarithm.", [ VisualShaderNodeVectorFunc.FUNC_LOG2, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("Log2", "Vector/Functions", "VisualShaderNodeVectorFunc", "Base-2 logarithm.", [ VisualShaderNodeVectorFunc.FUNC_LOG2, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("Log2", "Vector/Functions", "VisualShaderNodeVectorFunc", "Base-2 logarithm.", [ VisualShaderNodeVectorFunc.FUNC_LOG2, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("Max", "Vector/Functions", "VisualShaderNodeVectorOp", "Returns the greater of two values.", [ VisualShaderNodeVectorOp.OP_MAX, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("Max", "Vector/Functions", "VisualShaderNodeVectorOp", "Returns the greater of two values.", [ VisualShaderNodeVectorOp.OP_MAX, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("Max", "Vector/Functions", "VisualShaderNodeVectorOp", "Returns the greater of two values.", [ VisualShaderNodeVectorOp.OP_MAX, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("Min", "Vector/Functions", "VisualShaderNodeVectorOp", "Returns the lesser of two values.", [ VisualShaderNodeVectorOp.OP_MIN, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("Min", "Vector/Functions", "VisualShaderNodeVectorOp", "Returns the lesser of two values.", [ VisualShaderNodeVectorOp.OP_MIN, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("Min", "Vector/Functions", "VisualShaderNodeVectorOp", "Returns the lesser of two values.", [ VisualShaderNodeVectorOp.OP_MIN, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("Mix", "Vector/Functions", "VisualShaderNodeMix", "Linear interpolation between two vectors.", [ VisualShaderNodeMix.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("Mix", "Vector/Functions", "VisualShaderNodeMix", "Linear interpolation between two vectors.", [ VisualShaderNodeMix.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("Mix", "Vector/Functions", "VisualShaderNodeMix", "Linear interpolation between two vectors.", [ VisualShaderNodeMix.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("MixS", "Vector/Functions", "VisualShaderNodeMix", "Linear interpolation between two vectors using scalar.", [ VisualShaderNodeMix.OP_TYPE_VECTOR_2D_SCALAR ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("MixS", "Vector/Functions", "VisualShaderNodeMix", "Linear interpolation between two vectors using scalar.", [ VisualShaderNodeMix.OP_TYPE_VECTOR_3D_SCALAR ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("MixS", "Vector/Functions", "VisualShaderNodeMix", "Linear interpolation between two vectors using scalar.", [ VisualShaderNodeMix.OP_TYPE_VECTOR_4D_SCALAR ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("MultiplyAdd (a * b + c)", "Vector/Functions", "VisualShaderNodeMultiplyAdd", "Performs a fused multiply-add operation (a * b + c) on vectors.", [ VisualShaderNodeMultiplyAdd.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("MultiplyAdd (a * b + c)", "Vector/Functions", "VisualShaderNodeMultiplyAdd", "Performs a fused multiply-add operation (a * b + c) on vectors.", [ VisualShaderNodeMultiplyAdd.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("MultiplyAdd (a * b + c)", "Vector/Functions", "VisualShaderNodeMultiplyAdd", "Performs a fused multiply-add operation (a * b + c) on vectors.", [ VisualShaderNodeMultiplyAdd.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("Negate (*-1)", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the opposite value of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_NEGATE, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("Negate (*-1)", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the opposite value of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_NEGATE, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("Negate (*-1)", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the opposite value of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_NEGATE, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("Normalize", "Vector/Functions", "VisualShaderNodeVectorFunc", "Calculates the normalize product of vector.", [ VisualShaderNodeVectorFunc.FUNC_NORMALIZE, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("Normalize", "Vector/Functions", "VisualShaderNodeVectorFunc", "Calculates the normalize product of vector.", [ VisualShaderNodeVectorFunc.FUNC_NORMALIZE, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("Normalize", "Vector/Functions", "VisualShaderNodeVectorFunc", "Calculates the normalize product of vector.", [ VisualShaderNodeVectorFunc.FUNC_NORMALIZE, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("OneMinus (1-)", "Vector/Functions", "VisualShaderNodeVectorFunc", "1.0 - vector", [ VisualShaderNodeVectorFunc.FUNC_ONEMINUS, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("OneMinus (1-)", "Vector/Functions", "VisualShaderNodeVectorFunc", "1.0 - vector", [ VisualShaderNodeVectorFunc.FUNC_ONEMINUS, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("OneMinus (1-)", "Vector/Functions", "VisualShaderNodeVectorFunc", "1.0 - vector", [ VisualShaderNodeVectorFunc.FUNC_ONEMINUS, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("Pow (^)", "Vector/Functions", "VisualShaderNodeVectorOp", "Returns the value of the first parameter raised to the power of the second.", [ VisualShaderNodeVectorOp.OP_POW, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("Pow (^)", "Vector/Functions", "VisualShaderNodeVectorOp", "Returns the value of the first parameter raised to the power of the second.", [ VisualShaderNodeVectorOp.OP_POW, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("Pow (^)", "Vector/Functions", "VisualShaderNodeVectorOp", "Returns the value of the first parameter raised to the power of the second.", [ VisualShaderNodeVectorOp.OP_POW, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("Radians", "Vector/Functions", "VisualShaderNodeVectorFunc", "Converts a quantity in degrees to radians.", [ VisualShaderNodeVectorFunc.FUNC_RADIANS, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("Radians", "Vector/Functions", "VisualShaderNodeVectorFunc", "Converts a quantity in degrees to radians.", [ VisualShaderNodeVectorFunc.FUNC_RADIANS, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("Radians", "Vector/Functions", "VisualShaderNodeVectorFunc", "Converts a quantity in degrees to radians.", [ VisualShaderNodeVectorFunc.FUNC_RADIANS, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("Reciprocal", "Vector/Functions", "VisualShaderNodeVectorFunc", "1.0 / vector", [ VisualShaderNodeVectorFunc.FUNC_RECIPROCAL, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("Reciprocal", "Vector/Functions", "VisualShaderNodeVectorFunc", "1.0 / vector", [ VisualShaderNodeVectorFunc.FUNC_RECIPROCAL, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("Reciprocal", "Vector/Functions", "VisualShaderNodeVectorFunc", "1.0 / vector", [ VisualShaderNodeVectorFunc.FUNC_RECIPROCAL, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("Reflect", "Vector/Functions", "VisualShaderNodeVectorOp", "Returns the vector that points in the direction of reflection ( a : incident vector, b : normal vector ).", [ VisualShaderNodeVectorOp.OP_REFLECT, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("Reflect", "Vector/Functions", "VisualShaderNodeVectorOp", "Returns the vector that points in the direction of reflection ( a : incident vector, b : normal vector ).", [ VisualShaderNodeVectorOp.OP_REFLECT, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("Reflect", "Vector/Functions", "VisualShaderNodeVectorOp", "Returns the vector that points in the direction of reflection ( a : incident vector, b : normal vector ).", [ VisualShaderNodeVectorOp.OP_REFLECT, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("Refract", "Vector/Functions", "VisualShaderNodeVectorRefract", "Returns the vector that points in the direction of refraction.", [], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("Refract", "Vector/Functions", "VisualShaderNodeVectorRefract", "Returns the vector that points in the direction of refraction.", [], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("Refract", "Vector/Functions", "VisualShaderNodeVectorRefract", "Returns the vector that points in the direction of refraction.", [], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	#add_options.push_back(AddOption.new("Remap", "Vector/Functions", "VisualShaderNodeRemap", "Remaps a vector from the input range to the output range.", [ VisualShaderNodeRemap.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	#add_options.push_back(AddOption.new("Remap", "Vector/Functions", "VisualShaderNodeRemap", "Remaps a vector from the input range to the output range.", [ VisualShaderNodeRemap.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	#add_options.push_back(AddOption.new("Remap", "Vector/Functions", "VisualShaderNodeRemap", "Remaps a vector from the input range to the output range.", [ VisualShaderNodeRemap.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	#add_options.push_back(AddOption.new("RemapS", "Vector/Functions", "VisualShaderNodeRemap", "Remaps a vector from the input range to the output range. Ranges defined with scalars.", [ VisualShaderNodeRemap.OP_TYPE_VECTOR_2D_SCALAR ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	#add_options.push_back(AddOption.new("RemapS", "Vector/Functions", "VisualShaderNodeRemap", "Remaps a vector from the input range to the output range. Ranges defined with scalars.", [ VisualShaderNodeRemap.OP_TYPE_VECTOR_3D_SCALAR ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	#add_options.push_back(AddOption.new("RemapS", "Vector/Functions", "VisualShaderNodeRemap", "Remaps a vector from the input range to the output range. Ranges defined with scalars.", [ VisualShaderNodeRemap.OP_TYPE_VECTOR_4D_SCALAR ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("Round", "Vector/Functions", "VisualShaderNodeVectorFunc", "Finds the nearest integer to the parameter.", [ VisualShaderNodeVectorFunc.FUNC_ROUND, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("Round", "Vector/Functions", "VisualShaderNodeVectorFunc", "Finds the nearest integer to the parameter.", [ VisualShaderNodeVectorFunc.FUNC_ROUND, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("Round", "Vector/Functions", "VisualShaderNodeVectorFunc", "Finds the nearest integer to the parameter.", [ VisualShaderNodeVectorFunc.FUNC_ROUND, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("RoundEven", "Vector/Functions", "VisualShaderNodeVectorFunc", "Finds the nearest even integer to the parameter.", [ VisualShaderNodeVectorFunc.FUNC_ROUNDEVEN, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("RoundEven", "Vector/Functions", "VisualShaderNodeVectorFunc", "Finds the nearest even integer to the parameter.", [ VisualShaderNodeVectorFunc.FUNC_ROUNDEVEN, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("RoundEven", "Vector/Functions", "VisualShaderNodeVectorFunc", "Finds the nearest even integer to the parameter.", [ VisualShaderNodeVectorFunc.FUNC_ROUNDEVEN, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("Saturate", "Vector/Functions", "VisualShaderNodeVectorFunc", "Clamps the value between 0.0 and 1.0.", [ VisualShaderNodeVectorFunc.FUNC_SATURATE, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("Saturate", "Vector/Functions", "VisualShaderNodeVectorFunc", "Clamps the value between 0.0 and 1.0.", [ VisualShaderNodeVectorFunc.FUNC_SATURATE, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("Saturate", "Vector/Functions", "VisualShaderNodeVectorFunc", "Clamps the value between 0.0 and 1.0.", [ VisualShaderNodeVectorFunc.FUNC_SATURATE, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("Sign", "Vector/Functions", "VisualShaderNodeVectorFunc", "Extracts the sign of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_SIGN, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("Sign", "Vector/Functions", "VisualShaderNodeVectorFunc", "Extracts the sign of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_SIGN, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("Sign", "Vector/Functions", "VisualShaderNodeVectorFunc", "Extracts the sign of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_SIGN, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("Sin", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the sine of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_SIN, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("Sin", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the sine of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_SIN, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("Sin", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the sine of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_SIN, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("SinH", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the hyperbolic sine of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_SINH, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("SinH", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the hyperbolic sine of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_SINH, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("SinH", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the hyperbolic sine of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_SINH, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("Sqrt", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the square root of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_SQRT, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("Sqrt", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the square root of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_SQRT, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("Sqrt", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the square root of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_SQRT, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("SmoothStep", "Vector/Functions", "VisualShaderNodeSmoothStep", "SmoothStep function( vector(edge0), vector(edge1), vector(x) ).\n\nReturns 0.0 if 'x' is smaller than 'edge0' and 1.0 if 'x' is larger than 'edge1'. Otherwise the return value is interpolated between 0.0 and 1.0 using Hermite polynomials.", [ VisualShaderNodeSmoothStep.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("SmoothStep", "Vector/Functions", "VisualShaderNodeSmoothStep", "SmoothStep function( vector(edge0), vector(edge1), vector(x) ).\n\nReturns 0.0 if 'x' is smaller than 'edge0' and 1.0 if 'x' is larger than 'edge1'. Otherwise the return value is interpolated between 0.0 and 1.0 using Hermite polynomials.", [ VisualShaderNodeSmoothStep.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("SmoothStep", "Vector/Functions", "VisualShaderNodeSmoothStep", "SmoothStep function( vector(edge0), vector(edge1), vector(x) ).\n\nReturns 0.0 if 'x' is smaller than 'edge0' and 1.0 if 'x' is larger than 'edge1'. Otherwise the return value is interpolated between 0.0 and 1.0 using Hermite polynomials.", [ VisualShaderNodeSmoothStep.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("SmoothStepS", "Vector/Functions", "VisualShaderNodeSmoothStep", "SmoothStep function( scalar(edge0), scalar(edge1), vector(x) ).\n\nReturns 0.0 if 'x' is smaller than 'edge0' and 1.0 if 'x' is larger than 'edge1'. Otherwise the return value is interpolated between 0.0 and 1.0 using Hermite polynomials.", [ VisualShaderNodeSmoothStep.OP_TYPE_VECTOR_2D_SCALAR ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("SmoothStepS", "Vector/Functions", "VisualShaderNodeSmoothStep", "SmoothStep function( scalar(edge0), scalar(edge1), vector(x) ).\n\nReturns 0.0 if 'x' is smaller than 'edge0' and 1.0 if 'x' is larger than 'edge1'. Otherwise the return value is interpolated between 0.0 and 1.0 using Hermite polynomials.", [ VisualShaderNodeSmoothStep.OP_TYPE_VECTOR_3D_SCALAR ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("SmoothStepS", "Vector/Functions", "VisualShaderNodeSmoothStep", "SmoothStep function( scalar(edge0), scalar(edge1), vector(x) ).\n\nReturns 0.0 if 'x' is smaller than 'edge0' and 1.0 if 'x' is larger than 'edge1'. Otherwise the return value is interpolated between 0.0 and 1.0 using Hermite polynomials.", [ VisualShaderNodeSmoothStep.OP_TYPE_VECTOR_4D_SCALAR ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("Step", "Vector/Functions", "VisualShaderNodeStep", "Step function( vector(edge), vector(x) ).\n\nReturns 0.0 if 'x' is smaller than 'edge' and otherwise 1.0.", [ VisualShaderNodeStep.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("Step", "Vector/Functions", "VisualShaderNodeStep", "Step function( vector(edge), vector(x) ).\n\nReturns 0.0 if 'x' is smaller than 'edge' and otherwise 1.0.", [ VisualShaderNodeStep.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("StepS", "Vector/Functions", "VisualShaderNodeStep", "Step function( scalar(edge), vector(x) ).\n\nReturns 0.0 if 'x' is smaller than 'edge' and otherwise 1.0.", [ VisualShaderNodeStep.OP_TYPE_VECTOR_2D_SCALAR ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("StepS", "Vector/Functions", "VisualShaderNodeStep", "Step function( scalar(edge), vector(x) ).\n\nReturns 0.0 if 'x' is smaller than 'edge' and otherwise 1.0.", [ VisualShaderNodeStep.OP_TYPE_VECTOR_3D_SCALAR ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("StepS", "Vector/Functions", "VisualShaderNodeStep", "Step function( scalar(edge), vector(x) ).\n\nReturns 0.0 if 'x' is smaller than 'edge' and otherwise 1.0.", [ VisualShaderNodeStep.OP_TYPE_VECTOR_4D_SCALAR ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("Sum (+)", "Vector/Functions", "VisualShaderNodeDerivativeFunc", "(Fragment/Light mode only) (Vector) Sum of absolute derivative in 'x' and 'y'.", [ VisualShaderNodeDerivativeFunc.FUNC_SUM, VisualShaderNodeDerivativeFunc.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("Sum (+)", "Vector/Functions", "VisualShaderNodeDerivativeFunc", "(Fragment/Light mode only) (Vector) Sum of absolute derivative in 'x' and 'y'.", [ VisualShaderNodeDerivativeFunc.FUNC_SUM, VisualShaderNodeDerivativeFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("Sum (+)", "Vector/Functions", "VisualShaderNodeDerivativeFunc", "(Fragment/Light mode only) (Vector) Sum of absolute derivative in 'x' and 'y'.", [ VisualShaderNodeDerivativeFunc.FUNC_SUM, VisualShaderNodeDerivativeFunc.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("Tan", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the tangent of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_TAN, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("Tan", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the tangent of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_TAN, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("Tan", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the tangent of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_TAN, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("TanH", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the hyperbolic tangent of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_TANH, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("TanH", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the hyperbolic tangent of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_TANH, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("TanH", "Vector/Functions", "VisualShaderNodeVectorFunc", "Returns the hyperbolic tangent of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_TANH, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("Trunc", "Vector/Functions", "VisualShaderNodeVectorFunc", "Finds the truncated value of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_TRUNC, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("Trunc", "Vector/Functions", "VisualShaderNodeVectorFunc", "Finds the truncated value of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_TRUNC, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("Trunc", "Vector/Functions", "VisualShaderNodeVectorFunc", "Finds the truncated value of the parameter.", [ VisualShaderNodeVectorFunc.FUNC_TRUNC, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+
+	add_options.push_back(AddOption.new("Add (+)", "Vector/Operators", "VisualShaderNodeVectorOp", "Adds 2D vector to 2D vector.", [ VisualShaderNodeVectorOp.OP_ADD, VisualShaderNodeVectorOp.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("Add (+)", "Vector/Operators", "VisualShaderNodeVectorOp", "Adds 3D vector to 3D vector.", [ VisualShaderNodeVectorOp.OP_ADD, VisualShaderNodeVectorOp.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("Add (+)", "Vector/Operators", "VisualShaderNodeVectorOp", "Adds 4D vector to 4D vector.", [ VisualShaderNodeVectorOp.OP_ADD, VisualShaderNodeVectorOp.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("Divide (/)", "Vector/Operators", "VisualShaderNodeVectorOp", "Divides 2D vector by 2D vector.", [ VisualShaderNodeVectorOp.OP_DIV, VisualShaderNodeVectorOp.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("Divide (/)", "Vector/Operators", "VisualShaderNodeVectorOp", "Divides 3D vector by 3D vector.", [ VisualShaderNodeVectorOp.OP_DIV, VisualShaderNodeVectorOp.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("Divide (/)", "Vector/Operators", "VisualShaderNodeVectorOp", "Divides 4D vector by 4D vector.", [ VisualShaderNodeVectorOp.OP_DIV, VisualShaderNodeVectorOp.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("Multiply (*)", "Vector/Operators", "VisualShaderNodeVectorOp", "Multiplies 2D vector by 2D vector.", [ VisualShaderNodeVectorOp.OP_MUL, VisualShaderNodeVectorOp.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("Multiply (*)", "Vector/Operators", "VisualShaderNodeVectorOp", "Multiplies 3D vector by 3D vector.", [ VisualShaderNodeVectorOp.OP_MUL, VisualShaderNodeVectorOp.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("Multiply (*)", "Vector/Operators", "VisualShaderNodeVectorOp", "Multiplies 4D vector by 4D vector.", [ VisualShaderNodeVectorOp.OP_MUL, VisualShaderNodeVectorOp.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("Remainder (%)", "Vector/Operators", "VisualShaderNodeVectorOp", "Returns the remainder of the two 2D vectors.", [ VisualShaderNodeVectorOp.OP_MOD, VisualShaderNodeVectorOp.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("Remainder (%)", "Vector/Operators", "VisualShaderNodeVectorOp", "Returns the remainder of the two 3D vectors.", [ VisualShaderNodeVectorOp.OP_MOD, VisualShaderNodeVectorOp.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("Remainder (%)", "Vector/Operators", "VisualShaderNodeVectorOp", "Returns the remainder of the two 4D vectors.", [ VisualShaderNodeVectorOp.OP_MOD, VisualShaderNodeVectorOp.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("Subtract (-)", "Vector/Operators", "VisualShaderNodeVectorOp", "Subtracts 2D vector from 2D vector.", [ VisualShaderNodeVectorOp.OP_SUB, VisualShaderNodeVectorOp.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("Subtract (-)", "Vector/Operators", "VisualShaderNodeVectorOp", "Subtracts 3D vector from 3D vector.", [ VisualShaderNodeVectorOp.OP_SUB, VisualShaderNodeVectorOp.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("Subtract (-)", "Vector/Operators", "VisualShaderNodeVectorOp", "Subtracts 4D vector from 4D vector.", [ VisualShaderNodeVectorOp.OP_SUB, VisualShaderNodeVectorOp.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+
+	add_options.push_back(AddOption.new("Vector2Constant", "Vector/Variables", "VisualShaderNodeVec2Constant", "2D vector constant.", [], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("Vector2Parameter", "Vector/Variables", "VisualShaderNodeVec2Parameter", "2D vector parameter.", [], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("Vector3Constant", "Vector/Variables", "VisualShaderNodeVec3Constant", "3D vector constant.", [], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("Vector3Parameter", "Vector/Variables", "VisualShaderNodeVec3Parameter", "3D vector parameter.", [], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("Vector4Constant", "Vector/Variables", "VisualShaderNodeVec4Constant", "4D vector constant.", [], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("Vector4Parameter", "Vector/Variables", "VisualShaderNodeVec4Parameter", "4D vector parameter.", [], VisualShaderNode.PORT_TYPE_VECTOR_4D))
+	#endregion
 
 
 func update_options_menu() -> void:
@@ -942,11 +1182,15 @@ func _on_graph_edit_connection_from_empty(_to_node: StringName, _to_port: int, r
 
 
 func _on_graph_edit_connection_to_empty(_from_node: StringName, _from_port: int, release_position: Vector2) -> void:
+	if not is_instance_valid(visual_shader):
+		return
 	node_list_tree.get_window().popup_centered()
 	spawn_node_in_position = release_position
 
 
 func _on_graph_edit_popup_request(at_position: Vector2) -> void:
+	if not is_instance_valid(visual_shader):
+		return
 	node_list_tree.get_window().popup_centered()
 	spawn_node_in_position = at_position
 
