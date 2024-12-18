@@ -254,14 +254,13 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		close_button.pressed.connect(delete_node.bind(graph_node))
 		graph_node.get_titlebar_hbox().add_child(close_button)
 	if vsn is VisualShaderNodeOutput:
-		var color_label := Label.new()
-		color_label.text = "Color"
-		graph_node.add_child(color_label)
-		var alpha_label := Label.new()
-		alpha_label.text = "Alpha"
-		graph_node.add_child(alpha_label)
-		graph_node.set_slot(0, true, VisualShaderNode.PORT_TYPE_VECTOR_3D, slot_colors[VisualShaderNode.PORT_TYPE_VECTOR_3D], false, VisualShaderNode.PORT_TYPE_MAX, Color.TRANSPARENT)
-		graph_node.set_slot(1, true, VisualShaderNode.PORT_TYPE_SCALAR, slot_colors[VisualShaderNode.PORT_TYPE_SCALAR], false, VisualShaderNode.PORT_TYPE_MAX, Color.TRANSPARENT)
+		_create_input("Color", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D)
+		_create_input("Alpha", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D)
+		_create_input("Normal", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D)
+		_create_input("Normal Map", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D)
+		_create_input("Normal Map Depth", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR)
+		_create_input("Light Vertex", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D)
+		_create_input("Shadow Vertex", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D)
 	elif vsn is VisualShaderNodeInput:
 		if not ops.is_empty():
 			vsn.input_name = ops[0]
@@ -334,7 +333,7 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		var option_button := OptionButton.new()
 		option_button.add_item("Infinite", VisualShaderNodeIs.FUNC_IS_INF)
 		option_button.add_item("Not A Number", VisualShaderNodeIs.FUNC_IS_NAN)
-		option_button.select(vsn.function)
+		option_button.select(option_button.get_item_index(vsn.function))
 		option_button.item_selected.connect(
 			func(id_selected: VisualShaderNodeIs.Function):
 				vsn.function = id_selected
@@ -364,7 +363,7 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		option_button.add_item("Vector4", VisualShaderNodeSwitch.OP_TYPE_VECTOR_4D)
 		option_button.add_item("Boolean", VisualShaderNodeSwitch.OP_TYPE_BOOLEAN)
 		option_button.add_item("Transform", VisualShaderNodeSwitch.OP_TYPE_TRANSFORM)
-		option_button.select(vsn.op_type)
+		option_button.select(option_button.get_item_index(vsn.op_type))
 		option_button.item_selected.connect(
 			func(id_selected: VisualShaderNodeSwitch.OpType):
 				vsn.op_type = id_selected
@@ -386,7 +385,7 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		option_button.add_item("Vector4", VisualShaderNodeCompare.CTYPE_VECTOR_4D)
 		option_button.add_item("Boolean", VisualShaderNodeCompare.CTYPE_BOOLEAN)
 		option_button.add_item("Transform", VisualShaderNodeCompare.CTYPE_TRANSFORM)
-		option_button.select(vsn.type)
+		option_button.select(option_button.get_item_index(vsn.type))
 		option_button.item_selected.connect(
 			func(id_selected: VisualShaderNodeCompare.ComparisonType):
 				vsn.type = id_selected
@@ -401,7 +400,7 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		comparison_option_button.add_item("Greater than or equal (a >= b)", VisualShaderNodeCompare.FUNC_GREATER_THAN_EQUAL)
 		comparison_option_button.add_item("Less than (a < b)", VisualShaderNodeCompare.FUNC_LESS_THAN)
 		comparison_option_button.add_item("Less than or equal (a <= b)", VisualShaderNodeCompare.FUNC_LESS_THAN_EQUAL)
-		comparison_option_button.select(vsn.function)
+		comparison_option_button.select(comparison_option_button.get_item_index(vsn.function))
 		comparison_option_button.item_selected.connect(
 			func(id_selected: VisualShaderNodeCompare.Function):
 				vsn.function = id_selected
@@ -428,7 +427,7 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		option_button.add_item("Bitwise XOR", VisualShaderNodeIntOp.OP_BITWISE_XOR)
 		option_button.add_item("Bitwise Left Shift", VisualShaderNodeIntOp.OP_BITWISE_LEFT_SHIFT)
 		option_button.add_item("Bitwise Right Shift", VisualShaderNodeIntOp.OP_BITWISE_RIGHT_SHIFT)
-		option_button.select(vsn.operator)
+		option_button.select(option_button.get_item_index(vsn.operator))
 		option_button.item_selected.connect(func(id_selected: VisualShaderNodeIntOp.Operator): vsn.operator = id_selected; _on_effect_changed())
 		graph_node.add_child(option_button)
 		_create_input("a", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR_INT, 0)
@@ -442,7 +441,7 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		option_button.add_item("Negate", VisualShaderNodeIntFunc.FUNC_NEGATE)
 		option_button.add_item("Sign", VisualShaderNodeIntFunc.FUNC_SIGN)
 		option_button.add_item("Bitwise NOT", VisualShaderNodeIntFunc.FUNC_BITWISE_NOT)
-		option_button.select(vsn.function)
+		option_button.select(option_button.get_item_index(vsn.function))
 		option_button.item_selected.connect(func(id_selected: VisualShaderNodeIntFunc.Function): vsn.function = id_selected; _on_effect_changed())
 		graph_node.add_child(option_button)
 		_create_input("input", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR_INT, 0)
@@ -465,7 +464,7 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		option_button.add_item("Bitwise XOR", VisualShaderNodeUIntOp.OP_BITWISE_XOR)
 		option_button.add_item("Bitwise Left Shift", VisualShaderNodeUIntOp.OP_BITWISE_LEFT_SHIFT)
 		option_button.add_item("Bitwise Right Shift", VisualShaderNodeUIntOp.OP_BITWISE_RIGHT_SHIFT)
-		option_button.select(vsn.operator)
+		option_button.select(option_button.get_item_index(vsn.operator))
 		option_button.item_selected.connect(func(id_selected: VisualShaderNodeUIntOp.Operator): vsn.operator = id_selected; _on_effect_changed())
 		graph_node.add_child(option_button)
 		_create_input("a", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR_UINT, 0)
@@ -477,7 +476,7 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		var option_button := OptionButton.new()
 		option_button.add_item("Negate", VisualShaderNodeUIntFunc.FUNC_NEGATE)
 		option_button.add_item("Bitwise NOT", VisualShaderNodeUIntFunc.FUNC_BITWISE_NOT)
-		option_button.select(vsn.function)
+		option_button.select(option_button.get_item_index(vsn.function))
 		option_button.item_selected.connect(func(id_selected: VisualShaderNodeUIntFunc.Function): vsn.function = id_selected; _on_effect_changed())
 		graph_node.add_child(option_button)
 		_create_input("input", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR_UINT, 0)
@@ -498,7 +497,7 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		option_button.add_item("Min", VisualShaderNodeFloatOp.OP_MIN)
 		option_button.add_item("ATan2", VisualShaderNodeFloatOp.OP_ATAN2)
 		option_button.add_item("Step", VisualShaderNodeFloatOp.OP_STEP)
-		option_button.select(vsn.operator)
+		option_button.select(option_button.get_item_index(vsn.operator))
 		option_button.item_selected.connect(func(id_selected: VisualShaderNodeFloatOp.Operator): vsn.operator = id_selected; _on_effect_changed())
 		graph_node.add_child(option_button)
 		_create_input("a", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 0)
@@ -540,7 +539,7 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		option_button.add_item("Roundeven", VisualShaderNodeFloatFunc.FUNC_ROUNDEVEN)
 		option_button.add_item("Trunc", VisualShaderNodeFloatFunc.FUNC_TRUNC)
 		option_button.add_item("One minus", VisualShaderNodeFloatFunc.FUNC_ONEMINUS)
-		option_button.select(vsn.function)
+		option_button.select(option_button.get_item_index(vsn.function))
 		option_button.item_selected.connect(func(id_selected: VisualShaderNodeFloatFunc.Function): vsn.function = id_selected; _on_effect_changed())
 		graph_node.add_child(option_button)
 		_create_input("input", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 0)
@@ -550,12 +549,11 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 	elif vsn is VisualShaderNodeVectorBase:
 		vsn.set("expanded_output_ports", [0])
 		if ops.size() > 1:
-			vsn.op_type = vsn.ops[1]
+			vsn.op_type = ops[1]
 		var option_button := OptionButton.new()
 		option_button.add_item("Vector2", VisualShaderNodeVectorBase.OP_TYPE_VECTOR_2D)
 		option_button.add_item("Vector3", VisualShaderNodeVectorBase.OP_TYPE_VECTOR_3D)
 		option_button.add_item("Vector4", VisualShaderNodeVectorBase.OP_TYPE_VECTOR_4D)
-		option_button.select(vsn.op_type)
 		option_button.item_selected.connect(
 			func(id_selected: VisualShaderNodeVectorBase.OpType):
 				vsn.op_type = id_selected
@@ -564,6 +562,7 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		)
 		graph_node.add_child(option_button)
 		_create_vector_node(graph_node, vsn, ops)
+		option_button.select(option_button.get_item_index(vsn.op_type))
 	#endregion
 	#region Colors
 	elif vsn is VisualShaderNodeColorOp:
@@ -579,7 +578,7 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		option_button.add_item("Burn", VisualShaderNodeColorOp.OP_BURN)
 		option_button.add_item("Soft light", VisualShaderNodeColorOp.OP_SOFT_LIGHT)
 		option_button.add_item("Hard light", VisualShaderNodeColorOp.OP_HARD_LIGHT)
-		option_button.select(vsn.operator)
+		option_button.select(option_button.get_item_index(vsn.operator))
 		option_button.item_selected.connect(func(id_selected: VisualShaderNodeColorOp.Operator): vsn.operator = id_selected; _on_effect_changed())
 		graph_node.add_child(option_button)
 		_create_input("a", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 0)
@@ -593,7 +592,7 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		option_button.add_item("HSV to RGB", VisualShaderNodeColorFunc.FUNC_HSV2RGB)
 		option_button.add_item("RGB to HSV", VisualShaderNodeColorFunc.FUNC_RGB2HSV)
 		option_button.add_item("Sepia", VisualShaderNodeColorFunc.FUNC_SEPIA)
-		option_button.select(vsn.function)
+		option_button.select(option_button.get_item_index(vsn.function))
 		option_button.item_selected.connect(func(id_selected: VisualShaderNodeColorFunc.Function): vsn.function = id_selected; _on_effect_changed())
 		graph_node.add_child(option_button)
 		_create_input("input", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 0)
@@ -616,7 +615,7 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		option_button.add_item("Vector2", VisualShaderNodeClamp.OP_TYPE_VECTOR_2D)
 		option_button.add_item("Vector3", VisualShaderNodeClamp.OP_TYPE_VECTOR_3D)
 		option_button.add_item("Vector4", VisualShaderNodeClamp.OP_TYPE_VECTOR_4D)
-		option_button.select(vsn.op_type)
+		option_button.select(option_button.get_item_index(vsn.op_type))
 		option_button.item_selected.connect(
 			func(id_selected: VisualShaderNodeClamp.OpType):
 				vsn.op_type = id_selected
@@ -634,7 +633,7 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		option_button.add_item("Vector2", VisualShaderNodeMultiplyAdd.OP_TYPE_VECTOR_2D)
 		option_button.add_item("Vector3", VisualShaderNodeMultiplyAdd.OP_TYPE_VECTOR_3D)
 		option_button.add_item("Vector4", VisualShaderNodeMultiplyAdd.OP_TYPE_VECTOR_4D)
-		option_button.select(vsn.op_type)
+		option_button.select(option_button.get_item_index(vsn.op_type))
 		option_button.item_selected.connect(
 			func(id_selected: VisualShaderNodeMultiplyAdd.OpType):
 				vsn.op_type = id_selected
@@ -655,7 +654,7 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		option_button.add_item("Vector3Scalar", VisualShaderNodeMix.OP_TYPE_VECTOR_3D_SCALAR)
 		option_button.add_item("Vector4", VisualShaderNodeMix.OP_TYPE_VECTOR_4D)
 		option_button.add_item("Vector4Scalar", VisualShaderNodeMix.OP_TYPE_VECTOR_4D_SCALAR)
-		option_button.select(vsn.op_type)
+		option_button.select(option_button.get_item_index(vsn.op_type))
 		option_button.item_selected.connect(
 			func(id_selected: VisualShaderNodeMix.OpType):
 				vsn.op_type = id_selected
@@ -676,7 +675,7 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		option_button.add_item("Vector3Scalar", VisualShaderNodeStep.OP_TYPE_VECTOR_3D_SCALAR)
 		option_button.add_item("Vector4", VisualShaderNodeStep.OP_TYPE_VECTOR_4D)
 		option_button.add_item("Vector4Scalar", VisualShaderNodeStep.OP_TYPE_VECTOR_4D_SCALAR)
-		option_button.select(vsn.op_type)
+		option_button.select(option_button.get_item_index(vsn.op_type))
 		option_button.item_selected.connect(
 			func(id_selected: VisualShaderNodeStep.OpType):
 				vsn.op_type = id_selected
@@ -697,7 +696,7 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		option_button.add_item("Vector3Scalar", VisualShaderNodeSmoothStep.OP_TYPE_VECTOR_3D_SCALAR)
 		option_button.add_item("Vector4", VisualShaderNodeSmoothStep.OP_TYPE_VECTOR_4D)
 		option_button.add_item("Vector4Scalar", VisualShaderNodeSmoothStep.OP_TYPE_VECTOR_4D_SCALAR)
-		option_button.select(vsn.op_type)
+		option_button.select(option_button.get_item_index(vsn.op_type))
 		option_button.item_selected.connect(
 			func(id_selected: VisualShaderNodeSmoothStep.OpType):
 				vsn.op_type = id_selected
@@ -1156,7 +1155,7 @@ func _create_compare_node(graph_node: GraphNode, vsn: VisualShaderNodeCompare) -
 		var option_button := OptionButton.new()
 		option_button.add_item("All", VisualShaderNodeCompare.COND_ALL)
 		option_button.add_item("Any", VisualShaderNodeCompare.COND_ANY)
-		option_button.select(vsn.condition)
+		option_button.select(option_button.get_item_index(vsn.condition))
 		option_button.item_selected.connect(
 			func(id_selected: VisualShaderNodeCompare.Condition):
 				vsn.condition = id_selected
@@ -1242,7 +1241,7 @@ func _create_vector_node(graph_node: GraphNode, vsn: VisualShaderNodeVectorBase,
 		option_button.add_item("ATan2", VisualShaderNodeVectorOp.OP_ATAN2)
 		option_button.add_item("Reflect", VisualShaderNodeVectorOp.OP_REFLECT)
 		option_button.add_item("Step", VisualShaderNodeVectorOp.OP_STEP)
-		option_button.select(vsn.operator)
+		option_button.select(option_button.get_item_index(vsn.operator))
 		option_button.item_selected.connect(func(id_selected: VisualShaderNodeVectorOp.Operator): vsn.operator = id_selected; _on_effect_changed())
 		graph_node.add_child(option_button)
 		_create_input("a", graph_node, vsn, _get_vector_op_type(vsn), 0)
@@ -1285,11 +1284,34 @@ func _create_vector_node(graph_node: GraphNode, vsn: VisualShaderNodeVectorBase,
 		option_button.add_item("Roundeven", VisualShaderNodeVectorFunc.FUNC_ROUNDEVEN)
 		option_button.add_item("Trunc", VisualShaderNodeVectorFunc.FUNC_TRUNC)
 		option_button.add_item("One minus", VisualShaderNodeVectorFunc.FUNC_ONEMINUS)
-		option_button.select(vsn.function)
+		option_button.select(option_button.get_item_index(vsn.function))
 		option_button.item_selected.connect(func(id_selected: VisualShaderNodeFloatFunc.Function): vsn.function = id_selected; _on_effect_changed())
 		graph_node.add_child(option_button)
 		_create_input("input", graph_node, vsn, _get_vector_op_type(vsn), 0)
 		_create_multi_output("output", graph_node, _get_vector_op_type(vsn))
+	elif vsn is VisualShaderNodeVectorCompose:
+		if not ops.is_empty():
+			vsn.op_type = ops[0]
+		_create_input("x", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 0)
+		if vsn.op_type >= VisualShaderNodeVectorBase.OP_TYPE_VECTOR_2D:
+			_create_input("y", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 1)
+			if vsn.op_type >= VisualShaderNodeVectorBase.OP_TYPE_VECTOR_3D:
+				_create_input("z", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 2)
+				if vsn.op_type == VisualShaderNodeVectorBase.OP_TYPE_VECTOR_4D:
+					_create_input("w", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 3)
+		_create_multi_output("vec", graph_node, _get_vector_op_type(vsn))
+	elif vsn is VisualShaderNodeVectorDecompose:
+		if not ops.is_empty():
+			vsn.op_type = ops[0]
+		_create_input("vec", graph_node, vsn, _get_vector_op_type(vsn), 0)
+		_create_multi_output("x", graph_node, VisualShaderNode.PORT_TYPE_SCALAR)
+		if vsn.op_type >= VisualShaderNodeVectorBase.OP_TYPE_VECTOR_2D:
+			_create_multi_output("y", graph_node, VisualShaderNode.PORT_TYPE_SCALAR)
+			if vsn.op_type >= VisualShaderNodeVectorBase.OP_TYPE_VECTOR_3D:
+				_create_multi_output("z", graph_node, VisualShaderNode.PORT_TYPE_SCALAR)
+				if vsn.op_type == VisualShaderNodeVectorBase.OP_TYPE_VECTOR_4D:
+					_create_multi_output("w", graph_node, VisualShaderNode.PORT_TYPE_SCALAR)
+
 	_check_output_connections_validity(graph_node)
 
 
