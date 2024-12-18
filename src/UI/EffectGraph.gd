@@ -352,6 +352,7 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		_create_input("a < b", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 5)
 		_create_multi_output("result", graph_node, VisualShaderNode.PORT_TYPE_BOOLEAN)
 	elif vsn is VisualShaderNodeSwitch:
+		vsn.set("expanded_output_ports", [0])
 		if not ops.is_empty():
 			vsn.op_type = ops[0]
 		var option_button := OptionButton.new()
@@ -373,6 +374,7 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		graph_node.add_child(option_button)
 		_create_switch_node(graph_node, vsn)
 	elif vsn is VisualShaderNodeCompare:
+		vsn.set("expanded_output_ports", [0])
 		if not ops.is_empty():
 			vsn.function = ops[0]
 		var option_button := OptionButton.new()
@@ -597,7 +599,50 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		_create_input("input", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 0)
 		_create_multi_output("output", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_3D)
 	#endregion
-
+	#region Extra functions
+	elif vsn is VisualShaderNodeDotProduct:
+		vsn.set("expanded_output_ports", [0])
+		_create_input("a", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 0)
+		_create_input("b", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 1)
+		_create_multi_output("output", graph_node, VisualShaderNode.PORT_TYPE_SCALAR)
+	elif vsn is VisualShaderNodeClamp:
+		vsn.set("expanded_output_ports", [0])
+		if not ops.is_empty():
+			vsn.op_type = ops[0]
+		var option_button := OptionButton.new()
+		option_button.add_item("Float", VisualShaderNodeClamp.OP_TYPE_FLOAT)
+		option_button.add_item("Int", VisualShaderNodeClamp.OP_TYPE_INT)
+		option_button.add_item("UInt", VisualShaderNodeClamp.OP_TYPE_UINT)
+		option_button.add_item("Vector2", VisualShaderNodeClamp.OP_TYPE_VECTOR_2D)
+		option_button.add_item("Vector3", VisualShaderNodeClamp.OP_TYPE_VECTOR_3D)
+		option_button.add_item("Vector4", VisualShaderNodeClamp.OP_TYPE_VECTOR_4D)
+		option_button.select(vsn.op_type)
+		option_button.item_selected.connect(
+			func(id_selected: VisualShaderNodeClamp.OpType):
+				vsn.op_type = id_selected
+				_create_clamp_node(graph_node, vsn)
+				_on_effect_changed()
+		)
+		graph_node.add_child(option_button)
+		_create_clamp_node(graph_node, vsn)
+	elif vsn is VisualShaderNodeMultiplyAdd:
+		vsn.set("expanded_output_ports", [0])
+		if not ops.is_empty():
+			vsn.op_type = ops[0]
+		var option_button := OptionButton.new()
+		option_button.add_item("Scalar", VisualShaderNodeMultiplyAdd.OP_TYPE_SCALAR)
+		option_button.add_item("Vector2", VisualShaderNodeMultiplyAdd.OP_TYPE_VECTOR_2D)
+		option_button.add_item("Vector3", VisualShaderNodeMultiplyAdd.OP_TYPE_VECTOR_3D)
+		option_button.add_item("Vector4", VisualShaderNodeMultiplyAdd.OP_TYPE_VECTOR_4D)
+		option_button.select(vsn.op_type)
+		option_button.item_selected.connect(
+			func(id_selected: VisualShaderNodeMultiplyAdd.OpType):
+				vsn.op_type = id_selected
+				_create_multiply_add_node(graph_node, vsn)
+				_on_effect_changed()
+		)
+		graph_node.add_child(option_button)
+		_create_multiply_add_node(graph_node, vsn)
 	elif vsn is VisualShaderNodeMix:
 		vsn.set("expanded_output_ports", [0])
 		if not ops.is_empty():
@@ -619,6 +664,50 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		)
 		graph_node.add_child(option_button)
 		_create_mix_node(graph_node, vsn)
+	elif vsn is VisualShaderNodeStep:
+		vsn.set("expanded_output_ports", [0])
+		if not ops.is_empty():
+			vsn.op_type = ops[0]
+		var option_button := OptionButton.new()
+		option_button.add_item("Scalar", VisualShaderNodeStep.OP_TYPE_SCALAR)
+		option_button.add_item("Vector2", VisualShaderNodeStep.OP_TYPE_VECTOR_2D)
+		option_button.add_item("Vector2Scalar", VisualShaderNodeStep.OP_TYPE_VECTOR_2D_SCALAR)
+		option_button.add_item("Vector3", VisualShaderNodeStep.OP_TYPE_VECTOR_3D)
+		option_button.add_item("Vector3Scalar", VisualShaderNodeStep.OP_TYPE_VECTOR_3D_SCALAR)
+		option_button.add_item("Vector4", VisualShaderNodeStep.OP_TYPE_VECTOR_4D)
+		option_button.add_item("Vector4Scalar", VisualShaderNodeStep.OP_TYPE_VECTOR_4D_SCALAR)
+		option_button.select(vsn.op_type)
+		option_button.item_selected.connect(
+			func(id_selected: VisualShaderNodeStep.OpType):
+				vsn.op_type = id_selected
+				_create_step_node(graph_node, vsn)
+				_on_effect_changed()
+		)
+		graph_node.add_child(option_button)
+		_create_step_node(graph_node, vsn)
+	elif vsn is VisualShaderNodeSmoothStep:
+		vsn.set("expanded_output_ports", [0])
+		if not ops.is_empty():
+			vsn.op_type = ops[0]
+		var option_button := OptionButton.new()
+		option_button.add_item("Scalar", VisualShaderNodeSmoothStep.OP_TYPE_SCALAR)
+		option_button.add_item("Vector2", VisualShaderNodeSmoothStep.OP_TYPE_VECTOR_2D)
+		option_button.add_item("Vector2Scalar", VisualShaderNodeSmoothStep.OP_TYPE_VECTOR_2D_SCALAR)
+		option_button.add_item("Vector3", VisualShaderNodeSmoothStep.OP_TYPE_VECTOR_3D)
+		option_button.add_item("Vector3Scalar", VisualShaderNodeSmoothStep.OP_TYPE_VECTOR_3D_SCALAR)
+		option_button.add_item("Vector4", VisualShaderNodeSmoothStep.OP_TYPE_VECTOR_4D)
+		option_button.add_item("Vector4Scalar", VisualShaderNodeSmoothStep.OP_TYPE_VECTOR_4D_SCALAR)
+		option_button.select(vsn.op_type)
+		option_button.item_selected.connect(
+			func(id_selected: VisualShaderNodeSmoothStep.OpType):
+				vsn.op_type = id_selected
+				_create_smooth_step_node(graph_node, vsn)
+				_on_effect_changed()
+		)
+		graph_node.add_child(option_button)
+		_create_smooth_step_node(graph_node, vsn)
+	#endregion
+	#region Textures
 	elif vsn is VisualShaderNodeTexture:
 		# TODO: Add texture changing logic
 		var texture_rect := TextureRect.new()
@@ -645,6 +734,7 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		graph_node.set_slot(1, true, VisualShaderNode.PORT_TYPE_VECTOR_2D, slot_colors[VisualShaderNode.PORT_TYPE_VECTOR_2D], false, VisualShaderNode.PORT_TYPE_MAX, Color.TRANSPARENT)
 		_create_label("offset", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_2D, VisualShaderNode.PORT_TYPE_MAX)
 		_create_label("uv", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_VECTOR_2D)
+	#endregion
 
 	graph_edit.add_child(graph_node)
 
@@ -800,6 +890,78 @@ func _get_vector_op_type(vsn: VisualShaderNodeVectorBase) -> VisualShaderNode.Po
 	return VisualShaderNode.PORT_TYPE_MAX
 
 
+func _create_clamp_node(graph_node: GraphNode, vsn: VisualShaderNodeClamp) -> void:
+	var children := graph_node.get_children(true)
+	for i in range(2, children.size()):
+		var child := children[i]
+		graph_node.remove_child(child)
+		child.queue_free()
+	var op_type := vsn.op_type
+	if op_type == VisualShaderNodeClamp.OP_TYPE_FLOAT:
+		_create_input("value", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 0)
+		_create_input("min", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 1)
+		_create_input("max", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 2)
+		_create_multi_output("result", graph_node, VisualShaderNode.PORT_TYPE_SCALAR)
+	elif op_type == VisualShaderNodeClamp.OP_TYPE_INT:
+		_create_input("value", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR_INT, 0)
+		_create_input("min", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR_INT, 1)
+		_create_input("max", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR_INT, 2)
+		_create_multi_output("result", graph_node, VisualShaderNode.PORT_TYPE_SCALAR_INT)
+	elif op_type == VisualShaderNodeClamp.OP_TYPE_UINT:
+		_create_input("value", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR_UINT, 0)
+		_create_input("min", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR_UINT, 1)
+		_create_input("max", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR_UINT, 2)
+		_create_multi_output("result", graph_node, VisualShaderNode.PORT_TYPE_SCALAR_UINT)
+	elif op_type == VisualShaderNodeClamp.OP_TYPE_VECTOR_2D:
+		_create_input("value", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_2D, 0)
+		_create_input("min", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_2D, 1)
+		_create_input("max", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_2D, 2)
+		_create_multi_output("result", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_2D)
+	elif op_type == VisualShaderNodeClamp.OP_TYPE_VECTOR_3D:
+		_create_input("value", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 0)
+		_create_input("min", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 1)
+		_create_input("max", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 2)
+		_create_multi_output("result", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_3D)
+	elif op_type == VisualShaderNodeClamp.OP_TYPE_VECTOR_4D:
+		_create_input("value", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_4D, 0)
+		_create_input("min", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_4D, 1)
+		_create_input("max", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_4D, 2)
+		_create_multi_output("result", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_4D)
+
+	_check_output_connections_validity(graph_node)
+
+
+func _create_multiply_add_node(graph_node: GraphNode, vsn: VisualShaderNodeMultiplyAdd) -> void:
+	var children := graph_node.get_children(true)
+	for i in range(2, children.size()):
+		var child := children[i]
+		graph_node.remove_child(child)
+		child.queue_free()
+	var op_type := vsn.op_type
+	if op_type == VisualShaderNodeMultiplyAdd.OP_TYPE_SCALAR:
+		_create_input("a", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 0)
+		_create_input("b(*)", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 1)
+		_create_input("c(+)", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 2)
+		_create_multi_output("result", graph_node, VisualShaderNode.PORT_TYPE_SCALAR)
+	elif op_type == VisualShaderNodeMultiplyAdd.OP_TYPE_VECTOR_2D:
+		_create_input("a", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_2D, 0)
+		_create_input("b(*)", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_2D, 1)
+		_create_input("c(+)", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_2D, 2)
+		_create_multi_output("result", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_2D)
+	elif op_type == VisualShaderNodeMultiplyAdd.OP_TYPE_VECTOR_3D:
+		_create_input("a", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 0)
+		_create_input("b(*)", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 1)
+		_create_input("c(+)", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 2)
+		_create_multi_output("result", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_3D)
+	elif op_type == VisualShaderNodeMultiplyAdd.OP_TYPE_VECTOR_4D:
+		_create_input("a", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_4D, 0)
+		_create_input("b(*)", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_4D, 1)
+		_create_input("c(+)", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_4D, 2)
+		_create_multi_output("result", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_4D)
+
+	_check_output_connections_validity(graph_node)
+
+
 func _create_mix_node(graph_node: GraphNode, vsn: VisualShaderNodeMix) -> void:
 	var children := graph_node.get_children(true)
 	for i in range(2, children.size()):
@@ -842,6 +1004,91 @@ func _create_mix_node(graph_node: GraphNode, vsn: VisualShaderNodeMix) -> void:
 		_create_input("b", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_4D, 1)
 		_create_input("weight", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 2)
 		_create_multi_output("mix", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_4D)
+
+	_check_output_connections_validity(graph_node)
+
+
+func _create_step_node(graph_node: GraphNode, vsn: VisualShaderNodeStep) -> void:
+	var children := graph_node.get_children(true)
+	for i in range(2, children.size()):
+		var child := children[i]
+		graph_node.remove_child(child)
+		child.queue_free()
+	var op_type := vsn.op_type
+	if op_type == VisualShaderNodeStep.OP_TYPE_SCALAR:
+		_create_input("edge0", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 0)
+		_create_input("x", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 1)
+		_create_label("result", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_SCALAR)
+	elif op_type == VisualShaderNodeStep.OP_TYPE_VECTOR_2D:
+		_create_input("edge0", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_2D, 0)
+		_create_input("x", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_2D, 1)
+		_create_multi_output("result", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_2D)
+	elif op_type == VisualShaderNodeStep.OP_TYPE_VECTOR_2D_SCALAR:
+		_create_input("edge0", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 0)
+		_create_input("x", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_2D, 1)
+		_create_multi_output("result", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_2D)
+	elif op_type == VisualShaderNodeStep.OP_TYPE_VECTOR_3D:
+		_create_input("edge0", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 0)
+		_create_input("x", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 1)
+		_create_multi_output("result", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_3D)
+	elif op_type == VisualShaderNodeStep.OP_TYPE_VECTOR_3D_SCALAR:
+		_create_input("edge0", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 0)
+		_create_input("x", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 1)
+		_create_multi_output("result", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_3D)
+	elif op_type == VisualShaderNodeStep.OP_TYPE_VECTOR_4D:
+		_create_input("edge0", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_4D, 0)
+		_create_input("x", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_4D, 1)
+		_create_multi_output("result", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_4D)
+	elif op_type == VisualShaderNodeStep.OP_TYPE_VECTOR_4D_SCALAR:
+		_create_input("edge0", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 0)
+		_create_input("x", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_4D, 1)
+		_create_multi_output("result", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_4D)
+
+	_check_output_connections_validity(graph_node)
+
+
+func _create_smooth_step_node(graph_node: GraphNode, vsn: VisualShaderNodeSmoothStep) -> void:
+	var children := graph_node.get_children(true)
+	for i in range(2, children.size()):
+		var child := children[i]
+		graph_node.remove_child(child)
+		child.queue_free()
+	var op_type := vsn.op_type
+	if op_type == VisualShaderNodeSmoothStep.OP_TYPE_SCALAR:
+		_create_input("edge0", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 0)
+		_create_input("edge1", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 1)
+		_create_input("x", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 2)
+		_create_label("result", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_SCALAR)
+	elif op_type == VisualShaderNodeSmoothStep.OP_TYPE_VECTOR_2D:
+		_create_input("edge0", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_2D, 0)
+		_create_input("edge1", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_2D, 1)
+		_create_input("x", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_2D, 2)
+		_create_multi_output("result", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_2D)
+	elif op_type == VisualShaderNodeSmoothStep.OP_TYPE_VECTOR_2D_SCALAR:
+		_create_input("edge0", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 0)
+		_create_input("edge1", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 1)
+		_create_input("x", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_2D, 2)
+		_create_multi_output("result", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_2D)
+	elif op_type == VisualShaderNodeSmoothStep.OP_TYPE_VECTOR_3D:
+		_create_input("edge0", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 0)
+		_create_input("edge1", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 1)
+		_create_input("x", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 2)
+		_create_multi_output("result", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_3D)
+	elif op_type == VisualShaderNodeSmoothStep.OP_TYPE_VECTOR_3D_SCALAR:
+		_create_input("edge0", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 0)
+		_create_input("edge1", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 1)
+		_create_input("x", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 2)
+		_create_multi_output("result", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_3D)
+	elif op_type == VisualShaderNodeSmoothStep.OP_TYPE_VECTOR_4D:
+		_create_input("edge0", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_4D, 0)
+		_create_input("edge1", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_4D, 1)
+		_create_input("x", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_4D, 2)
+		_create_multi_output("result", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_4D)
+	elif op_type == VisualShaderNodeSmoothStep.OP_TYPE_VECTOR_4D_SCALAR:
+		_create_input("edge0", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 0)
+		_create_input("edge1", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 1)
+		_create_input("x", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_4D, 2)
+		_create_multi_output("result", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_4D)
 
 	_check_output_connections_validity(graph_node)
 
