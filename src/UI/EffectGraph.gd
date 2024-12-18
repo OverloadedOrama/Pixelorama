@@ -364,6 +364,39 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 	elif vsn is VisualShaderNodeCompare:
 		if not ops.is_empty():
 			vsn.function = ops[0]
+		var option_button := OptionButton.new()
+		option_button.add_item("Float", VisualShaderNodeCompare.CTYPE_SCALAR)
+		option_button.add_item("Int", VisualShaderNodeCompare.CTYPE_SCALAR_INT)
+		option_button.add_item("UInt", VisualShaderNodeCompare.CTYPE_SCALAR_UINT)
+		option_button.add_item("Vector2", VisualShaderNodeCompare.CTYPE_VECTOR_2D)
+		option_button.add_item("Vector3", VisualShaderNodeCompare.CTYPE_VECTOR_3D)
+		option_button.add_item("Vector4", VisualShaderNodeCompare.CTYPE_VECTOR_4D)
+		option_button.add_item("Boolean", VisualShaderNodeCompare.CTYPE_BOOLEAN)
+		option_button.add_item("Transform", VisualShaderNodeCompare.CTYPE_TRANSFORM)
+		option_button.select(vsn.type)
+		option_button.item_selected.connect(
+			func(id_selected: VisualShaderNodeCompare.ComparisonType):
+				vsn.type = id_selected
+				_create_compare_node(graph_node, vsn)
+				_on_effect_changed()
+		)
+		graph_node.add_child(option_button)
+		var comparison_option_button := OptionButton.new()
+		comparison_option_button.add_item("Equal (a == b)", VisualShaderNodeCompare.FUNC_EQUAL)
+		comparison_option_button.add_item("Not equal (a != b)", VisualShaderNodeCompare.FUNC_NOT_EQUAL)
+		comparison_option_button.add_item("Greater than (a > b)", VisualShaderNodeCompare.FUNC_GREATER_THAN)
+		comparison_option_button.add_item("Greater than or equal (a >= b)", VisualShaderNodeCompare.FUNC_GREATER_THAN_EQUAL)
+		comparison_option_button.add_item("Less than (a < b)", VisualShaderNodeCompare.FUNC_LESS_THAN)
+		comparison_option_button.add_item("Less than or equal (a <= b)", VisualShaderNodeCompare.FUNC_LESS_THAN_EQUAL)
+		comparison_option_button.select(vsn.function)
+		comparison_option_button.item_selected.connect(
+			func(id_selected: VisualShaderNodeCompare.Function):
+				vsn.function = id_selected
+				_create_compare_node(graph_node, vsn)
+				_on_effect_changed()
+		)
+		graph_node.add_child(comparison_option_button)
+		_create_compare_node(graph_node, vsn)
 	#endregion
 	#region Integers
 	elif vsn is VisualShaderNodeIntOp:
@@ -635,7 +668,7 @@ func _create_input(text: String, graph_node: GraphNode, vsn: VisualShaderNode, l
 
 	if left_slot <= VisualShaderNode.PORT_TYPE_SCALAR_UINT:
 		var slider := ValueSlider.new()
-		slider.custom_minimum_size = Vector2(66, 32)
+		slider.custom_minimum_size = Vector2(100, 32)
 		slider.step = 0.001
 		slider.allow_greater = true
 		slider.allow_lesser = left_slot != VisualShaderNode.PORT_TYPE_SCALAR_UINT
@@ -646,7 +679,7 @@ func _create_input(text: String, graph_node: GraphNode, vsn: VisualShaderNode, l
 		graph_node.set_meta(&"default_input_button_%s" % port_index, slider)
 	elif left_slot == VisualShaderNode.PORT_TYPE_VECTOR_2D:
 		var slider := ShaderLoader.VALUE_SLIDER_V2_TSCN.instantiate() as ValueSliderV2
-		slider.custom_minimum_size = Vector2(100, 32)
+		slider.custom_minimum_size = Vector2(150, 32)
 		slider.grid_columns = 2
 		slider.step = 0.001
 		slider.allow_greater = true
@@ -670,7 +703,7 @@ func _create_input(text: String, graph_node: GraphNode, vsn: VisualShaderNode, l
 		graph_node.set_meta(&"default_input_button_%s" % port_index, slider)
 	elif left_slot == VisualShaderNode.PORT_TYPE_VECTOR_4D:
 		var cbp := ColorPickerButton.new()
-		cbp.custom_minimum_size = Vector2(20, 20)
+		cbp.custom_minimum_size = Vector2(50, 50)
 		if default_parameter != null:
 			if default_parameter is Quaternion or default_parameter is Vector4:
 				cbp.color = Color(default_parameter.w, default_parameter.x, default_parameter.y, default_parameter.z)
@@ -849,6 +882,71 @@ func _create_switch_node(graph_node: GraphNode, vsn: VisualShaderNodeSwitch) -> 
 		_create_input("true", graph_node, vsn, VisualShaderNode.PORT_TYPE_TRANSFORM, 1)
 		_create_input("false", graph_node, vsn, VisualShaderNode.PORT_TYPE_TRANSFORM, 2)
 		_create_label("result", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_BOOLEAN)
+
+	_check_output_connections_validity(graph_node)
+
+
+func _create_compare_node(graph_node: GraphNode, vsn: VisualShaderNodeCompare) -> void:
+	var children := graph_node.get_children(true)
+	for i in range(3, children.size()):
+		var child := children[i]
+		graph_node.remove_child(child)
+		child.queue_free()
+	graph_node.clear_all_slots()
+	var op_type := vsn.type
+	if op_type >= VisualShaderNodeCompare.CTYPE_VECTOR_2D and op_type <= VisualShaderNodeCompare.CTYPE_VECTOR_4D:
+		var option_button := OptionButton.new()
+		option_button.add_item("All", VisualShaderNodeCompare.COND_ALL)
+		option_button.add_item("Any", VisualShaderNodeCompare.COND_ANY)
+		option_button.select(vsn.condition)
+		option_button.item_selected.connect(
+			func(id_selected: VisualShaderNodeCompare.Condition):
+				vsn.condition = id_selected
+				_on_effect_changed()
+		)
+		graph_node.add_child(option_button)
+	if op_type == VisualShaderNodeCompare.CTYPE_SCALAR:
+		_create_input("a", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 0)
+		_create_input("b", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 1)
+		if vsn.function == VisualShaderNodeCompare.FUNC_EQUAL or vsn.function == VisualShaderNodeCompare.FUNC_NOT_EQUAL:
+			_create_input("tolerance", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 2)
+		_create_label("result", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_BOOLEAN)
+	elif op_type == VisualShaderNodeCompare.CTYPE_SCALAR_INT:
+		_create_input("a", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR_INT, 0)
+		_create_input("b", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR_INT, 1)
+		_create_label("result", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_BOOLEAN)
+	elif op_type == VisualShaderNodeCompare.CTYPE_SCALAR_UINT:
+		_create_input("a", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR_UINT, 0)
+		_create_input("b", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR_UINT, 1)
+		_create_label("result", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_BOOLEAN)
+	elif op_type == VisualShaderNodeCompare.CTYPE_VECTOR_2D:
+		_create_input("a", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_2D, 0)
+		_create_input("b", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_2D, 1)
+		_create_label("result", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_BOOLEAN)
+	elif op_type == VisualShaderNodeCompare.CTYPE_VECTOR_3D:
+		_create_input("a", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 0)
+		_create_input("b", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 1)
+		_create_label("result", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_BOOLEAN)
+	elif op_type == VisualShaderNodeCompare.CTYPE_VECTOR_4D:
+		_create_input("a", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_4D, 0)
+		_create_input("b", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_4D, 1)
+		_create_label("result", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_BOOLEAN)
+	elif op_type == VisualShaderNodeCompare.CTYPE_BOOLEAN:
+		_create_input("a", graph_node, vsn, VisualShaderNode.PORT_TYPE_BOOLEAN, 0)
+		_create_input("b", graph_node, vsn, VisualShaderNode.PORT_TYPE_BOOLEAN, 1)
+		_create_label("result", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_BOOLEAN)
+		if vsn.function >= VisualShaderNodeCompare.FUNC_GREATER_THAN:
+			var label := Label.new()
+			label.text = "Invalid comparison function for that type."
+			graph_node.add_child(label)
+	elif op_type == VisualShaderNodeCompare.CTYPE_TRANSFORM:
+		_create_input("a", graph_node, vsn, VisualShaderNode.PORT_TYPE_TRANSFORM, 0)
+		_create_input("b", graph_node, vsn, VisualShaderNode.PORT_TYPE_TRANSFORM, 1)
+		_create_label("result", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_BOOLEAN)
+		if vsn.function >= VisualShaderNodeCompare.FUNC_GREATER_THAN:
+			var label := Label.new()
+			label.text = "Invalid comparison function for that type."
+			graph_node.add_child(label)
 
 	_check_output_connections_validity(graph_node)
 
