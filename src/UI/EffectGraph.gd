@@ -190,7 +190,8 @@ func new_effect(effect_name: String) -> void:
 		effect_name += " (copy)"
 		file_name = effect_name + ".tres"
 		file_path = OpenSave.SHADERS_DIRECTORY.path_join(file_name)
-	ResourceSaver.save(visual_shader, file_path)
+	visual_shader.resource_path = file_path
+	ResourceSaver.save(visual_shader)
 	OpenSave.shader_copied.emit(file_path)
 
 
