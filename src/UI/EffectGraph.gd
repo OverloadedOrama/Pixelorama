@@ -263,7 +263,17 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 	graph_node.resizable = true
 	graph_node.set_meta("visual_shader_node", vsn)  # TODO: Remove if not needed
 	graph_node.position_offset = visual_shader.get_node_position(VisualShader.TYPE_FRAGMENT, id)
-	graph_node.dragged.connect(func(_from: Vector2, to: Vector2): visual_shader.set_node_position(VisualShader.TYPE_FRAGMENT, id, to))
+	graph_node.dragged.connect(
+		func(from: Vector2, to: Vector2):
+			undo_redo.create_action("Move node")
+			undo_redo.add_do_property(graph_node, "position_offset", to)
+			undo_redo.add_do_method(visual_shader.set_node_position.bind(VisualShader.TYPE_FRAGMENT, id, to))
+			undo_redo.add_do_method(_on_effect_changed)
+			undo_redo.add_undo_property(graph_node, "position_offset", from)
+			undo_redo.add_undo_method(visual_shader.set_node_position.bind(VisualShader.TYPE_FRAGMENT, id, from))
+			undo_redo.add_undo_method(_on_effect_changed)
+			undo_redo.commit_action()
+	)
 	if vsn is not VisualShaderNodeOutput:  # Add a close button if the node can be deleted.
 		var close_button := TextureButton.new()
 		close_button.texture_normal = CLOSE
@@ -782,7 +792,7 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 func _on_delete_request(graph_node_name: StringName) -> void:
 	var id := int(String(graph_node_name))
 	var vsn := visual_shader.get_node(VisualShader.TYPE_FRAGMENT, id)
-	undo_redo.create_action("Add node")
+	undo_redo.create_action("Remove node")
 	undo_redo.add_do_method(delete_node.bind(graph_node_name))
 	undo_redo.add_do_method(_on_effect_changed)
 	undo_redo.add_undo_method(visual_shader.add_node.bind(VisualShader.TYPE_FRAGMENT, vsn, spawn_node_in_position, id))
@@ -795,7 +805,6 @@ func delete_node(graph_node_name: StringName) -> void:
 	var graph_node := graph_edit.get_node(String(graph_node_name))
 	visual_shader.remove_node(VisualShader.TYPE_FRAGMENT, int(String(graph_node_name)))
 	graph_node.queue_free()
-	#_on_effect_changed()
 
 
 func _create_label(text: String, graph_node: GraphNode, left_slot: VisualShaderNode.PortType, right_slot: VisualShaderNode.PortType) -> Label:
