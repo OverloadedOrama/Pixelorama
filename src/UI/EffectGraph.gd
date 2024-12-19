@@ -1854,28 +1854,51 @@ func _on_create_node_dialog_confirmed() -> void:
 
 
 func _on_graph_edit_connection_request(from_node_name: String, from_port: int, to_node_name: String, to_port: int) -> void:
-	#var from_node := graph_edit.get_node(from_node_name) as GraphNode
-	var to_node := graph_edit.get_node(to_node_name) as GraphNode
-	graph_edit.connect_node(from_node_name, from_port, to_node_name, to_port)
-	if to_node.has_meta(&"default_input_button_%s" % to_port):
-		to_node.get_meta(&"default_input_button_%s" % to_port).visible = false
-	#var vs_from_node := from_node.get_meta("visual_shader_node") as VisualShaderNode
-	#var vs_to_node := to_node.get_meta("visual_shader_node") as VisualShaderNode
 	var vs_from_node_id := int(from_node_name)
 	var vs_to_node_id := int(to_node_name)
-	visual_shader.connect_nodes(VisualShader.TYPE_FRAGMENT, vs_from_node_id, from_port, vs_to_node_id, to_port)
-	_on_effect_changed()
+	undo_redo.create_action("Connect nodes")
+	undo_redo.add_do_method(graph_edit.connect_node.bind(from_node_name, from_port, to_node_name, to_port))
+	undo_redo.add_do_method(_graph_node_default_input_control_visibility.bind(to_node_name, to_port, false))
+	undo_redo.add_do_method(visual_shader.connect_nodes.bind(VisualShader.TYPE_FRAGMENT, vs_from_node_id, from_port, vs_to_node_id, to_port))
+	undo_redo.add_do_method(_on_effect_changed)
+	undo_redo.add_undo_method(graph_edit.disconnect_node.bind(from_node_name, from_port, to_node_name, to_port))
+	undo_redo.add_undo_method(_graph_node_default_input_control_visibility.bind(to_node_name, to_port, true))
+	undo_redo.add_undo_method(visual_shader.disconnect_nodes.bind(VisualShader.TYPE_FRAGMENT, vs_from_node_id, from_port, vs_to_node_id, to_port))
+	undo_redo.add_undo_method(_on_effect_changed)
+	undo_redo.commit_action()
 
 
 func _on_graph_edit_disconnection_request(from_node_name: String, from_port: int, to_node_name: String, to_port: int) -> void:
-	var to_node := graph_edit.get_node(to_node_name) as GraphNode
-	graph_edit.disconnect_node(from_node_name, from_port, to_node_name, to_port)
-	if to_node.has_meta(&"default_input_button_%s" % to_port):
-		to_node.get_meta(&"default_input_button_%s" % to_port).visible = true
 	var vs_from_node_id := int(from_node_name)
 	var vs_to_node_id := int(to_node_name)
-	visual_shader.disconnect_nodes(VisualShader.TYPE_FRAGMENT, vs_from_node_id, from_port, vs_to_node_id, to_port)
-	_on_effect_changed()
+	undo_redo.create_action("Disconnect nodes")
+	undo_redo.add_do_method(graph_edit.disconnect_node.bind(from_node_name, from_port, to_node_name, to_port))
+	undo_redo.add_do_method(_graph_node_default_input_control_visibility.bind(to_node_name, to_port, true))
+	undo_redo.add_do_method(visual_shader.disconnect_nodes.bind(VisualShader.TYPE_FRAGMENT, vs_from_node_id, from_port, vs_to_node_id, to_port))
+	undo_redo.add_do_method(_on_effect_changed)
+	undo_redo.add_undo_method(graph_edit.connect_node.bind(from_node_name, from_port, to_node_name, to_port))
+	undo_redo.add_undo_method(_graph_node_default_input_control_visibility.bind(to_node_name, to_port, false))
+	undo_redo.add_undo_method(visual_shader.connect_nodes.bind(VisualShader.TYPE_FRAGMENT, vs_from_node_id, from_port, vs_to_node_id, to_port))
+	undo_redo.add_undo_method(_on_effect_changed)
+	undo_redo.commit_action()
+
+
+func _on_graph_edit_graph_elements_linked_to_frame_request(elements: Array, frame: StringName) -> void:
+	undo_redo.create_action("Link nodes to frame")
+	for element in elements:
+		undo_redo.add_do_method(graph_edit.attach_graph_element_to_frame.bind(element, frame))
+		undo_redo.add_do_method(visual_shader.attach_node_to_frame.bind(VisualShader.TYPE_FRAGMENT, int(String(element)), int(String(frame))))
+		undo_redo.add_undo_method(graph_edit.detach_graph_element_from_frame.bind(element))
+		undo_redo.add_undo_method(visual_shader.detach_node_from_frame.bind(VisualShader.TYPE_FRAGMENT, int(String(element))))
+	undo_redo.add_do_method(_on_effect_changed)
+	undo_redo.add_undo_method(_on_effect_changed)
+	undo_redo.commit_action()
+
+
+func _graph_node_default_input_control_visibility(node_name: StringName, port: int, vis: bool) -> void:
+	var node := graph_edit.get_node(String(node_name))
+	if node.has_meta(&"default_input_button_%s" % port):
+		node.get_meta(&"default_input_button_%s" % port).visible = vis
 
 
 func _on_graph_edit_connection_from_empty(_to_node: StringName, _to_port: int, release_position: Vector2) -> void:
@@ -1900,16 +1923,6 @@ func _on_graph_edit_popup_request(at_position: Vector2) -> void:
 func _on_graph_edit_delete_nodes_request(node_names: Array[StringName]) -> void:
 	for node_name in node_names:
 		_on_delete_request(node_name)
-
-
-func _on_graph_edit_graph_elements_linked_to_frame_request(elements: Array, frame: StringName) -> void:
-	#var frame_node := graph_edit.get_node(String(frame))
-	#var frame_vsn := frame_node.get_meta("visual_shader_node") as VisualShaderNodeFrame
-	for element in elements:
-		graph_edit.attach_graph_element_to_frame(element, frame)
-		visual_shader.attach_node_to_frame(VisualShader.TYPE_FRAGMENT, int(String(element)), int(String(frame)))
-		#frame_vsn.add_attached_node(int(String(element)))
-	_on_effect_changed()
 
 
 func _on_graph_edit_mouse_entered() -> void:
