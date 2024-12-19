@@ -63,6 +63,7 @@ var add_node_button: Button
 var spawn_node_in_position := Vector2.ZERO
 
 @onready var graph_edit := $GraphEdit as GraphEdit
+@onready var filter_line_edit: LineEdit = %FilterLineEdit
 @onready var node_list_tree: Tree = %NodeListTree
 @onready var effect_name_line_edit: LineEdit = %EffectNameLineEdit
 
@@ -1793,10 +1794,22 @@ func fill_add_options() -> void:
 
 
 func update_options_menu() -> void:
+	node_list_tree.clear()
+	var filter := filter_line_edit.text.strip_edges()
+	var use_filter := not filter.is_empty()
+	var is_first_item := true
 	var root := node_list_tree.create_item()
 	var folders := {}  # String, TreeItem
-	for i in add_options.size():
-		var option := add_options[i]
+	var options: Array[AddOption]
+	if not use_filter:
+		options = add_options
+	else:
+		for i in add_options.size():
+			var option := add_options[i]
+			if option.option_name.containsn(filter):
+				options.append(option)
+	for i in options.size():
+		var option := options[i]
 		if option.highend and not is_instance_valid(RenderingServer.get_rendering_device()):
 			continue
 		var path := option.category
@@ -1810,7 +1823,7 @@ func update_options_menu() -> void:
 				if not folders.has(path_temp):
 					category = node_list_tree.create_item(category)
 					category.set_selectable(0, false)
-					#category.set_collapsed(!use_filter)
+					category.set_collapsed(!use_filter)
 					category.set_text(0, subfolders[j])
 					folders[path_temp] = category
 				else:
@@ -1825,12 +1838,12 @@ func update_options_menu() -> void:
 		#}
 		item.set_text(0, option.option_name)
 		item.set_metadata(0, i)
-		#if (is_first_item && use_filter):
-			#item.select(0)
+		if is_first_item && use_filter:
+			item.select(0)
 			#node_desc.set_text(options[i].description)
-			#is_first_item = false
-#
-			#node_list_tree.get_window().get_ok_button().set_disabled(false)
+			is_first_item = false
+
+			node_list_tree.get_window().get_ok_button().set_disabled(false)
 
 
 func _on_node_list_tree_item_selected() -> void:
@@ -1931,3 +1944,7 @@ func _on_graph_edit_mouse_entered() -> void:
 
 func _on_graph_edit_mouse_exited() -> void:
 	can_undo = false
+
+
+func _on_filter_line_edit_text_changed(_new_text: String) -> void:
+	update_options_menu()

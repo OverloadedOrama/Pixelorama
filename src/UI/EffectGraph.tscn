@@ -17,13 +17,17 @@ show_zoom_label = true
 
 [node name="CreateNodeDialog" type="ConfirmationDialog" parent="."]
 title = "Create node"
-size = Vector2i(200, 400)
+size = Vector2i(500, 400)
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CreateNodeDialog"]
 offset_left = 8.0
 offset_top = 8.0
-offset_right = 192.0
-offset_bottom = 51.0
+offset_right = 492.0
+offset_bottom = 351.0
+
+[node name="FilterLineEdit" type="LineEdit" parent="CreateNodeDialog/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
 
 [node name="NodeListTree" type="Tree" parent="CreateNodeDialog/VBoxContainer"]
 unique_name_in_owner = true
@@ -62,6 +66,7 @@ size_flags_horizontal = 3
 [connection signal="mouse_exited" from="GraphEdit" to="." method="_on_graph_edit_mouse_exited"]
 [connection signal="popup_request" from="GraphEdit" to="." method="_on_graph_edit_popup_request"]
 [connection signal="confirmed" from="CreateNodeDialog" to="." method="_on_create_node_dialog_confirmed"]
+[connection signal="text_changed" from="CreateNodeDialog/VBoxContainer/FilterLineEdit" to="." method="_on_filter_line_edit_text_changed"]
 [connection signal="item_selected" from="CreateNodeDialog/VBoxContainer/NodeListTree" to="." method="_on_node_list_tree_item_selected"]
 [connection signal="nothing_selected" from="CreateNodeDialog/VBoxContainer/NodeListTree" to="." method="_on_node_list_tree_nothing_selected"]
 [connection signal="confirmed" from="CreateEffectDialog" to="." method="_on_create_effect_dialog_confirmed"]
