@@ -1619,8 +1619,16 @@ func fill_add_options() -> void:
 	#region Textures
 	add_options.push_back(AddOption.new("UVFunc", "Textures/Common", "VisualShaderNodeUVFunc", "Function to be applied on texture coordinates.", [], VisualShaderNode.PORT_TYPE_VECTOR_2D))
 	add_options.push_back(AddOption.new("UVPolarCoord", "Textures/Common", "VisualShaderNodeUVPolarCoord", "Polar coordinates conversion applied on texture coordinates.", [], VisualShaderNode.PORT_TYPE_VECTOR_2D))
+	#add_options.push_back(AddOption.new("CubeMap", "Textures/Functions", "VisualShaderNodeCubemap", "Perform the cubic texture lookup.", [], VisualShaderNode.PORT_TYPE_VECTOR_4D))
+	add_options.push_back(AddOption.new("CurveTexture", "Textures/Functions", "VisualShaderNodeCurveTexture", "Perform the curve texture lookup.", [], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("CurveXYZTexture", "Textures/Functions", "VisualShaderNodeCurveXYZTexture", "Perform the three components curve texture lookup.", [], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("Texture2D", "Textures/Functions", "VisualShaderNodeTexture", "Perform the 2D texture lookup.", [], VisualShaderNode.PORT_TYPE_VECTOR_4D))
+	#add_options.push_back(AddOption.new("Texture2DArray", "Textures/Functions", "VisualShaderNodeTexture2DArray", "Perform the 2D-array texture lookup.", [], VisualShaderNode.PORT_TYPE_VECTOR_4D))
+	#add_options.push_back(AddOption.new("Texture3D", "Textures/Functions", "VisualShaderNodeTexture3D", "Perform the 3D texture lookup.", [], VisualShaderNode.PORT_TYPE_VECTOR_4D))
 	add_options.push_back(AddOption.new("UVPanning", "Textures/Functions", "VisualShaderNodeUVFunc", "Apply panning function on texture coordinates.", [ VisualShaderNodeUVFunc.FUNC_PANNING ], VisualShaderNode.PORT_TYPE_VECTOR_2D))
 	add_options.push_back(AddOption.new("UVScaling", "Textures/Functions", "VisualShaderNodeUVFunc", "Apply scaling function on texture coordinates.", [ VisualShaderNodeUVFunc.FUNC_SCALING ], VisualShaderNode.PORT_TYPE_VECTOR_2D))
+	#add_options.push_back(AddOption.new("CubeMapParameter", "Textures/Variables", "VisualShaderNodeCubemapParameter", "Cubic texture parameter lookup.", [], VisualShaderNode.PORT_TYPE_SAMPLER))
+	add_options.push_back(AddOption.new("Texture2DParameter", "Textures/Variables", "VisualShaderNodeTexture2DParameter", "2D texture parameter lookup.", [], VisualShaderNode.PORT_TYPE_SAMPLER))
 	#endregion
 	#region Utility
 	add_options.push_back(AddOption.new("RandomRange", "Utility", "VisualShaderNodeRandomRange", "Returns a random value between the minimum and maximum input values.", [], VisualShaderNode.PORT_TYPE_SCALAR))
