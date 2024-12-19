@@ -733,19 +733,31 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		_create_label("sampler2D", graph_node, VisualShaderNode.PORT_TYPE_SAMPLER, VisualShaderNode.PORT_TYPE_MAX)
 		_create_multi_output("color", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_4D)
 	elif vsn is VisualShaderNodeUVFunc:
-		_create_label("uv", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_2D, VisualShaderNode.PORT_TYPE_MAX)
-		var scale_hbox := HBoxContainer.new()
-		var scale_v2 := ShaderLoader.VALUE_SLIDER_V2_TSCN.instantiate() as ValueSliderV2
-		scale_v2.value = Vector2.ONE
-		scale_v2.grid_columns = 2
-		scale_hbox.add_child(scale_v2)
-		var scale_label := Label.new()
-		scale_label.text = "scale"
-		scale_hbox.add_child(scale_label)
-		graph_node.add_child(scale_hbox)
-		graph_node.set_slot(1, true, VisualShaderNode.PORT_TYPE_VECTOR_2D, slot_colors[VisualShaderNode.PORT_TYPE_VECTOR_2D], false, VisualShaderNode.PORT_TYPE_MAX, Color.TRANSPARENT)
-		_create_label("offset", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_2D, VisualShaderNode.PORT_TYPE_MAX)
-		_create_label("uv", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_VECTOR_2D)
+		vsn.set("expanded_output_ports", [0])
+		if not ops.is_empty():
+			vsn.function = ops[0]
+		var option_button := OptionButton.new()
+		option_button.add_item("Panning", VisualShaderNodeUVFunc.FUNC_PANNING)
+		option_button.add_item("Scaling", VisualShaderNodeUVFunc.FUNC_SCALING)
+		option_button.select(option_button.get_item_index(vsn.function))
+		option_button.item_selected.connect(
+			func(id_selected: VisualShaderNodeUVFunc.Function):
+				vsn.function = id_selected
+				_on_effect_changed()
+		)
+		graph_node.add_child(option_button)
+		_create_input("uv", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_2D, 0)
+		_create_input("scale", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_2D, 1)
+		var input_text := "offset" if vsn.function == VisualShaderNodeUVFunc.FUNC_PANNING else "pivot"
+		_create_input(input_text, graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_2D, 2)
+		_create_multi_output("uv", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_2D)
+	elif vsn is VisualShaderNodeUVPolarCoord:
+		vsn.set("expanded_output_ports", [0])
+		_create_input("uv", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_2D, 0)
+		_create_input("scale", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_2D, 1)
+		_create_input("zoom_strength", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 2)
+		_create_input("repeat", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 3)
+		_create_multi_output("uv", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_2D)
 	#endregion
 
 	graph_edit.add_child(graph_node)
@@ -1505,6 +1517,12 @@ func fill_add_options() -> void:
 	add_options.push_back(AddOption.new("IntParameter", "Scalar/Variables", "VisualShaderNodeIntParameter", ("Scalar integer parameter."), [], VisualShaderNode.PORT_TYPE_SCALAR_INT));
 	add_options.push_back(AddOption.new("UIntParameter", "Scalar/Variables", "VisualShaderNodeUIntParameter", ("Scalar unsigned integer parameter."), [], VisualShaderNode.PORT_TYPE_SCALAR_UINT));
 
+	#endregion
+	#region Textures
+	add_options.push_back(AddOption.new("UVFunc", "Textures/Common", "VisualShaderNodeUVFunc", "Function to be applied on texture coordinates.", [], VisualShaderNode.PORT_TYPE_VECTOR_2D))
+	add_options.push_back(AddOption.new("UVPolarCoord", "Textures/Common", "VisualShaderNodeUVPolarCoord", "Polar coordinates conversion applied on texture coordinates.", [], VisualShaderNode.PORT_TYPE_VECTOR_2D))
+	add_options.push_back(AddOption.new("UVPanning", "Textures/Functions", "VisualShaderNodeUVFunc", "Apply panning function on texture coordinates.", [ VisualShaderNodeUVFunc.FUNC_PANNING ], VisualShaderNode.PORT_TYPE_VECTOR_2D))
+	add_options.push_back(AddOption.new("UVScaling", "Textures/Functions", "VisualShaderNodeUVFunc", "Apply scaling function on texture coordinates.", [ VisualShaderNodeUVFunc.FUNC_SCALING ], VisualShaderNode.PORT_TYPE_VECTOR_2D))
 	#endregion
 	#region Utility
 	add_options.push_back(AddOption.new("RandomRange", "Utility", "VisualShaderNodeRandomRange", "Returns a random value between the minimum and maximum input values.", [], VisualShaderNode.PORT_TYPE_SCALAR))
