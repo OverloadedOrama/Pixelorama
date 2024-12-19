@@ -706,6 +706,19 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		graph_node.add_child(option_button)
 		_create_smooth_step_node(graph_node, vsn)
 	#endregion
+	#region Utility
+	elif vsn is VisualShaderNodeRandomRange:
+		_create_input("seed", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 0)
+		_create_input("min", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 1)
+		_create_input("max", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 2)
+		_create_multi_output("value", graph_node, VisualShaderNode.PORT_TYPE_SCALAR)
+	elif vsn is VisualShaderNodeRotationByAxis:
+		_create_input("input", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 0)
+		_create_input("angle", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 1)
+		_create_input("axis", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 2)
+		_create_label("output", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_VECTOR_3D)
+		_create_label("rotationMat", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_TRANSFORM)
+	#endregion
 	#region Textures
 	elif vsn is VisualShaderNodeTexture:
 		# TODO: Add texture changing logic
@@ -1492,6 +1505,10 @@ func fill_add_options() -> void:
 	add_options.push_back(AddOption.new("IntParameter", "Scalar/Variables", "VisualShaderNodeIntParameter", ("Scalar integer parameter."), [], VisualShaderNode.PORT_TYPE_SCALAR_INT));
 	add_options.push_back(AddOption.new("UIntParameter", "Scalar/Variables", "VisualShaderNodeUIntParameter", ("Scalar unsigned integer parameter."), [], VisualShaderNode.PORT_TYPE_SCALAR_UINT));
 
+	#endregion
+	#region Utility
+	add_options.push_back(AddOption.new("RandomRange", "Utility", "VisualShaderNodeRandomRange", "Returns a random value between the minimum and maximum input values.", [], VisualShaderNode.PORT_TYPE_SCALAR))
+	add_options.push_back(AddOption.new("RotationByAxis", "Utility", "VisualShaderNodeRotationByAxis", "Builds a rotation matrix from the given axis and angle, multiply the input vector by it and returns both this vector and a matrix.", [], VisualShaderNode.PORT_TYPE_VECTOR_3D))
 	#endregion
 	#region Vector
 	add_options.push_back(AddOption.new("VectorFunc", "Vector/Common", "VisualShaderNodeVectorFunc", "Vector function.", [], VisualShaderNode.PORT_TYPE_VECTOR_3D));
