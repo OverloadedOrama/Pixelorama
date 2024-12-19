@@ -18,7 +18,12 @@ var slot_colors := PackedColorArray(
 	]
 )
 var can_undo := false
-var undo_redo := UndoRedo.new()
+var undo_redos := {}  ## Dictionary of [VisualShader] and [UndoRedo].
+var undo_redo: UndoRedo:
+	get():
+		if is_instance_valid(visual_shader) and visual_shader in undo_redos:
+			return undo_redos[visual_shader]
+		return null
 var add_options: Array[AddOption]
 var visual_shader: VisualShader:
 	set(value):
@@ -50,6 +55,8 @@ var visual_shader: VisualShader:
 				if vsn is VisualShaderNodeFrame:
 					for attached_node in vsn.attached_nodes:
 						graph_edit.attach_graph_element_to_frame(str(attached_node), str(id))
+			if not visual_shader in undo_redos:
+				undo_redos[visual_shader] = UndoRedo.new()
 
 var effects_button: MenuButton
 var add_node_button: Button
@@ -167,7 +174,7 @@ func _ready() -> void:
 
 
 func _input(event: InputEvent) -> void:
-	if can_undo:
+	if can_undo and is_instance_valid(undo_redo):
 		if event.is_action_pressed(&"undo", true, true):
 			undo_redo.undo()
 			get_window().set_input_as_handled()
@@ -263,17 +270,7 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 	graph_node.resizable = true
 	graph_node.set_meta("visual_shader_node", vsn)  # TODO: Remove if not needed
 	graph_node.position_offset = visual_shader.get_node_position(VisualShader.TYPE_FRAGMENT, id)
-	graph_node.dragged.connect(
-		func(from: Vector2, to: Vector2):
-			undo_redo.create_action("Move node")
-			undo_redo.add_do_property(graph_node, "position_offset", to)
-			undo_redo.add_do_method(visual_shader.set_node_position.bind(VisualShader.TYPE_FRAGMENT, id, to))
-			undo_redo.add_do_method(_on_effect_changed)
-			undo_redo.add_undo_property(graph_node, "position_offset", from)
-			undo_redo.add_undo_method(visual_shader.set_node_position.bind(VisualShader.TYPE_FRAGMENT, id, from))
-			undo_redo.add_undo_method(_on_effect_changed)
-			undo_redo.commit_action()
-	)
+	graph_node.dragged.connect(move_node.bind(str(id)))
 	if vsn is not VisualShaderNodeOutput:  # Add a close button if the node can be deleted.
 		var close_button := TextureButton.new()
 		close_button.texture_normal = CLOSE
@@ -805,6 +802,26 @@ func delete_node(graph_node_name: StringName) -> void:
 	var graph_node := graph_edit.get_node(String(graph_node_name))
 	visual_shader.remove_node(VisualShader.TYPE_FRAGMENT, int(String(graph_node_name)))
 	graph_node.queue_free()
+
+
+func move_node(from: Vector2, to: Vector2, graph_node_name: StringName) -> void:
+	var id := int(String(graph_node_name))
+	undo_redo.create_action("Move node")
+	undo_redo.add_do_method(
+		func():
+			var graph_node := graph_edit.get_node(String(graph_node_name))
+			graph_node.position_offset = to
+	)
+	undo_redo.add_do_method(visual_shader.set_node_position.bind(VisualShader.TYPE_FRAGMENT, id, to))
+	undo_redo.add_do_method(_on_effect_changed)
+	undo_redo.add_undo_method(
+		func():
+			var graph_node := graph_edit.get_node(String(graph_node_name))
+			graph_node.position_offset = from
+	)
+	undo_redo.add_undo_method(visual_shader.set_node_position.bind(VisualShader.TYPE_FRAGMENT, id, from))
+	undo_redo.add_undo_method(_on_effect_changed)
+	undo_redo.commit_action()
 
 
 func _create_label(text: String, graph_node: GraphNode, left_slot: VisualShaderNode.PortType, right_slot: VisualShaderNode.PortType) -> Label:
