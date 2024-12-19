@@ -58,6 +58,8 @@ size_flags_horizontal = 3
 [connection signal="delete_nodes_request" from="GraphEdit" to="." method="_on_graph_edit_delete_nodes_request"]
 [connection signal="disconnection_request" from="GraphEdit" to="." method="_on_graph_edit_disconnection_request"]
 [connection signal="graph_elements_linked_to_frame_request" from="GraphEdit" to="." method="_on_graph_edit_graph_elements_linked_to_frame_request"]
+[connection signal="mouse_entered" from="GraphEdit" to="." method="_on_graph_edit_mouse_entered"]
+[connection signal="mouse_exited" from="GraphEdit" to="." method="_on_graph_edit_mouse_exited"]
 [connection signal="popup_request" from="GraphEdit" to="." method="_on_graph_edit_popup_request"]
 [connection signal="confirmed" from="CreateNodeDialog" to="." method="_on_create_node_dialog_confirmed"]
 [connection signal="item_selected" from="CreateNodeDialog/VBoxContainer/NodeListTree" to="." method="_on_node_list_tree_item_selected"]
