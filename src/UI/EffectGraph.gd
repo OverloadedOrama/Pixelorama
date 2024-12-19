@@ -1,9 +1,27 @@
 extends PanelContainer
 
+## This would not be needed if Godot had exposed VisualShaderNode's category enum.
+enum Category {
+	CATEGORY_NONE,
+	CATEGORY_OUTPUT,
+	CATEGORY_COLOR,
+	CATEGORY_CONDITIONAL,
+	CATEGORY_INPUT,
+	CATEGORY_SCALAR,
+	CATEGORY_TEXTURES,
+	CATEGORY_TRANSFORM,
+	CATEGORY_UTILITY,
+	CATEGORY_VECTOR,
+	CATEGORY_SPECIAL,
+	CATEGORY_PARTICLE,
+	CATEGORY_MAX
+}
+
 const VALUE_ARROW := preload("res://assets/graphics/misc/value_arrow.svg")
 const VALUE_ARROW_RIGHT := preload("res://assets/graphics/misc/value_arrow_right.svg")
 const CLOSE := preload("res://assets/graphics/misc/close.svg")
 
+# The color values are taken from Godot's editor_settings.cpp file.
 var slot_colors := PackedColorArray(
 	[
 		Color(0.55, 0.55, 0.55),  # Scalar
@@ -15,6 +33,22 @@ var slot_colors := PackedColorArray(
 		Color(0.243, 0.612, 0.349),  # Boolean
 		Color(0.71, 0.357, 0.64),  # Transform
 		Color(0.659, 0.4, 0.137)  # Sampler
+	]
+)
+var category_colors := PackedColorArray(
+	[
+		Color(0.0, 0.0, 0.0),  # None (default, not used)
+		Color(0.26, 0.10, 0.15),  # Output
+		Color(0.5, 0.5, 0.1),  # Color
+		Color(0.208, 0.522, 0.298),  # Conditional
+		Color(0.502, 0.2, 0.204),  # Input
+		Color(0.1, 0.5, 0.6),  # Scalar
+		Color(0.5, 0.3, 0.1),  # Textures
+		Color(0.5, 0.3, 0.5),  # Transform
+		Color(0.2, 0.2, 0.2),  # Utility
+		Color(0.2, 0.2, 0.5),  # Vector
+		Color(0.098, 0.361, 0.294),  # Special
+		Color(0.12, 0.358, 0.8)  # Particle
 	]
 )
 var can_undo := false
@@ -266,6 +300,14 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		graph_node = GraphFrame.new()
 	else:
 		graph_node = GraphNode.new()
+		# Set the color of the title
+		var sb_colored := graph_node.get_theme_stylebox(&"titlebar", &"GraphNode").duplicate() as StyleBoxFlat
+		sb_colored.bg_color = category_colors[_get_node_category(vsn)]
+		graph_node.add_theme_stylebox_override(&"titlebar", sb_colored)
+
+		var sb_colored_selected := graph_node.get_theme_stylebox(&"titlebar_selected", &"GraphNode").duplicate() as StyleBoxFlat
+		sb_colored_selected.bg_color = category_colors[_get_node_category(vsn)].lightened(0.2)
+		graph_node.add_theme_stylebox_override(&"titlebar_selected", sb_colored_selected)
 	graph_node.name = str(id)
 	graph_node.title = vsn.get_class().replace("VisualShaderNode", "")
 	graph_node.resizable = true
@@ -1844,6 +1886,95 @@ func update_options_menu() -> void:
 			is_first_item = false
 
 			node_list_tree.get_window().get_ok_button().set_disabled(false)
+
+
+## TODO: Remove if Godot ever exposes VisualShaderNode's category.
+func _get_node_category(vsn: VisualShaderNode) -> Category:
+	if vsn is VisualShaderNodeVectorBase:
+		return Category.CATEGORY_VECTOR
+	if vsn is VisualShaderNodeConstant or vsn is VisualShaderNodeParameter:
+		return Category.CATEGORY_INPUT
+
+	if vsn is VisualShaderNodeClamp:
+		if vsn.op_type <= VisualShaderNodeClamp.OP_TYPE_UINT:
+			return Category.CATEGORY_SCALAR
+		return Category.CATEGORY_VECTOR
+
+	if vsn is VisualShaderNodeStep or vsn is VisualShaderNodeSmoothStep or vsn is VisualShaderNodeMix or vsn is VisualShaderNodeMultiplyAdd:
+		if vsn.op_type == 0:
+			return Category.CATEGORY_SCALAR
+		return Category.CATEGORY_VECTOR
+
+	match vsn.get_class():
+		"VisualShaderNodeOutput", "VisualShaderNodeVaryingSetter":
+			return Category.CATEGORY_OUTPUT
+
+		"VisualShaderNodeColorOp", "VisualShaderNodeColorFunc":
+			return Category.CATEGORY_COLOR
+
+		"VisuahShaderNodeIf",\
+		"VisualShaderNodeIs",\
+		"VisualShaderNodeSwitch",\
+		"VisualShaderNodeCompare":
+			return Category.CATEGORY_CONDITIONAL
+
+		"VisualShaderNodeInput",\
+		"VisualShaderNodeParameterRef",\
+		"VisualShaderNodeVaryingGetter":
+			return Category.CATEGORY_INPUT
+
+		"VisualShaderNodeFloatOp",\
+		"VisualShaderNodeIntOp",\
+		"VisualShaderNodeUIntOp",\
+		"VisualShaderNodeFloatFunc",\
+		"VisualShaderNodeIntFunc",\
+		"VisualShaderNodeUIntFunc":
+			return Category.CATEGORY_SCALAR
+
+		"VisualShaderNodeTexture",\
+		"VisualShaderNodeCurveTexture",\
+		"VisualShaderNodeCurveXYZTexture",\
+		"VisualShaderNodeSample3D",\
+		"VisualShaderNodeCubemap",\
+		"VisualShaderNodeLinearSceneDepth",\
+		"VisualShaderNodeWorldPositionFromDepth",\
+		"VisualShaderNodeScreenNormalWorldSpace",\
+		"VisualShaderNodeUVFunc",\
+		"VisualShaderNodeUVPolarCoord",\
+		"VisualShaderNodeSDFToScreenUV",\
+		"VisualShaderNodeScreenUVToSDF",\
+		"VisualShaderNodeTextureSDF",\
+		"VisualShaderNodeTextureSDFNormal",\
+		"VisualShaderNodeSDFRaymarch":
+			return Category.CATEGORY_TEXTURES
+
+		"VisualShaderNodeTransformOp", "VisualShaderNodeTransformVecMult", "VisualShaderNodeTransformFunc", "VisualShaderNodeOuterProduct", "VisualShaderNodeTransformCompose", "VisualShaderNodeTransformDecompose":
+			return Category.CATEGORY_TRANSFORM
+
+		"VisualShaderNodeDerivativeFunc",\
+		"VisualShaderNodeFresnel",\
+		"VisualShaderNodeBillboard",\
+		"VisualShaderNodeDistanceFade",\
+		"VisualShaderNodeProximityFade",\
+		"VisualShaderNodeRandomRange",\
+		"VisualShaderNodeRotationByAxis":
+			return Category.CATEGORY_UTILITY
+
+		"VisualShaderNodeDotProduct", "VisualShaderNodeDeterminant":
+			return Category.CATEGORY_VECTOR
+
+		"VisualShaderNodeReroute", "VisualShaderNodeGroupBase":
+			return Category.CATEGORY_SPECIAL
+
+		"VisualShaderNodeParticleEmitter",\
+		"VisualShaderNodeParticleMultiplyByAxisAngle",\
+		"VisualShaderNodeParticleConeVelocity",\
+		"VisualShaderNodeParticleRandomness",\
+		"VisualShaderNodeParticleAccelerator",\
+		"VisualShaderNodeParticleEmit":
+			return Category.CATEGORY_PARTICLE
+
+	return Category.CATEGORY_NONE
 
 
 func _on_node_list_tree_item_selected() -> void:
