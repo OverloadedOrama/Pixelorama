@@ -17,6 +17,8 @@ var slot_colors := PackedColorArray(
 		Color(0.659, 0.4, 0.137)  # Sampler
 	]
 )
+var can_undo := false
+var undo_redo := UndoRedo.new()
 var add_options: Array[AddOption]
 var visual_shader: VisualShader:
 	set(value):
@@ -164,6 +166,16 @@ func _ready() -> void:
 	menu_hbox.move_child(effects_button, 0)
 
 
+func _input(event: InputEvent) -> void:
+	if can_undo:
+		if event.is_action_pressed(&"undo", true, true):
+			undo_redo.undo()
+			get_window().set_input_as_handled()
+		if event.is_action_pressed(&"redo", true, true):
+			undo_redo.redo()
+			get_window().set_input_as_handled()
+
+
 func _on_effect_changed() -> void:
 	ResourceSaver.save(visual_shader)
 	Global.canvas.queue_redraw()
@@ -228,15 +240,19 @@ func add_new_node(index: int) -> void:
 	var option := add_options[index]
 	if not option.type.is_empty():
 		var vsn := ClassDB.instantiate(option.type) as VisualShaderNode
+		if not is_instance_valid(vsn):
+			return
 		var id := visual_shader.get_valid_node_id(VisualShader.TYPE_FRAGMENT)
-		visual_shader.add_node(VisualShader.TYPE_FRAGMENT, vsn, spawn_node_in_position, id)
-		add_node(vsn, id, option.ops)
-		_on_effect_changed()
+		undo_redo.create_action("Add node")
+		undo_redo.add_do_method(visual_shader.add_node.bind(VisualShader.TYPE_FRAGMENT, vsn, spawn_node_in_position, id))
+		undo_redo.add_do_method(add_node.bind(vsn, id, option.ops))
+		undo_redo.add_do_method(_on_effect_changed)
+		undo_redo.add_undo_method(delete_node.bind(str(id)))
+		undo_redo.add_undo_method(_on_effect_changed)
+		undo_redo.commit_action()
 
 
 func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
-	if not is_instance_valid(vsn):
-		return
 	var graph_node: GraphElement
 	if vsn is VisualShaderNodeFrame:
 		graph_node = GraphFrame.new()
@@ -251,7 +267,7 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 	if vsn is not VisualShaderNodeOutput:  # Add a close button if the node can be deleted.
 		var close_button := TextureButton.new()
 		close_button.texture_normal = CLOSE
-		close_button.pressed.connect(delete_node.bind(graph_node))
+		close_button.pressed.connect(_on_delete_request.bind((str(id))))
 		graph_node.get_titlebar_hbox().add_child(close_button)
 	if vsn is VisualShaderNodeOutput:
 		_create_input("Color", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D)
@@ -763,10 +779,23 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 	graph_edit.add_child(graph_node)
 
 
-func delete_node(graph_node: GraphElement) -> void:
-	visual_shader.remove_node(VisualShader.TYPE_FRAGMENT, int(String(graph_node.name)))
+func _on_delete_request(graph_node_name: StringName) -> void:
+	var id := int(String(graph_node_name))
+	var vsn := visual_shader.get_node(VisualShader.TYPE_FRAGMENT, id)
+	undo_redo.create_action("Add node")
+	undo_redo.add_do_method(delete_node.bind(graph_node_name))
+	undo_redo.add_do_method(_on_effect_changed)
+	undo_redo.add_undo_method(visual_shader.add_node.bind(VisualShader.TYPE_FRAGMENT, vsn, spawn_node_in_position, id))
+	undo_redo.add_undo_method(add_node.bind(vsn, id))
+	undo_redo.add_undo_method(_on_effect_changed)
+	undo_redo.commit_action()
+
+
+func delete_node(graph_node_name: StringName) -> void:
+	var graph_node := graph_edit.get_node(String(graph_node_name))
+	visual_shader.remove_node(VisualShader.TYPE_FRAGMENT, int(String(graph_node_name)))
 	graph_node.queue_free()
-	_on_effect_changed()
+	#_on_effect_changed()
 
 
 func _create_label(text: String, graph_node: GraphNode, left_slot: VisualShaderNode.PortType, right_slot: VisualShaderNode.PortType) -> Label:
@@ -1844,8 +1873,7 @@ func _on_graph_edit_popup_request(at_position: Vector2) -> void:
 
 func _on_graph_edit_delete_nodes_request(node_names: Array[StringName]) -> void:
 	for node_name in node_names:
-		var node := graph_edit.get_node(String(node_name))
-		delete_node(node)
+		_on_delete_request(node_name)
 
 
 func _on_graph_edit_graph_elements_linked_to_frame_request(elements: Array, frame: StringName) -> void:
@@ -1856,3 +1884,11 @@ func _on_graph_edit_graph_elements_linked_to_frame_request(elements: Array, fram
 		visual_shader.attach_node_to_frame(VisualShader.TYPE_FRAGMENT, int(String(element)), int(String(frame)))
 		#frame_vsn.add_attached_node(int(String(element)))
 	_on_effect_changed()
+
+
+func _on_graph_edit_mouse_entered() -> void:
+	can_undo = true
+
+
+func _on_graph_edit_mouse_exited() -> void:
+	can_undo = false
