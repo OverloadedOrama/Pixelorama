@@ -281,7 +281,12 @@ func get_color_type(type: int) -> Color:
 func add_new_node(index: int) -> void:
 	var option := add_options[index]
 	if not option.type.is_empty():
-		var vsn := ClassDB.instantiate(option.type) as VisualShaderNode
+		var vsn: VisualShaderNode
+		if option.type == "VisualShaderNodeCustom":
+			if not option.ops.is_empty():
+				vsn = option.ops[0].new()
+		else:
+			vsn = ClassDB.instantiate(option.type)
 		if not is_instance_valid(vsn):
 			return
 		var id := visual_shader.get_valid_node_id(VisualShader.TYPE_FRAGMENT)
@@ -896,6 +901,13 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		_create_input("repeat", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 3)
 		_create_multi_output("uv", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_2D)
 	#endregion
+	elif vsn is VisualShaderNodeCustom:
+		vsn.set("expanded_output_ports", [0])
+		for i in vsn._get_input_port_count():
+			_create_input(vsn._get_input_port_name(i), graph_node, vsn, vsn._get_input_port_type(i), i)
+		for i in vsn._get_output_port_count():
+			_create_multi_output(vsn._get_output_port_name(i), graph_node, vsn._get_output_port_type(i))
+
 
 	graph_edit.add_child(graph_node)
 
@@ -953,6 +965,8 @@ func _create_label(text: String, graph_node: GraphNode, left_slot: VisualShaderN
 
 
 func _create_input(text: String, graph_node: GraphNode, vsn: VisualShaderNode, left_slot: VisualShaderNode.PortType, port_index := -1, create_default_control := true) -> void:
+	if text == "uv":
+		create_default_control = false
 	var hbox := HBoxContainer.new()
 	graph_node.add_child(hbox)
 	var slot_index := graph_node.get_child_count() - 1
