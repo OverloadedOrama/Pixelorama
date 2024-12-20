@@ -17,6 +17,8 @@ enum Category {
 	CATEGORY_MAX
 }
 
+enum TextureClasses {CURVE, GRADIENT, NOISE}
+
 const VALUE_ARROW := preload("res://assets/graphics/misc/value_arrow.svg")
 const VALUE_ARROW_RIGHT := preload("res://assets/graphics/misc/value_arrow_right.svg")
 const CLOSE := preload("res://assets/graphics/misc/close.svg")
@@ -789,24 +791,42 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 	#region Textures
 	elif vsn is VisualShaderNodeTexture:
 		vsn.set("expanded_output_ports", [0])
-		var option_button := OptionButton.new()
-		option_button.add_item("New texture", VisualShaderNodeTexture.SOURCE_TEXTURE)
-		option_button.add_item("Current cel texture", VisualShaderNodeTexture.SOURCE_2D_TEXTURE)
-		option_button.add_item("Normal map", VisualShaderNodeTexture.SOURCE_2D_NORMAL)
-		option_button.add_item("From sampler2D port", VisualShaderNodeTexture.SOURCE_PORT)
-		option_button.select(option_button.get_item_index(vsn.source))
-		option_button.item_selected.connect(func(index_selected: VisualShaderNodeTexture.Source): vsn.source = option_button.get_item_id(index_selected); _on_effect_changed())
-		graph_node.add_child(option_button)
-		# TODO: Add texture changing logic
-		var texture_rect := TextureRect.new()
-		texture_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		texture_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		texture_rect.custom_minimum_size = Vector2(20, 20)
-		texture_rect.texture = vsn.texture
-		graph_node.add_child(texture_rect)
-		_create_label("uv", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_2D, VisualShaderNode.PORT_TYPE_MAX)
-		_create_label("lod", graph_node, VisualShaderNode.PORT_TYPE_SCALAR, VisualShaderNode.PORT_TYPE_MAX)
-		_create_label("sampler2D", graph_node, VisualShaderNode.PORT_TYPE_SAMPLER, VisualShaderNode.PORT_TYPE_MAX)
+		if not ops.is_empty():
+			vsn.source = ops[0]
+		if vsn.source == VisualShaderNodeTexture.SOURCE_TEXTURE:
+			graph_node.title = "New texture"
+			# TODO: Add texture changing logic
+			var texture_class_option_button := OptionButton.new()
+			texture_class_option_button.add_item("Curve", TextureClasses.CURVE)
+			texture_class_option_button.add_item("Gradient", TextureClasses.GRADIENT)
+			texture_class_option_button.add_item("Noise", TextureClasses.NOISE)
+			#texture_class_option_button.select(texture_type_option_button.get_item_index(vsn.texture_type))
+			#texture_type_option_button.item_selected.connect(func(index_selected: VisualShaderNodeTexture.TextureType): vsn.texture_type = texture_type_option_button.get_item_id(index_selected); _on_effect_changed())
+			graph_node.add_child(texture_class_option_button)
+			var texture_rect := TextureRect.new()
+			texture_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			texture_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			texture_rect.custom_minimum_size = Vector2(64, 64)
+			texture_rect.texture = vsn.texture
+			graph_node.add_child(texture_rect)
+			var texture_type_option_button := OptionButton.new()
+			texture_type_option_button.add_item("Data", VisualShaderNodeTexture.TYPE_DATA)
+			texture_type_option_button.add_item("Color", VisualShaderNodeTexture.TYPE_COLOR)
+			texture_type_option_button.add_item("Normal map", VisualShaderNodeTexture.TYPE_NORMAL_MAP)
+			texture_type_option_button.select(texture_type_option_button.get_item_index(vsn.texture_type))
+			texture_type_option_button.item_selected.connect(func(index_selected: VisualShaderNodeTexture.TextureType): vsn.texture_type = texture_type_option_button.get_item_id(index_selected); _on_effect_changed())
+			graph_node.add_child(texture_type_option_button)
+		elif vsn.source == VisualShaderNodeTexture.SOURCE_2D_TEXTURE:
+			graph_node.title = "Current cel texture"
+		elif vsn.source == VisualShaderNodeTexture.SOURCE_2D_TEXTURE:
+			graph_node.title = "Current cel normal map"
+		elif vsn.source == VisualShaderNodeTexture.SOURCE_PORT:
+			graph_node.title = "Texture sampler"
+
+		_create_input("uv", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_2D, 0)
+		_create_input("lod", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 1)
+		if vsn.source == VisualShaderNodeTexture.SOURCE_PORT:
+			_create_input("sampler2D", graph_node, vsn, VisualShaderNode.PORT_TYPE_SAMPLER, 2)
 		_create_multi_output("color", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_4D)
 	elif vsn is VisualShaderNodeUVFunc:
 		vsn.set("expanded_output_ports", [0])
@@ -1529,6 +1549,7 @@ func fill_add_options() -> void:
 	add_options.push_back(AddOption.new("Time", "Input/All", "VisualShaderNodeFloatParameter", "", [ "PXO_time" ], VisualShaderNode.PORT_TYPE_SCALAR, -1))
 	add_options.push_back(AddOption.new("UV", "Input/All", "VisualShaderNodeInput", "", [ "uv" ], VisualShaderNode.PORT_TYPE_VECTOR_2D, -1))
 	add_options.push_back(AddOption.new("Texture", "Input/Fragment", "VisualShaderNodeInput", "", [ "texture" ], VisualShaderNode.PORT_TYPE_SAMPLER, -1))
+	#add_options.push_back(AddOption.new("Normal map texture", "Input/Fragment", "VisualShaderNodeInput", "", [ "normal_texture" ], VisualShaderNode.PORT_TYPE_SAMPLER, -1))
 	#endregion
 	#region Scalar
 	add_options.push_back(AddOption.new("FloatFunc", "Scalar/Common", "VisualShaderNodeFloatFunc", ("Float function."), [], VisualShaderNode.PORT_TYPE_SCALAR));
@@ -1632,7 +1653,8 @@ func fill_add_options() -> void:
 	#add_options.push_back(AddOption.new("CubeMap", "Textures/Functions", "VisualShaderNodeCubemap", "Perform the cubic texture lookup.", [], VisualShaderNode.PORT_TYPE_VECTOR_4D))
 	#add_options.push_back(AddOption.new("CurveTexture", "Textures/Functions", "VisualShaderNodeCurveTexture", "Perform the curve texture lookup.", [], VisualShaderNode.PORT_TYPE_SCALAR));
 	#add_options.push_back(AddOption.new("CurveXYZTexture", "Textures/Functions", "VisualShaderNodeCurveXYZTexture", "Perform the three components curve texture lookup.", [], VisualShaderNode.PORT_TYPE_VECTOR_3D));
-	add_options.push_back(AddOption.new("Texture2D", "Textures/Functions", "VisualShaderNodeTexture", "Perform the 2D texture lookup.", [], VisualShaderNode.PORT_TYPE_VECTOR_4D))
+	add_options.push_back(AddOption.new("New texture", "Textures/Functions", "VisualShaderNodeTexture", "Perform the 2D texture lookup.", [], VisualShaderNode.PORT_TYPE_VECTOR_4D))
+	add_options.push_back(AddOption.new("Texture sampler", "Textures/Functions", "VisualShaderNodeTexture", "Perform the 2D texture lookup.", [VisualShaderNodeTexture.SOURCE_PORT], VisualShaderNode.PORT_TYPE_VECTOR_4D))
 	#add_options.push_back(AddOption.new("Texture2DArray", "Textures/Functions", "VisualShaderNodeTexture2DArray", "Perform the 2D-array texture lookup.", [], VisualShaderNode.PORT_TYPE_VECTOR_4D))
 	#add_options.push_back(AddOption.new("Texture3D", "Textures/Functions", "VisualShaderNodeTexture3D", "Perform the 3D texture lookup.", [], VisualShaderNode.PORT_TYPE_VECTOR_4D))
 	add_options.push_back(AddOption.new("UVPanning", "Textures/Functions", "VisualShaderNodeUVFunc", "Apply panning function on texture coordinates.", [ VisualShaderNodeUVFunc.FUNC_PANNING ], VisualShaderNode.PORT_TYPE_VECTOR_2D))
