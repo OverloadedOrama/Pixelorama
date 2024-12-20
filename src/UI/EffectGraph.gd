@@ -1588,6 +1588,7 @@ func fill_add_options() -> void:
 	add_options.push_back(AddOption.new("Color", "Input/All", "VisualShaderNodeInput", "", [ "color" ], VisualShaderNode.PORT_TYPE_VECTOR_4D, -1))
 	add_options.push_back(AddOption.new("TexturePixelSize", "Input/All", "VisualShaderNodeInput", "", [ "texture_pixel_size" ], VisualShaderNode.PORT_TYPE_VECTOR_2D, -1))
 	add_options.push_back(AddOption.new("Time", "Input/All", "VisualShaderNodeFloatParameter", "", [ "PXO_time" ], VisualShaderNode.PORT_TYPE_SCALAR, -1))
+	add_options.push_back(AddOption.new("Current frame", "Input/All", "VisualShaderNodeFloatParameter", "", [ "PXO_frame_index" ], VisualShaderNode.PORT_TYPE_SCALAR, -1))
 	add_options.push_back(AddOption.new("UV", "Input/All", "VisualShaderNodeInput", "", [ "uv" ], VisualShaderNode.PORT_TYPE_VECTOR_2D, -1))
 	add_options.push_back(AddOption.new("Texture", "Input/Fragment", "VisualShaderNodeInput", "", [ "texture" ], VisualShaderNode.PORT_TYPE_SAMPLER, -1))
 	#add_options.push_back(AddOption.new("Normal map texture", "Input/Fragment", "VisualShaderNodeInput", "", [ "normal_texture" ], VisualShaderNode.PORT_TYPE_SAMPLER, -1))
