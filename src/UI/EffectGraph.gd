@@ -17,8 +17,6 @@ enum Category {
 	CATEGORY_MAX
 }
 
-enum TextureClasses {CURVE, GRADIENT, NOISE}
-
 const VALUE_ARROW := preload("res://assets/graphics/misc/value_arrow.svg")
 const VALUE_ARROW_RIGHT := preload("res://assets/graphics/misc/value_arrow_right.svg")
 const CLOSE := preload("res://assets/graphics/misc/close.svg")
@@ -793,22 +791,65 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		vsn.set("expanded_output_ports", [0])
 		if not ops.is_empty():
 			vsn.source = ops[0]
+			if ops.size() > 0:
+				var texture_class_str = ops[1]
+				var texture_class = ClassDB.instantiate(texture_class_str)
+				if is_instance_valid(texture_class):
+					vsn.texture = texture_class
 		if vsn.source == VisualShaderNodeTexture.SOURCE_TEXTURE:
 			graph_node.title = "New texture"
-			# TODO: Add texture changing logic
-			var texture_class_option_button := OptionButton.new()
-			texture_class_option_button.add_item("Curve", TextureClasses.CURVE)
-			texture_class_option_button.add_item("Gradient", TextureClasses.GRADIENT)
-			texture_class_option_button.add_item("Noise", TextureClasses.NOISE)
-			#texture_class_option_button.select(texture_type_option_button.get_item_index(vsn.texture_type))
-			#texture_type_option_button.item_selected.connect(func(index_selected: VisualShaderNodeTexture.TextureType): vsn.texture_type = texture_type_option_button.get_item_id(index_selected); _on_effect_changed())
-			graph_node.add_child(texture_class_option_button)
+			if not is_instance_valid(vsn.texture):
+				# In case it wasn't created already from the ops array,
+				# such as when loading shaders made with Godot.
+				vsn.texture = GradientTexture2D.new()
 			var texture_rect := TextureRect.new()
 			texture_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 			texture_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 			texture_rect.custom_minimum_size = Vector2(64, 64)
 			texture_rect.texture = vsn.texture
 			graph_node.add_child(texture_rect)
+			if vsn.texture is GradientTexture1D:
+				var texture := GradientTexture2D.new()
+				texture.gradient = vsn.texture.gradient
+				vsn.texture = texture
+			if vsn.texture is GradientTexture2D:
+				graph_node.title = "Gradient texture"
+				if not is_instance_valid(vsn.texture.gradient):
+					vsn.texture.gradient = Gradient.new()
+				var gradient_edit := ShaderLoader.GRADIENT_EDIT_TSCN.instantiate() as GradientEditNode
+				gradient_edit.set_gradient_texture(vsn.texture)
+				gradient_edit.updated.connect(
+					func(gradient: Gradient, _cc: bool): vsn.texture.gradient = gradient; _on_effect_changed()
+				)
+				graph_node.add_child(gradient_edit)
+			elif vsn.texture is CurveTexture:
+				texture_rect.stretch_mode = TextureRect.STRETCH_SCALE
+				graph_node.title = "Curve texture"
+				var curve_edit := CurveEdit.new()
+				curve_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+				if is_instance_valid(vsn.texture.curve):
+					curve_edit.curve = vsn.texture.curve
+				else:
+					curve_edit.set_default_curve()
+				curve_edit.value_changed.connect(
+					func(curve: Curve): vsn.texture.curve = curve; _on_effect_changed()
+				)
+				graph_node.add_child(curve_edit)
+			elif vsn.texture is NoiseTexture2D:
+				graph_node.title = "Noise texture"
+				var noise_generator_dialog := ShaderLoader.NOISE_GENERATOR.instantiate() as AcceptDialog
+				var noise_generator := noise_generator_dialog.get_child(0) as NoiseGenerator
+				noise_generator.noise_texture = vsn.texture
+				noise_generator.value_changed.connect(
+					func(noise_texture: NoiseTexture2D): vsn.texture = noise_texture; _on_effect_changed()
+				)
+				var button := Button.new()
+				button.text = "Generate noise"
+				button.pressed.connect(noise_generator_dialog.popup_centered)
+				button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+				button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+				button.add_child(noise_generator_dialog)
+				graph_node.add_child(button)
 			var texture_type_option_button := OptionButton.new()
 			texture_type_option_button.add_item("Data", VisualShaderNodeTexture.TYPE_DATA)
 			texture_type_option_button.add_item("Color", VisualShaderNodeTexture.TYPE_COLOR)
@@ -823,7 +864,7 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		elif vsn.source == VisualShaderNodeTexture.SOURCE_PORT:
 			graph_node.title = "Texture sampler"
 
-		_create_input("uv", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_2D, 0)
+		_create_input("uv", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_2D, 0, false)
 		_create_input("lod", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 1)
 		if vsn.source == VisualShaderNodeTexture.SOURCE_PORT:
 			_create_input("sampler2D", graph_node, vsn, VisualShaderNode.PORT_TYPE_SAMPLER, 2)
@@ -842,14 +883,14 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 				_on_effect_changed()
 		)
 		graph_node.add_child(option_button)
-		_create_input("uv", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_2D, 0)
+		_create_input("uv", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_2D, 0, false)
 		_create_input("scale", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_2D, 1)
 		var input_text := "offset" if vsn.function == VisualShaderNodeUVFunc.FUNC_PANNING else "pivot"
 		_create_input(input_text, graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_2D, 2)
 		_create_multi_output("uv", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_2D)
 	elif vsn is VisualShaderNodeUVPolarCoord:
 		vsn.set("expanded_output_ports", [0])
-		_create_input("uv", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_2D, 0)
+		_create_input("uv", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_2D, 0, false)
 		_create_input("scale", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_2D, 1)
 		_create_input("zoom_strength", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 2)
 		_create_input("repeat", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 3)
@@ -1653,7 +1694,9 @@ func fill_add_options() -> void:
 	#add_options.push_back(AddOption.new("CubeMap", "Textures/Functions", "VisualShaderNodeCubemap", "Perform the cubic texture lookup.", [], VisualShaderNode.PORT_TYPE_VECTOR_4D))
 	#add_options.push_back(AddOption.new("CurveTexture", "Textures/Functions", "VisualShaderNodeCurveTexture", "Perform the curve texture lookup.", [], VisualShaderNode.PORT_TYPE_SCALAR));
 	#add_options.push_back(AddOption.new("CurveXYZTexture", "Textures/Functions", "VisualShaderNodeCurveXYZTexture", "Perform the three components curve texture lookup.", [], VisualShaderNode.PORT_TYPE_VECTOR_3D));
-	add_options.push_back(AddOption.new("New texture", "Textures/Functions", "VisualShaderNodeTexture", "Perform the 2D texture lookup.", [], VisualShaderNode.PORT_TYPE_VECTOR_4D))
+	add_options.push_back(AddOption.new("Gradient texture", "Textures/Functions", "VisualShaderNodeTexture", "Create a new gradient texture.", [VisualShaderNodeTexture.SOURCE_TEXTURE, "GradientTexture2D"], VisualShaderNode.PORT_TYPE_VECTOR_4D))
+	add_options.push_back(AddOption.new("Curve texture", "Textures/Functions", "VisualShaderNodeTexture", "Create a new curve texture.", [VisualShaderNodeTexture.SOURCE_TEXTURE, "CurveTexture"], VisualShaderNode.PORT_TYPE_VECTOR_4D))
+	add_options.push_back(AddOption.new("CPU noise texture", "Textures/Functions", "VisualShaderNodeTexture", "Create a new CPU noise texture.", [VisualShaderNodeTexture.SOURCE_TEXTURE, "NoiseTexture2D"], VisualShaderNode.PORT_TYPE_VECTOR_4D))
 	add_options.push_back(AddOption.new("Texture sampler", "Textures/Functions", "VisualShaderNodeTexture", "Perform the 2D texture lookup.", [VisualShaderNodeTexture.SOURCE_PORT], VisualShaderNode.PORT_TYPE_VECTOR_4D))
 	#add_options.push_back(AddOption.new("Texture2DArray", "Textures/Functions", "VisualShaderNodeTexture2DArray", "Perform the 2D-array texture lookup.", [], VisualShaderNode.PORT_TYPE_VECTOR_4D))
 	#add_options.push_back(AddOption.new("Texture3D", "Textures/Functions", "VisualShaderNodeTexture3D", "Perform the 3D texture lookup.", [], VisualShaderNode.PORT_TYPE_VECTOR_4D))
