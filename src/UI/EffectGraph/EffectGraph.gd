@@ -903,11 +903,11 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 	#endregion
 	elif vsn is VisualShaderNodeCustom:
 		vsn.set("expanded_output_ports", [0])
+		graph_node.title = vsn._get_name()
 		for i in vsn._get_input_port_count():
 			_create_input(vsn._get_input_port_name(i), graph_node, vsn, vsn._get_input_port_type(i), i)
 		for i in vsn._get_output_port_count():
 			_create_multi_output(vsn._get_output_port_name(i), graph_node, vsn._get_output_port_type(i))
-
 
 	graph_edit.add_child(graph_node)
 
@@ -965,7 +965,11 @@ func _create_label(text: String, graph_node: GraphNode, left_slot: VisualShaderN
 
 
 func _create_input(text: String, graph_node: GraphNode, vsn: VisualShaderNode, left_slot: VisualShaderNode.PortType, port_index := -1, create_default_control := true) -> void:
-	if text == "uv":
+	var default_parameter = vsn.get_input_port_default_value(port_index)
+	if default_parameter == null:
+		create_default_control = false
+	if vsn is VisualShaderNodeCustom:
+		# Not sure why, but changing the default value on custom nodes is not working.
 		create_default_control = false
 	var hbox := HBoxContainer.new()
 	graph_node.add_child(hbox)
@@ -973,15 +977,13 @@ func _create_input(text: String, graph_node: GraphNode, vsn: VisualShaderNode, l
 	if port_index == -1:
 		port_index = slot_index
 	if create_default_control:
-		var default_parameter = vsn.get_input_port_default_value(port_index)
 		if left_slot <= VisualShaderNode.PORT_TYPE_SCALAR_UINT:
 			var slider := ValueSlider.new()
 			slider.custom_minimum_size = Vector2(100, 32)
 			slider.step = 0.001
 			slider.allow_greater = true
 			slider.allow_lesser = left_slot != VisualShaderNode.PORT_TYPE_SCALAR_UINT
-			if default_parameter != null:
-				slider.value = default_parameter
+			slider.value = default_parameter
 			slider.value_changed.connect(func(value: float): vsn.set_input_port_default_value(port_index, value); _on_effect_changed())
 			hbox.add_child(slider)
 			graph_node.set_meta(&"default_input_button_%s" % port_index, slider)
@@ -992,9 +994,8 @@ func _create_input(text: String, graph_node: GraphNode, vsn: VisualShaderNode, l
 			slider.step = 0.001
 			slider.allow_greater = true
 			slider.allow_lesser = true
-			if default_parameter != null:
-				slider.value = default_parameter
-			slider.value_changed.connect(func(value: Vector2): vsn.set_input_port_default_value(port_index, value))
+			slider.value = default_parameter
+			slider.value_changed.connect(func(value: Vector2): vsn.set_input_port_default_value(port_index, value); _on_effect_changed())
 			hbox.add_child(slider)
 			graph_node.set_meta(&"default_input_button_%s" % port_index, slider)
 		elif left_slot == VisualShaderNode.PORT_TYPE_VECTOR_3D:
@@ -1004,25 +1005,22 @@ func _create_input(text: String, graph_node: GraphNode, vsn: VisualShaderNode, l
 			slider.step = 0.001
 			slider.allow_greater = true
 			slider.allow_lesser = true
-			if default_parameter != null:
-				slider.value = default_parameter
-			slider.value_changed.connect(func(value: Vector3): vsn.set_input_port_default_value(port_index, value))
+			slider.value = default_parameter
+			slider.value_changed.connect(func(value: Vector3): vsn.set_input_port_default_value(port_index, value); _on_effect_changed())
 			hbox.add_child(slider)
 			graph_node.set_meta(&"default_input_button_%s" % port_index, slider)
 		elif left_slot == VisualShaderNode.PORT_TYPE_VECTOR_4D:
 			var cbp := ColorPickerButton.new()
 			cbp.custom_minimum_size = Vector2(50, 50)
-			if default_parameter != null:
-				if default_parameter is Quaternion or default_parameter is Vector4:
-					cbp.color = Color(default_parameter.w, default_parameter.x, default_parameter.y, default_parameter.z)
-			cbp.color_changed.connect(func(value: Color): vsn.set_input_port_default_value(port_index, value))
+			if default_parameter is Quaternion or default_parameter is Vector4:
+				cbp.color = Color(default_parameter.w, default_parameter.x, default_parameter.y, default_parameter.z)
+			cbp.color_changed.connect(func(value: Color): vsn.set_input_port_default_value(port_index, value); _on_effect_changed())
 			hbox.add_child(cbp)
 			graph_node.set_meta(&"default_input_button_%s" % port_index, cbp)
 		elif left_slot == VisualShaderNode.PORT_TYPE_BOOLEAN:
 			var box := CheckBox.new()
-			if default_parameter != null:
-				box.button_pressed = default_parameter
-			box.toggled.connect(func(value: bool): vsn.set_input_port_default_value(port_index, value))
+			box.button_pressed = default_parameter
+			box.toggled.connect(func(value: bool): vsn.set_input_port_default_value(port_index, value); _on_effect_changed())
 			hbox.add_child(box)
 			graph_node.set_meta(&"default_input_button_%s" % port_index, box)
 	var label := Label.new()
@@ -1721,6 +1719,7 @@ func fill_add_options() -> void:
 	add_options.push_back(AddOption.new("Texture2DParameter", "Textures/Variables", "VisualShaderNodeTexture2DParameter", "2D texture parameter lookup.", [], VisualShaderNode.PORT_TYPE_SAMPLER))
 	#endregion
 	#region Utility
+	add_options.push_back(AddOption.new("GPU perlin noise texture", "Utility", "VisualShaderNodeCustom", "Classic Perlin-Noise-3D function (by Curly-Brace)", [VisualShaderNodePerlinNoise3D], VisualShaderNode.PORT_TYPE_SCALAR))
 	add_options.push_back(AddOption.new("RandomRange", "Utility", "VisualShaderNodeRandomRange", "Returns a random value between the minimum and maximum input values.", [], VisualShaderNode.PORT_TYPE_SCALAR))
 	add_options.push_back(AddOption.new("RotationByAxis", "Utility", "VisualShaderNodeRotationByAxis", "Builds a rotation matrix from the given axis and angle, multiply the input vector by it and returns both this vector and a matrix.", [], VisualShaderNode.PORT_TYPE_VECTOR_3D))
 	#endregion
@@ -2003,6 +2002,8 @@ func _get_node_category(vsn: VisualShaderNode) -> Category:
 			return Category.CATEGORY_SCALAR
 		return Category.CATEGORY_VECTOR
 
+	if vsn is VisualShaderNodePerlinNoise3D:
+		return Category.CATEGORY_UTILITY
 	match vsn.get_class():
 		"VisualShaderNodeOutput", "VisualShaderNodeVaryingSetter":
 			return Category.CATEGORY_OUTPUT
