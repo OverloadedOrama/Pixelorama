@@ -320,13 +320,13 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		close_button.pressed.connect(_on_delete_request.bind((str(id))))
 		graph_node.get_titlebar_hbox().add_child(close_button)
 	if vsn is VisualShaderNodeOutput:
-		_create_input("Color", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D)
-		_create_input("Alpha", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D)
-		_create_input("Normal", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D)
-		_create_input("Normal Map", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D)
-		_create_input("Normal Map Depth", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR)
-		_create_input("Light Vertex", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D)
-		_create_input("Shadow Vertex", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D)
+		_create_input("Color", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 0, false)
+		_create_input("Alpha", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 1, false)
+		_create_input("Normal", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 2, false)
+		_create_input("Normal Map", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 3, false)
+		_create_input("Normal Map Depth", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 4, false)
+		_create_input("Light Vertex", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 5, false)
+		_create_input("Shadow Vertex", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 6, false)
 	elif vsn is VisualShaderNodeInput:
 		if not ops.is_empty():
 			vsn.input_name = ops[0]
@@ -787,6 +787,15 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 	#endregion
 	#region Textures
 	elif vsn is VisualShaderNodeTexture:
+		vsn.set("expanded_output_ports", [0])
+		var option_button := OptionButton.new()
+		option_button.add_item("New texture", VisualShaderNodeTexture.SOURCE_TEXTURE)
+		option_button.add_item("Current cel texture", VisualShaderNodeTexture.SOURCE_2D_TEXTURE)
+		option_button.add_item("Normal map", VisualShaderNodeTexture.SOURCE_2D_NORMAL)
+		option_button.add_item("From sampler2D port", VisualShaderNodeTexture.SOURCE_PORT)
+		option_button.select(option_button.get_item_index(vsn.source))
+		option_button.item_selected.connect(func(index_selected: VisualShaderNodeTexture.Source): vsn.source = option_button.get_item_id(index_selected); _on_effect_changed())
+		graph_node.add_child(option_button)
 		# TODO: Add texture changing logic
 		var texture_rect := TextureRect.new()
 		texture_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -881,65 +890,65 @@ func _create_label(text: String, graph_node: GraphNode, left_slot: VisualShaderN
 	return label
 
 
-func _create_input(text: String, graph_node: GraphNode, vsn: VisualShaderNode, left_slot: VisualShaderNode.PortType, port_index := -1) -> void:
+func _create_input(text: String, graph_node: GraphNode, vsn: VisualShaderNode, left_slot: VisualShaderNode.PortType, port_index := -1, create_default_control := true) -> void:
 	var hbox := HBoxContainer.new()
 	graph_node.add_child(hbox)
 	var slot_index := graph_node.get_child_count() - 1
 	if port_index == -1:
 		port_index = slot_index
-	var default_parameter = vsn.get_input_port_default_value(port_index)
-
-	if left_slot <= VisualShaderNode.PORT_TYPE_SCALAR_UINT:
-		var slider := ValueSlider.new()
-		slider.custom_minimum_size = Vector2(100, 32)
-		slider.step = 0.001
-		slider.allow_greater = true
-		slider.allow_lesser = left_slot != VisualShaderNode.PORT_TYPE_SCALAR_UINT
-		if default_parameter != null:
-			slider.value = default_parameter
-		slider.value_changed.connect(func(value: float): vsn.set_input_port_default_value(port_index, value); _on_effect_changed())
-		hbox.add_child(slider)
-		graph_node.set_meta(&"default_input_button_%s" % port_index, slider)
-	elif left_slot == VisualShaderNode.PORT_TYPE_VECTOR_2D:
-		var slider := ShaderLoader.VALUE_SLIDER_V2_TSCN.instantiate() as ValueSliderV2
-		slider.custom_minimum_size = Vector2(150, 32)
-		slider.grid_columns = 2
-		slider.step = 0.001
-		slider.allow_greater = true
-		slider.allow_lesser = true
-		if default_parameter != null:
-			slider.value = default_parameter
-		slider.value_changed.connect(func(value: Vector2): vsn.set_input_port_default_value(port_index, value))
-		hbox.add_child(slider)
-		graph_node.set_meta(&"default_input_button_%s" % port_index, slider)
-	elif left_slot == VisualShaderNode.PORT_TYPE_VECTOR_3D:
-		var slider := ShaderLoader.VALUE_SLIDER_V3_TSCN.instantiate() as ValueSliderV3
-		slider.custom_minimum_size = Vector2(200, 32)
-		slider.grid_columns = 3
-		slider.step = 0.001
-		slider.allow_greater = true
-		slider.allow_lesser = true
-		if default_parameter != null:
-			slider.value = default_parameter
-		slider.value_changed.connect(func(value: Vector3): vsn.set_input_port_default_value(port_index, value))
-		hbox.add_child(slider)
-		graph_node.set_meta(&"default_input_button_%s" % port_index, slider)
-	elif left_slot == VisualShaderNode.PORT_TYPE_VECTOR_4D:
-		var cbp := ColorPickerButton.new()
-		cbp.custom_minimum_size = Vector2(50, 50)
-		if default_parameter != null:
-			if default_parameter is Quaternion or default_parameter is Vector4:
-				cbp.color = Color(default_parameter.w, default_parameter.x, default_parameter.y, default_parameter.z)
-		cbp.color_changed.connect(func(value: Color): vsn.set_input_port_default_value(port_index, value))
-		hbox.add_child(cbp)
-		graph_node.set_meta(&"default_input_button_%s" % port_index, cbp)
-	elif left_slot == VisualShaderNode.PORT_TYPE_BOOLEAN:
-		var box := CheckBox.new()
-		if default_parameter != null:
-			box.button_pressed = default_parameter
-		box.toggled.connect(func(value: bool): vsn.set_input_port_default_value(port_index, value))
-		hbox.add_child(box)
-		graph_node.set_meta(&"default_input_button_%s" % port_index, box)
+	if create_default_control:
+		var default_parameter = vsn.get_input_port_default_value(port_index)
+		if left_slot <= VisualShaderNode.PORT_TYPE_SCALAR_UINT:
+			var slider := ValueSlider.new()
+			slider.custom_minimum_size = Vector2(100, 32)
+			slider.step = 0.001
+			slider.allow_greater = true
+			slider.allow_lesser = left_slot != VisualShaderNode.PORT_TYPE_SCALAR_UINT
+			if default_parameter != null:
+				slider.value = default_parameter
+			slider.value_changed.connect(func(value: float): vsn.set_input_port_default_value(port_index, value); _on_effect_changed())
+			hbox.add_child(slider)
+			graph_node.set_meta(&"default_input_button_%s" % port_index, slider)
+		elif left_slot == VisualShaderNode.PORT_TYPE_VECTOR_2D:
+			var slider := ShaderLoader.VALUE_SLIDER_V2_TSCN.instantiate() as ValueSliderV2
+			slider.custom_minimum_size = Vector2(150, 32)
+			slider.grid_columns = 2
+			slider.step = 0.001
+			slider.allow_greater = true
+			slider.allow_lesser = true
+			if default_parameter != null:
+				slider.value = default_parameter
+			slider.value_changed.connect(func(value: Vector2): vsn.set_input_port_default_value(port_index, value))
+			hbox.add_child(slider)
+			graph_node.set_meta(&"default_input_button_%s" % port_index, slider)
+		elif left_slot == VisualShaderNode.PORT_TYPE_VECTOR_3D:
+			var slider := ShaderLoader.VALUE_SLIDER_V3_TSCN.instantiate() as ValueSliderV3
+			slider.custom_minimum_size = Vector2(200, 32)
+			slider.grid_columns = 3
+			slider.step = 0.001
+			slider.allow_greater = true
+			slider.allow_lesser = true
+			if default_parameter != null:
+				slider.value = default_parameter
+			slider.value_changed.connect(func(value: Vector3): vsn.set_input_port_default_value(port_index, value))
+			hbox.add_child(slider)
+			graph_node.set_meta(&"default_input_button_%s" % port_index, slider)
+		elif left_slot == VisualShaderNode.PORT_TYPE_VECTOR_4D:
+			var cbp := ColorPickerButton.new()
+			cbp.custom_minimum_size = Vector2(50, 50)
+			if default_parameter != null:
+				if default_parameter is Quaternion or default_parameter is Vector4:
+					cbp.color = Color(default_parameter.w, default_parameter.x, default_parameter.y, default_parameter.z)
+			cbp.color_changed.connect(func(value: Color): vsn.set_input_port_default_value(port_index, value))
+			hbox.add_child(cbp)
+			graph_node.set_meta(&"default_input_button_%s" % port_index, cbp)
+		elif left_slot == VisualShaderNode.PORT_TYPE_BOOLEAN:
+			var box := CheckBox.new()
+			if default_parameter != null:
+				box.button_pressed = default_parameter
+			box.toggled.connect(func(value: bool): vsn.set_input_port_default_value(port_index, value))
+			hbox.add_child(box)
+			graph_node.set_meta(&"default_input_button_%s" % port_index, box)
 	var label := Label.new()
 	label.text = text
 	hbox.add_child(label)
@@ -1620,8 +1629,8 @@ func fill_add_options() -> void:
 	add_options.push_back(AddOption.new("UVFunc", "Textures/Common", "VisualShaderNodeUVFunc", "Function to be applied on texture coordinates.", [], VisualShaderNode.PORT_TYPE_VECTOR_2D))
 	add_options.push_back(AddOption.new("UVPolarCoord", "Textures/Common", "VisualShaderNodeUVPolarCoord", "Polar coordinates conversion applied on texture coordinates.", [], VisualShaderNode.PORT_TYPE_VECTOR_2D))
 	#add_options.push_back(AddOption.new("CubeMap", "Textures/Functions", "VisualShaderNodeCubemap", "Perform the cubic texture lookup.", [], VisualShaderNode.PORT_TYPE_VECTOR_4D))
-	add_options.push_back(AddOption.new("CurveTexture", "Textures/Functions", "VisualShaderNodeCurveTexture", "Perform the curve texture lookup.", [], VisualShaderNode.PORT_TYPE_SCALAR));
-	add_options.push_back(AddOption.new("CurveXYZTexture", "Textures/Functions", "VisualShaderNodeCurveXYZTexture", "Perform the three components curve texture lookup.", [], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	#add_options.push_back(AddOption.new("CurveTexture", "Textures/Functions", "VisualShaderNodeCurveTexture", "Perform the curve texture lookup.", [], VisualShaderNode.PORT_TYPE_SCALAR));
+	#add_options.push_back(AddOption.new("CurveXYZTexture", "Textures/Functions", "VisualShaderNodeCurveXYZTexture", "Perform the three components curve texture lookup.", [], VisualShaderNode.PORT_TYPE_VECTOR_3D));
 	add_options.push_back(AddOption.new("Texture2D", "Textures/Functions", "VisualShaderNodeTexture", "Perform the 2D texture lookup.", [], VisualShaderNode.PORT_TYPE_VECTOR_4D))
 	#add_options.push_back(AddOption.new("Texture2DArray", "Textures/Functions", "VisualShaderNodeTexture2DArray", "Perform the 2D-array texture lookup.", [], VisualShaderNode.PORT_TYPE_VECTOR_4D))
 	#add_options.push_back(AddOption.new("Texture3D", "Textures/Functions", "VisualShaderNodeTexture3D", "Perform the 3D texture lookup.", [], VisualShaderNode.PORT_TYPE_VECTOR_4D))
@@ -1887,7 +1896,7 @@ func update_options_menu() -> void:
 			#item->set_custom_color(0, supported_color)
 		#}
 		item.set_text(0, option.option_name)
-		item.set_metadata(0, i)
+		item.set_metadata(0, add_options.find(option))
 		if is_first_item && use_filter:
 			item.select(0)
 			#node_desc.set_text(options[i].description)
