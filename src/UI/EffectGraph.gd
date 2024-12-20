@@ -791,7 +791,7 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		vsn.set("expanded_output_ports", [0])
 		if not ops.is_empty():
 			vsn.source = ops[0]
-			if ops.size() > 0:
+			if ops.size() > 1:
 				var texture_class_str = ops[1]
 				var texture_class = ClassDB.instantiate(texture_class_str)
 				if is_instance_valid(texture_class):
