@@ -298,6 +298,7 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 	var graph_node: GraphElement
 	if vsn is VisualShaderNodeFrame:
 		graph_node = GraphFrame.new()
+		graph_node.title = vsn.title
 	else:
 		graph_node = GraphNode.new()
 		# Set the color of the title
@@ -308,8 +309,8 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		var sb_colored_selected := graph_node.get_theme_stylebox(&"titlebar_selected", &"GraphNode").duplicate() as StyleBoxFlat
 		sb_colored_selected.bg_color = category_colors[_get_node_category(vsn)].lightened(0.2)
 		graph_node.add_theme_stylebox_override(&"titlebar_selected", sb_colored_selected)
+		graph_node.title = vsn.get_class().replace("VisualShaderNode", "")
 	graph_node.name = str(id)
-	graph_node.title = vsn.get_class().replace("VisualShaderNode", "")
 	graph_node.resizable = true
 	graph_node.set_meta("visual_shader_node", vsn)  # TODO: Remove if not needed
 	graph_node.position_offset = visual_shader.get_node_position(VisualShader.TYPE_FRAGMENT, id)
