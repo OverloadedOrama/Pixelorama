@@ -17,13 +17,14 @@ show_zoom_label = true
 
 [node name="CreateNodeDialog" type="ConfirmationDialog" parent="."]
 title = "Create node"
-size = Vector2i(500, 400)
+position = Vector2i(0, 36)
+size = Vector2i(500, 500)
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CreateNodeDialog"]
 offset_left = 8.0
 offset_top = 8.0
 offset_right = 492.0
-offset_bottom = 351.0
+offset_bottom = 451.0
 
 [node name="FilterLineEdit" type="LineEdit" parent="CreateNodeDialog/VBoxContainer"]
 unique_name_in_owner = true
@@ -34,6 +35,11 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 hide_root = true
+
+[node name="NodeDescriptionLabel" type="RichTextLabel" parent="CreateNodeDialog/VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 2
 
 [node name="CreateEffectDialog" type="ConfirmationDialog" parent="."]
 title = "New effect"
