@@ -118,10 +118,8 @@ class AddOption:
 	var type := ""
 	var description := ""
 	var ops := []
-	#Ref<Script> script
 	## TODO: Probably remove.
 	var mode: int
-	## TODO: Probably remove.
 	var return_type: VisualShaderNode.PortType
 	#int func = 0
 	var highend := false
@@ -2372,18 +2370,6 @@ func _graph_node_default_input_control_visibility(node_name: StringName, port: i
 	var node := graph_edit.get_node(String(node_name))
 	if node.has_meta(&"default_input_button_%s" % port):
 		node.get_meta(&"default_input_button_%s" % port).visible = vis
-
-
-func _on_graph_edit_connection_from_empty(_to_node: StringName, _to_port: int, release_position: Vector2) -> void:
-	node_list_tree.get_window().popup_centered()
-	spawn_node_in_position = release_position
-
-
-func _on_graph_edit_connection_to_empty(_from_node: StringName, _from_port: int, release_position: Vector2) -> void:
-	if not is_instance_valid(visual_shader):
-		return
-	node_list_tree.get_window().popup_centered()
-	spawn_node_in_position = release_position
 
 
 func _on_graph_edit_popup_request(at_position: Vector2) -> void:
