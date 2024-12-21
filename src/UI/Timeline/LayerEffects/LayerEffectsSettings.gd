@@ -242,9 +242,18 @@ func _apply_effect(layer: BaseLayer, effect: LayerEffect) -> void:
 		undo_data[cel_image] = cel_image.data
 		var image_size := cel_image.get_size()
 		var params := effect.params
-		params["PXO_time"] = frame.position_in_seconds(project)
-		params["PXO_frame_index"] = i
-		params["PXO_layer_index"] = layer.index
+		for uniform in effect.shader.get_shader_uniform_list():
+			var uniform_name: String = uniform.name
+			if uniform_name == "PXO_time":
+				params["PXO_time"] = frame.position_in_seconds(project)
+			elif uniform_name == "PXO_frame_index":
+				params["PXO_frame_index"] = i
+			elif uniform_name == "PXO_frame_index":
+				params["PXO_layer_index"] = index
+			elif uniform_name.begins_with("PXO_layer_tex_"):
+				var layer_index := int(uniform_name.replace("PXO_layer_tex_", ""))
+				if layer_index < project.layers.size():
+					params[uniform_name] = frame.cels[layer_index].image_texture
 		var shader_image_effect := ShaderImageEffect.new()
 		shader_image_effect.generate_image(cel_image, effect.shader, params, image_size)
 

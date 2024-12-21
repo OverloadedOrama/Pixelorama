@@ -99,6 +99,8 @@ static func create_ui_for_shader_uniforms(
 		var u_name := u_init[2]
 		if u_name in ["PXO_time", "PXO_frame_index", "PXO_layer_index"]:
 			continue
+		if u_name.begins_with("PXO_layer_tex_"):
+			continue
 		# Find custom data of the uniform, if any exists
 		# Right now it only checks if a uniform should have another type of node
 		# Such as integers having OptionButtons
