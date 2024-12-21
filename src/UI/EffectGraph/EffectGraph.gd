@@ -1024,14 +1024,32 @@ func _create_input(text: String, graph_node: GraphNode, vsn: VisualShaderNode, l
 	if port_index == -1:
 		port_index = slot_index
 	if create_default_control:
-		if left_slot <= VisualShaderNode.PORT_TYPE_SCALAR_UINT:
+		if left_slot == VisualShaderNode.PORT_TYPE_SCALAR:
 			var slider := ValueSlider.new()
 			slider.custom_minimum_size = Vector2(100, 32)
 			slider.step = 0.001
 			slider.allow_greater = true
-			slider.allow_lesser = left_slot != VisualShaderNode.PORT_TYPE_SCALAR_UINT
+			slider.allow_lesser = true
 			slider.value = default_parameter
 			slider.value_changed.connect(func(value: float): vsn.set_input_port_default_value(port_index, value); _on_effect_changed())
+			hbox.add_child(slider)
+			graph_node.set_meta(&"default_input_button_%s" % port_index, slider)
+		elif left_slot == VisualShaderNode.PORT_TYPE_SCALAR_INT:
+			var slider := ValueSlider.new()
+			slider.custom_minimum_size = Vector2(100, 32)
+			slider.allow_greater = true
+			slider.allow_lesser = true
+			slider.value = default_parameter
+			slider.value_changed.connect(func(value: int): vsn.set_input_port_default_value(port_index, value); _on_effect_changed())
+			hbox.add_child(slider)
+			graph_node.set_meta(&"default_input_button_%s" % port_index, slider)
+		elif left_slot == VisualShaderNode.PORT_TYPE_SCALAR_UINT:
+			var slider := ValueSlider.new()
+			slider.custom_minimum_size = Vector2(100, 32)
+			slider.allow_greater = true
+			slider.allow_lesser = false
+			slider.value = default_parameter
+			slider.value_changed.connect(func(value: int): vsn.set_input_port_default_value(port_index, value); _on_effect_changed())
 			hbox.add_child(slider)
 			graph_node.set_meta(&"default_input_button_%s" % port_index, slider)
 		elif left_slot == VisualShaderNode.PORT_TYPE_VECTOR_2D:
