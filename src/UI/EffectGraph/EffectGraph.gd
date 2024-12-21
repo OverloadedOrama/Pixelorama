@@ -912,6 +912,42 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		_create_input("repeat", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 3)
 		_create_multi_output("uv", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_2D)
 	#endregion
+	#region Special
+	elif vsn is VisualShaderNodeGlobalExpression:
+		_create_code_text_edit(graph_node, vsn)
+	elif vsn is VisualShaderNodeExpression:
+		var hbox := HBoxContainer.new()
+		hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		var add_input_button := Button.new()
+		add_input_button.text = "Add Input"
+		add_input_button.pressed.connect(
+			func():
+				var free_id := (vsn as VisualShaderNodeExpression).get_free_input_port_id()
+				var port_name := "input%s" % free_id
+				while not vsn.is_valid_port_name(port_name):
+					port_name = "_" + port_name
+				vsn.add_input_port(free_id, VisualShaderNode.PORT_TYPE_VECTOR_3D, port_name)
+				_create_expression_node(graph_node, vsn)
+				_on_effect_changed()
+		)
+		hbox.add_child(add_input_button)
+		var add_output_button := Button.new()
+		add_output_button.size_flags_horizontal = Control.SIZE_SHRINK_END | Control.SIZE_EXPAND
+		add_output_button.text = "Add Output"
+		add_output_button.pressed.connect(
+			func():
+				var free_id := (vsn as VisualShaderNodeExpression).get_free_output_port_id()
+				var port_name := "output%s" % free_id
+				while not vsn.is_valid_port_name(port_name):
+					port_name = "_" + port_name
+				vsn.add_output_port(free_id, VisualShaderNode.PORT_TYPE_VECTOR_3D, port_name)
+				_create_expression_node(graph_node, vsn)
+				_on_effect_changed()
+		)
+		hbox.add_child(add_output_button)
+		graph_node.add_child(hbox)
+		_create_expression_node(graph_node, vsn)
+	#endregion
 	elif vsn is VisualShaderNodeCustom:
 		vsn.set("expanded_output_ports", [0])
 		graph_node.title = vsn._get_name()
@@ -1557,6 +1593,134 @@ func _create_vector_node(graph_node: GraphNode, vsn: VisualShaderNodeVectorBase,
 	_check_output_connections_validity(graph_node)
 
 
+func _create_expression_node(graph_node: GraphNode, vsn: VisualShaderNodeExpression) -> void:
+	var children := graph_node.get_children(true)
+	for i in range(2, children.size()):
+		var child := children[i]
+		graph_node.remove_child(child)
+		child.queue_free()
+	graph_node.clear_all_slots()
+	# Why aren't get_input_port_name() and get_output_port_name() exposed to GDSCript?
+	var inputs := vsn.get_inputs().split(";")
+	for i in vsn.get_input_port_count():  # Add inputs
+		var input_values := inputs[i].split(",")
+		var slot_type := int(input_values[1])
+		var hbox := HBoxContainer.new()
+		var option_button := _create_port_type_option_button()
+		option_button.select(option_button.get_item_index(slot_type))
+		option_button.item_selected.connect(
+			func(idx: int):
+				vsn.set_input_port_type(i, option_button.get_item_id(idx))
+				_create_expression_node(graph_node, vsn)
+				_on_effect_changed()
+		)
+		hbox.add_child(option_button)
+		var line_edit := LineEdit.new()
+		line_edit.custom_minimum_size.x = 80
+		line_edit.text = input_values[2]
+		line_edit.text_changed.connect(
+			func(new_text: String):
+				if vsn.is_valid_port_name(new_text):
+					vsn.set_input_port_name(i, new_text)
+				else:
+					line_edit.text = input_values[2]
+				_on_effect_changed()
+		)
+		hbox.add_child(line_edit)
+		var delete_button := Button.new()
+		delete_button.icon = CLOSE
+		delete_button.pressed.connect(
+			func():
+				vsn.remove_input_port(i)
+				_create_expression_node(graph_node, vsn)
+				_on_effect_changed()
+		)
+		hbox.add_child(delete_button)
+		graph_node.add_child(hbox)
+		graph_node.set_slot(
+			i + 1,
+			slot_type != VisualShaderNode.PORT_TYPE_MAX,
+			slot_type,
+			get_color_type(slot_type),
+			false,
+			VisualShaderNode.PORT_TYPE_MAX,
+			get_color_type(VisualShaderNode.PORT_TYPE_MAX)
+		)
+
+	var outputs := vsn.get_outputs().split(";")
+	for i in vsn.get_output_port_count():  # Add outputs
+		var output_values := outputs[i].split(",")
+		var slot_type := int(output_values[1])
+		var hbox := HBoxContainer.new()
+		hbox.alignment = BoxContainer.ALIGNMENT_END
+		var delete_button := Button.new()
+		delete_button.icon = CLOSE
+		delete_button.pressed.connect(
+			func():
+				vsn.remove_output_port(i)
+				_create_expression_node(graph_node, vsn)
+				_on_effect_changed()
+		)
+		hbox.add_child(delete_button)
+		var line_edit := LineEdit.new()
+		line_edit.custom_minimum_size.x = 80
+		line_edit.text = output_values[2]
+		line_edit.text_changed.connect(
+			func(new_text: String):
+				if vsn.is_valid_port_name(new_text):
+					vsn.set_output_port_name(i, new_text)
+				else:
+					line_edit.text = output_values[2]
+				_on_effect_changed()
+		)
+		hbox.add_child(line_edit)
+		var option_button := _create_port_type_option_button()
+		option_button.select(option_button.get_item_index(slot_type))
+		option_button.item_selected.connect(
+			func(idx: int):
+				vsn.set_output_port_type(i, option_button.get_item_id(idx))
+				_create_expression_node(graph_node, vsn)
+				_on_effect_changed()
+		)
+		hbox.add_child(option_button)
+		graph_node.add_child(hbox)
+		graph_node.set_slot(
+			i + 1 + vsn.get_input_port_count(),
+			false,
+			VisualShaderNode.PORT_TYPE_MAX,
+			get_color_type(VisualShaderNode.PORT_TYPE_MAX),
+			slot_type != VisualShaderNode.PORT_TYPE_MAX,
+			slot_type,
+			get_color_type(slot_type)
+		)
+	_create_code_text_edit(graph_node, vsn)
+
+
+func _create_code_text_edit(graph_node: GraphNode, vsn: VisualShaderNodeExpression) -> void:
+	var text_edit := CodeEdit.new()
+	text_edit.custom_minimum_size.y = 100
+	text_edit.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	text_edit.draw_tabs = true
+	text_edit.gutters_draw_line_numbers = true
+	text_edit.text = vsn.expression
+	text_edit.text_changed.connect(func(): vsn.expression = text_edit.text; _on_effect_changed())
+	graph_node.add_child(text_edit)
+
+
+func _create_port_type_option_button() -> OptionButton:
+	var option_button := OptionButton.new()
+	option_button.add_item("Float", VisualShaderNode.PORT_TYPE_SCALAR)
+	option_button.add_item("Int", VisualShaderNode.PORT_TYPE_SCALAR_INT)
+	option_button.add_item("UInt", VisualShaderNode.PORT_TYPE_SCALAR_UINT)
+	option_button.add_item("Vector2", VisualShaderNode.PORT_TYPE_VECTOR_2D)
+	option_button.add_item("Vector3",VisualShaderNode.PORT_TYPE_VECTOR_3D)
+	option_button.add_item("Vector4", VisualShaderNode.PORT_TYPE_VECTOR_4D)
+	option_button.add_item("Boolean", VisualShaderNode.PORT_TYPE_BOOLEAN)
+	option_button.add_item("Transform", VisualShaderNode.PORT_TYPE_TRANSFORM)
+	option_button.add_item("Sampler", VisualShaderNode.PORT_TYPE_SAMPLER)
+	return option_button
+
+
 func fill_add_options() -> void:
 	#region Color
 	add_options.push_back(AddOption.new("ColorFunc", "Color/Common", "VisualShaderNodeColorFunc", "Color function.", [], VisualShaderNode.PORT_TYPE_VECTOR_3D))
@@ -1581,7 +1745,7 @@ func fill_add_options() -> void:
 	add_options.push_back(AddOption.new("ColorParameter", "Color/Variables", "VisualShaderNodeColorParameter", "Color parameter.", [], VisualShaderNode.PORT_TYPE_VECTOR_4D))
 	#endregion
 	#region Conditional
-	const compare_func_desc := "Returns the boolean result of the %s comparison between two parameters."
+	var compare_func_desc := tr("Returns the boolean result of the %s comparison between two parameters.")
 
 	add_options.push_back(AddOption.new("Equal (==)", "Conditional/Functions", "VisualShaderNodeCompare", compare_func_desc % "Equal (==)", [ VisualShaderNodeCompare.FUNC_EQUAL ], VisualShaderNode.PORT_TYPE_BOOLEAN));
 	add_options.push_back(AddOption.new("GreaterThan (>)", "Conditional/Functions", "VisualShaderNodeCompare", compare_func_desc % "Greater Than (>)", [ VisualShaderNodeCompare.FUNC_GREATER_THAN ], VisualShaderNode.PORT_TYPE_BOOLEAN));
@@ -1608,7 +1772,7 @@ func fill_add_options() -> void:
 	add_options.push_back(AddOption.new("BooleanParameter", "Conditional/Variables", "VisualShaderNodeBooleanParameter", "Boolean parameter.", [], VisualShaderNode.PORT_TYPE_BOOLEAN));
 	#endregion
 	#region Input
-	var input_param_shader_modes := "'%s' input parameter.\n\nTranslated to '%s' in Godot Shading Language."
+	var input_param_shader_modes := tr("'%s' input parameter.\n\nTranslated to '%s' in Godot Shading Language.")
 	add_options.push_back(AddOption.new("Color", "Input/All", "VisualShaderNodeInput", input_param_shader_modes % ["color", "COLOR"], [ "color" ], VisualShaderNode.PORT_TYPE_VECTOR_4D, -1))
 	add_options.push_back(AddOption.new("TexturePixelSize", "Input/All", "VisualShaderNodeInput", input_param_shader_modes % ["texture_pixel_size", "TEXTURE_PIXEL_SIZE"], [ "texture_pixel_size" ], VisualShaderNode.PORT_TYPE_VECTOR_2D, -1))
 	add_options.push_back(AddOption.new("Time", "Input/All", "VisualShaderNodeFloatParameter", input_param_shader_modes % ["PXO_time", "PXO_time"], [ "PXO_time" ], VisualShaderNode.PORT_TYPE_SCALAR, -1))
@@ -1942,6 +2106,8 @@ func fill_add_options() -> void:
 	#endregion
 	#region Special
 	add_options.push_back(AddOption.new("Frame", "Special", "VisualShaderNodeFrame", "A rectangular area with a description string for better graph organization."))
+	add_options.push_back(AddOption.new("Expression", "Special", "VisualShaderNodeExpression", "Custom Godot Shader Language expression, with custom amount of input and output ports. This is a direct injection of code into the fragment function, do not use it to write the function declarations inside."))
+	add_options.push_back(AddOption.new("GlobalExpression", "Special", "VisualShaderNodeGlobalExpression", "Custom Godot Shader Language expression, which is placed on top of the resulted shader. You can place various function definitions inside and call it later in the Expressions. You can also declare varyings, parameters and constants."))
 	#endregion
 
 
