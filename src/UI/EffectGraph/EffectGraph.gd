@@ -796,19 +796,6 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		graph_node.add_child(option_button)
 		_create_smooth_step_node(graph_node, vsn)
 	#endregion
-	#region Utility
-	elif vsn is VisualShaderNodeRandomRange:
-		_create_input("seed", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 0)
-		_create_input("min", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 1)
-		_create_input("max", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 2)
-		_create_multi_output("value", graph_node, VisualShaderNode.PORT_TYPE_SCALAR)
-	elif vsn is VisualShaderNodeRotationByAxis:
-		_create_input("input", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 0)
-		_create_input("angle", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 1)
-		_create_input("axis", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 2)
-		_create_label("output", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_VECTOR_3D)
-		_create_label("rotationMat", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_TRANSFORM)
-	#endregion
 	#region Textures
 	elif vsn is VisualShaderNodeTexture:
 		vsn.set("expanded_output_ports", [0])
@@ -918,6 +905,55 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		_create_input("zoom_strength", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 2)
 		_create_input("repeat", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 3)
 		_create_multi_output("uv", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_2D)
+	#endregion
+	#region Transform
+	elif vsn is VisualShaderNodeDeterminant:
+		_create_input("", graph_node, vsn, VisualShaderNode.PORT_TYPE_TRANSFORM, 0)
+		_create_multi_output("", graph_node, VisualShaderNode.PORT_TYPE_SCALAR)
+	elif vsn is VisualShaderNodeOuterProduct:
+		_create_input("c", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 0)
+		_create_input("n", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 1)
+		_create_multi_output("", graph_node, VisualShaderNode.PORT_TYPE_TRANSFORM)
+	elif vsn is VisualShaderNodeTransformCompose:
+		_create_input("x", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 0)
+		_create_input("y", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 1)
+		_create_input("z", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 2)
+		_create_input("origin", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 3)
+		_create_multi_output("xform", graph_node, VisualShaderNode.PORT_TYPE_TRANSFORM)
+	elif vsn is VisualShaderNodeTransformDecompose:
+		_create_input("xform", graph_node, vsn, VisualShaderNode.PORT_TYPE_TRANSFORM, 0)
+		_create_multi_output("x", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_3D)
+		_create_multi_output("y", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_3D)
+		_create_multi_output("z", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_3D)
+		_create_multi_output("origin", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_3D)
+	elif vsn is VisualShaderNodeTransformVecMult:
+		var option_button := OptionButton.new()
+		option_button.add_item("A x B", VisualShaderNodeTransformVecMult.OP_AxB)
+		option_button.add_item("B x A", VisualShaderNodeTransformVecMult.OP_BxA)
+		option_button.add_item("A x B (3x3)", VisualShaderNodeTransformVecMult.OP_3x3_AxB)
+		option_button.add_item("B x A (3x3)", VisualShaderNodeTransformVecMult.OP_3x3_BxA)
+		option_button.select(option_button.get_item_index(vsn.operator))
+		option_button.item_selected.connect(
+			func(idx_selected: VisualShaderNodeTransformVecMult.Operator):
+				vsn.operator = option_button.get_item_id(idx_selected)
+				_on_effect_changed()
+		)
+		_create_input("a", graph_node, vsn, VisualShaderNode.PORT_TYPE_TRANSFORM, 0)
+		_create_input("b", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 1)
+		_create_multi_output("", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_3D)
+	#endregion
+	#region Utility
+	elif vsn is VisualShaderNodeRandomRange:
+		_create_input("seed", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 0)
+		_create_input("min", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 1)
+		_create_input("max", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 2)
+		_create_multi_output("value", graph_node, VisualShaderNode.PORT_TYPE_SCALAR)
+	elif vsn is VisualShaderNodeRotationByAxis:
+		_create_input("input", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 0)
+		_create_input("angle", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 1)
+		_create_input("axis", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 2)
+		_create_label("output", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_VECTOR_3D)
+		_create_label("rotationMat", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_TRANSFORM)
 	#endregion
 	#region Special
 	elif vsn is VisualShaderNodeGlobalExpression:
@@ -1108,16 +1144,16 @@ func _create_multi_output(text: String, graph_node: GraphNode, right_slot: Visua
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	label.text = text
 	hbox.add_child(label)
-	var expand_button := TextureButton.new()
-	expand_button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	expand_button.toggle_mode = true
-	expand_button.texture_normal = VALUE_ARROW_RIGHT
-	expand_button.texture_pressed = VALUE_ARROW
-	hbox.add_child(expand_button)
 	graph_node.add_child(hbox)
 	var slot_index := graph_node.get_child_count() - 1
 	graph_node.set_slot(slot_index, false, VisualShaderNode.PORT_TYPE_MAX, get_color_type(VisualShaderNode.PORT_TYPE_MAX), right_slot != VisualShaderNode.PORT_TYPE_MAX, right_slot, get_color_type(right_slot))
 	if right_slot >= VisualShaderNode.PORT_TYPE_VECTOR_2D and right_slot <= VisualShaderNode.PORT_TYPE_VECTOR_4D:
+		var expand_button := TextureButton.new()
+		expand_button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		expand_button.toggle_mode = true
+		expand_button.texture_normal = VALUE_ARROW_RIGHT
+		expand_button.texture_pressed = VALUE_ARROW
+		hbox.add_child(expand_button)
 		var labels: Array[Control]
 		var red := _create_label("red", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_SCALAR)
 		labels.append(red)
@@ -1920,6 +1956,29 @@ func fill_add_options() -> void:
 	add_options.push_back(AddOption.new("UVScaling", "Textures/Functions", "VisualShaderNodeUVFunc", "Apply scaling function on texture coordinates.", [ VisualShaderNodeUVFunc.FUNC_SCALING ], VisualShaderNode.PORT_TYPE_VECTOR_2D))
 	#add_options.push_back(AddOption.new("CubeMapParameter", "Textures/Variables", "VisualShaderNodeCubemapParameter", "Cubic texture parameter lookup.", [], VisualShaderNode.PORT_TYPE_SAMPLER))
 	add_options.push_back(AddOption.new("Texture2DParameter", "Textures/Variables", "VisualShaderNodeTexture2DParameter", "2D texture parameter lookup.", [], VisualShaderNode.PORT_TYPE_SAMPLER))
+	#endregion
+	#region Transform
+	add_options.push_back(AddOption.new("TransformFunc", "Transform/Common", "VisualShaderNodeTransformFunc", "Transform function.", [], VisualShaderNode.PORT_TYPE_TRANSFORM))
+	add_options.push_back(AddOption.new("TransformOp", "Transform/Common", "VisualShaderNodeTransformOp", "Transform operator.", [], VisualShaderNode.PORT_TYPE_TRANSFORM))
+
+	add_options.push_back(AddOption.new("OuterProduct", "Transform/Composition", "VisualShaderNodeOuterProduct", "Calculate the outer product of a pair of vectors.\n\nOuterProduct treats the first parameter 'c' as a column vector (matrix with one column) and the second parameter 'r' as a row vector (matrix with one row) and does a linear algebraic matrix multiply 'c * r', yielding a matrix whose number of rows is the number of components in 'c' and whose number of columns is the number of components in 'r'.", [], VisualShaderNode.PORT_TYPE_TRANSFORM));
+	add_options.push_back(AddOption.new("TransformCompose", "Transform/Composition", "VisualShaderNodeTransformCompose", "Composes transform from four vectors.", [], VisualShaderNode.PORT_TYPE_TRANSFORM))
+	add_options.push_back(AddOption.new("TransformDecompose", "Transform/Composition", "VisualShaderNodeTransformDecompose", "Decomposes transform to four vectors."));
+
+	add_options.push_back(AddOption.new("Determinant", "Transform/Functions", "VisualShaderNodeDeterminant", "Calculates the determinant of a transform.", [], VisualShaderNode.PORT_TYPE_SCALAR))
+	#add_options.push_back(AddOption.new("GetBillboardMatrix", "Transform/Functions", "VisualShaderNodeBillboard", "Calculates how the object should face the camera to be applied on Model View Matrix output port for 3D objects.", [], VisualShaderNode.PORT_TYPE_TRANSFORM, TYPE_FLAGS_VERTEX, Shader.MODE_SPATIAL))
+	add_options.push_back(AddOption.new("Inverse", "Transform/Functions", "VisualShaderNodeTransformFunc", "Calculates the inverse of a transform.", [ VisualShaderNodeTransformFunc.FUNC_INVERSE ], VisualShaderNode.PORT_TYPE_TRANSFORM))
+	add_options.push_back(AddOption.new("Transpose", "Transform/Functions", "VisualShaderNodeTransformFunc", "Calculates the transpose of a transform.", [ VisualShaderNodeTransformFunc.FUNC_TRANSPOSE ], VisualShaderNode.PORT_TYPE_TRANSFORM))
+
+	add_options.push_back(AddOption.new("Add (+)", "Transform/Operators", "VisualShaderNodeTransformOp", "Sums two transforms.", [ VisualShaderNodeTransformOp.OP_ADD ], VisualShaderNode.PORT_TYPE_TRANSFORM));
+	add_options.push_back(AddOption.new("Divide (/)", "Transform/Operators", "VisualShaderNodeTransformOp", "Divides two transforms.", [ VisualShaderNodeTransformOp.OP_A_DIV_B ], VisualShaderNode.PORT_TYPE_TRANSFORM));
+	add_options.push_back(AddOption.new("Multiply (*)", "Transform/Operators", "VisualShaderNodeTransformOp", "Multiplies two transforms.", [ VisualShaderNodeTransformOp.OP_AxB ], VisualShaderNode.PORT_TYPE_TRANSFORM));
+	add_options.push_back(AddOption.new("MultiplyComp (*)", "Transform/Operators", "VisualShaderNodeTransformOp", "Performs per-component multiplication of two transforms.", [ VisualShaderNodeTransformOp.OP_AxB_COMP ], VisualShaderNode.PORT_TYPE_TRANSFORM));
+	add_options.push_back(AddOption.new("Subtract (-)", "Transform/Operators", "VisualShaderNodeTransformOp", "Subtracts two transforms.", [ VisualShaderNodeTransformOp.OP_A_MINUS_B ], VisualShaderNode.PORT_TYPE_TRANSFORM));
+	add_options.push_back(AddOption.new("TransformVectorMult (*)", "Transform/Operators", "VisualShaderNodeTransformVecMult", "Multiplies vector by transform.", [], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+
+	add_options.push_back(AddOption.new("TransformConstant", "Transform/Variables", "VisualShaderNodeTransformConstant", "Transform constant.", [], VisualShaderNode.PORT_TYPE_TRANSFORM));
+	add_options.push_back(AddOption.new("TransformParameter", "Transform/Variables", "VisualShaderNodeTransformParameter", "Transform parameter.", [], VisualShaderNode.PORT_TYPE_TRANSFORM));
 	#endregion
 	#region Utility
 	add_options.push_back(AddOption.new("GPU perlin noise texture", "Utility", "VisualShaderNodeCustom", "Classic Perlin-Noise-3D function (by Curly-Brace)", [VisualShaderNodePerlinNoise3D], VisualShaderNode.PORT_TYPE_SCALAR))
