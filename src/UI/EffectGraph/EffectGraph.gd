@@ -1356,32 +1356,32 @@ func _create_switch_node(graph_node: GraphNode, vsn: VisualShaderNodeSwitch) -> 
 		_create_input("value", graph_node, vsn, VisualShaderNode.PORT_TYPE_BOOLEAN, 0)
 		_create_input("true", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 1)
 		_create_input("false", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 2)
-		_create_label("result", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_BOOLEAN)
+		_create_label("result", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_SCALAR)
 	elif op_type == VisualShaderNodeSwitch.OP_TYPE_INT:
 		_create_input("value", graph_node, vsn, VisualShaderNode.PORT_TYPE_BOOLEAN, 0)
 		_create_input("true", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR_INT, 1)
 		_create_input("false", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR_INT, 2)
-		_create_label("result", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_BOOLEAN)
+		_create_label("result", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_SCALAR_INT)
 	elif op_type == VisualShaderNodeSwitch.OP_TYPE_UINT:
 		_create_input("value", graph_node, vsn, VisualShaderNode.PORT_TYPE_BOOLEAN, 0)
 		_create_input("true", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR_UINT, 1)
 		_create_input("false", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR_UINT, 2)
-		_create_label("result", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_BOOLEAN)
+		_create_label("result", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_SCALAR_UINT)
 	elif op_type == VisualShaderNodeSwitch.OP_TYPE_VECTOR_2D:
 		_create_input("value", graph_node, vsn, VisualShaderNode.PORT_TYPE_BOOLEAN, 0)
 		_create_input("true", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_2D, 1)
 		_create_input("false", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_2D, 2)
-		_create_label("result", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_BOOLEAN)
+		_create_label("result", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_VECTOR_2D)
 	elif op_type == VisualShaderNodeSwitch.OP_TYPE_VECTOR_3D:
 		_create_input("value", graph_node, vsn, VisualShaderNode.PORT_TYPE_BOOLEAN, 0)
 		_create_input("true", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 1)
 		_create_input("false", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 2)
-		_create_label("result", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_BOOLEAN)
+		_create_label("result", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_VECTOR_3D)
 	elif op_type == VisualShaderNodeSwitch.OP_TYPE_VECTOR_4D:
 		_create_input("value", graph_node, vsn, VisualShaderNode.PORT_TYPE_BOOLEAN, 0)
 		_create_input("true", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_4D, 1)
 		_create_input("false", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_4D, 2)
-		_create_label("result", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_BOOLEAN)
+		_create_label("result", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_VECTOR_4D)
 	elif op_type == VisualShaderNodeSwitch.OP_TYPE_BOOLEAN:
 		_create_input("value", graph_node, vsn, VisualShaderNode.PORT_TYPE_BOOLEAN, 0)
 		_create_input("true", graph_node, vsn, VisualShaderNode.PORT_TYPE_BOOLEAN, 1)
@@ -1391,7 +1391,7 @@ func _create_switch_node(graph_node: GraphNode, vsn: VisualShaderNodeSwitch) -> 
 		_create_input("value", graph_node, vsn, VisualShaderNode.PORT_TYPE_BOOLEAN, 0)
 		_create_input("true", graph_node, vsn, VisualShaderNode.PORT_TYPE_TRANSFORM, 1)
 		_create_input("false", graph_node, vsn, VisualShaderNode.PORT_TYPE_TRANSFORM, 2)
-		_create_label("result", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_BOOLEAN)
+		_create_label("result", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_TRANSFORM)
 
 	_check_output_connections_validity(graph_node)
 
