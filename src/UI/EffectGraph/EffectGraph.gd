@@ -2171,7 +2171,7 @@ func _on_graph_edit_popup_request(at_position: Vector2) -> void:
 	if not is_instance_valid(visual_shader):
 		return
 	node_list_tree.get_window().popup_centered()
-	spawn_node_in_position = at_position
+	spawn_node_in_position = (at_position + graph_edit.scroll_offset) / graph_edit.zoom
 
 
 func _on_graph_edit_delete_nodes_request(node_names: Array[StringName]) -> void:
