@@ -300,9 +300,18 @@ func _apply_effect(layer: BaseLayer, effect: LayerEffect) -> void:
 			undo_data[cel_image.indices_image] = cel_image.indices_image.data
 		undo_data[cel_image] = cel_image.data
 		var params := effect.get_params(i)
-		params["PXO_time"] = frame.position_in_seconds(project)
-		params["PXO_frame_index"] = i
-		params["PXO_layer_index"] = layer.index
+		for uniform in effect.shader.get_shader_uniform_list():
+			var uniform_name: String = uniform.name
+			if uniform_name == "PXO_time":
+				params["PXO_time"] = frame.position_in_seconds(project)
+			elif uniform_name == "PXO_frame_index":
+				params["PXO_frame_index"] = i
+			elif uniform_name == "PXO_frame_index":
+				params["PXO_layer_index"] = index
+			elif uniform_name.begins_with("PXO_layer_tex_"):
+				var layer_index := int(uniform_name.replace("PXO_layer_tex_", ""))
+				if layer_index < project.layers.size():
+					params[uniform_name] = frame.cels[layer_index].image_texture
 		var effect_image: Image
 		if layer.use_cel_image_for_effects:
 			effect_image = cel.get_image()
