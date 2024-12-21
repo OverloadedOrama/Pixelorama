@@ -347,8 +347,18 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 			vsn.parameter_name = ops[0]
 		var parameter_type := _get_parameter_type(vsn)
 		if vsn.parameter_name.begins_with("PXO_"):
+			var label_name: String = vsn.parameter_name.replace("PXO_", "")
 			graph_node.title = "Input"
-			_create_label(vsn.parameter_name, graph_node, VisualShaderNode.PORT_TYPE_MAX, parameter_type)
+			if vsn.parameter_name == "PXO_layer_tex_":
+				label_name = "layer"
+				vsn.parameter_name = "PXO_layer_tex_0"
+				var slider := ValueSlider.new()
+				slider.custom_minimum_size = Vector2(100, 32)
+				slider.allow_greater = true
+				slider.allow_lesser = false
+				slider.value_changed.connect(func(value: int): vsn.parameter_name = "PXO_layer_tex_%s" % value; _on_effect_changed())
+				graph_node.add_child(slider)
+			_create_label(label_name, graph_node, VisualShaderNode.PORT_TYPE_MAX, parameter_type)
 		else:
 			var line_edit := LineEdit.new()
 			line_edit.text = vsn.parameter_name
@@ -1603,6 +1613,7 @@ func fill_add_options() -> void:
 	add_options.push_back(AddOption.new("Current frame", "Input/All", "VisualShaderNodeFloatParameter", "", [ "PXO_frame_index" ], VisualShaderNode.PORT_TYPE_SCALAR, -1))
 	add_options.push_back(AddOption.new("UV", "Input/All", "VisualShaderNodeInput", "", [ "uv" ], VisualShaderNode.PORT_TYPE_VECTOR_2D, -1))
 	add_options.push_back(AddOption.new("Texture", "Input/Fragment", "VisualShaderNodeInput", "", [ "texture" ], VisualShaderNode.PORT_TYPE_SAMPLER, -1))
+	add_options.push_back(AddOption.new("Layer texture", "Input/Fragment", "VisualShaderNodeTexture2DParameter", "", [ "PXO_layer_tex_" ], VisualShaderNode.PORT_TYPE_SCALAR, -1))
 	#add_options.push_back(AddOption.new("Normal map texture", "Input/Fragment", "VisualShaderNodeInput", "", [ "normal_texture" ], VisualShaderNode.PORT_TYPE_SAMPLER, -1))
 	#endregion
 	#region Scalar

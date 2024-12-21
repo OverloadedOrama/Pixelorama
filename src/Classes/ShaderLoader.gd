@@ -103,6 +103,8 @@ static func create_ui_for_shader_uniforms(
 		var u_name := u_init[2]
 		if u_name in UNIFORMS_TO_IGNORE:
 			continue
+		if u_name.begins_with("PXO_layer_tex_"):
+			continue
 		var humanized_u_name := Keychain.humanize_snake_case(u_name) + ":"
 
 		if u_type == "float" or u_type == "int":

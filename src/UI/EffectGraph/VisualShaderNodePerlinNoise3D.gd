@@ -69,7 +69,7 @@ func _get_output_port_type(_port: int) -> VisualShaderNode.PortType:
 	return VisualShaderNode.PORT_TYPE_SCALAR
 
 
-func _get_global_code(_mode):
+func _get_global_code(_mode: Shader.Mode) -> String:
 	return """
 		vec3 mod289_3(vec3 x) {
 			return x - floor(x * (1.0 / 289.0)) * 289.0;
