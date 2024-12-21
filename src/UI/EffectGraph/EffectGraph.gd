@@ -99,6 +99,7 @@ var spawn_node_in_position := Vector2.ZERO
 @onready var graph_edit := $GraphEdit as GraphEdit
 @onready var filter_line_edit: LineEdit = %FilterLineEdit
 @onready var node_list_tree: Tree = %NodeListTree
+@onready var node_description_label: RichTextLabel = %NodeDescriptionLabel
 @onready var effect_name_line_edit: LineEdit = %EffectNameLineEdit
 
 
@@ -1607,13 +1608,14 @@ func fill_add_options() -> void:
 	add_options.push_back(AddOption.new("BooleanParameter", "Conditional/Variables", "VisualShaderNodeBooleanParameter", "Boolean parameter.", [], VisualShaderNode.PORT_TYPE_BOOLEAN));
 	#endregion
 	#region Input
-	add_options.push_back(AddOption.new("Color", "Input/All", "VisualShaderNodeInput", "", [ "color" ], VisualShaderNode.PORT_TYPE_VECTOR_4D, -1))
-	add_options.push_back(AddOption.new("TexturePixelSize", "Input/All", "VisualShaderNodeInput", "", [ "texture_pixel_size" ], VisualShaderNode.PORT_TYPE_VECTOR_2D, -1))
-	add_options.push_back(AddOption.new("Time", "Input/All", "VisualShaderNodeFloatParameter", "", [ "PXO_time" ], VisualShaderNode.PORT_TYPE_SCALAR, -1))
-	add_options.push_back(AddOption.new("Current frame", "Input/All", "VisualShaderNodeFloatParameter", "", [ "PXO_frame_index" ], VisualShaderNode.PORT_TYPE_SCALAR, -1))
-	add_options.push_back(AddOption.new("UV", "Input/All", "VisualShaderNodeInput", "", [ "uv" ], VisualShaderNode.PORT_TYPE_VECTOR_2D, -1))
-	add_options.push_back(AddOption.new("Texture", "Input/Fragment", "VisualShaderNodeInput", "", [ "texture" ], VisualShaderNode.PORT_TYPE_SAMPLER, -1))
-	add_options.push_back(AddOption.new("Layer texture", "Input/Fragment", "VisualShaderNodeTexture2DParameter", "", [ "PXO_layer_tex_" ], VisualShaderNode.PORT_TYPE_SCALAR, -1))
+	var input_param_shader_modes := "'%s' input parameter.\n\nTranslated to '%s' in Godot Shading Language."
+	add_options.push_back(AddOption.new("Color", "Input/All", "VisualShaderNodeInput", input_param_shader_modes % ["color", "COLOR"], [ "color" ], VisualShaderNode.PORT_TYPE_VECTOR_4D, -1))
+	add_options.push_back(AddOption.new("TexturePixelSize", "Input/All", "VisualShaderNodeInput", input_param_shader_modes % ["texture_pixel_size", "TEXTURE_PIXEL_SIZE"], [ "texture_pixel_size" ], VisualShaderNode.PORT_TYPE_VECTOR_2D, -1))
+	add_options.push_back(AddOption.new("Time", "Input/All", "VisualShaderNodeFloatParameter", input_param_shader_modes % ["PXO_time", "PXO_time"], [ "PXO_time" ], VisualShaderNode.PORT_TYPE_SCALAR, -1))
+	add_options.push_back(AddOption.new("Current frame", "Input/All", "VisualShaderNodeFloatParameter", input_param_shader_modes % ["PXO_frame_index", "PXO_frame_index"], [ "PXO_frame_index" ], VisualShaderNode.PORT_TYPE_SCALAR, -1))
+	add_options.push_back(AddOption.new("UV", "Input/All", "VisualShaderNodeInput", input_param_shader_modes % ["uv", "UV"], [ "uv" ], VisualShaderNode.PORT_TYPE_VECTOR_2D, -1))
+	add_options.push_back(AddOption.new("Texture", "Input/Fragment", "VisualShaderNodeInput", input_param_shader_modes % ["texture", "TEXTURE"], [ "texture" ], VisualShaderNode.PORT_TYPE_SAMPLER, -1))
+	add_options.push_back(AddOption.new("Layer texture", "Input/Fragment", "VisualShaderNodeTexture2DParameter", input_param_shader_modes % ["PXO_layer_tex_N", "PXO_layer_tex_N"], [ "PXO_layer_tex_" ], VisualShaderNode.PORT_TYPE_SCALAR, -1))
 	#add_options.push_back(AddOption.new("Normal map texture", "Input/Fragment", "VisualShaderNodeInput", "", [ "normal_texture" ], VisualShaderNode.PORT_TYPE_SAMPLER, -1))
 	#endregion
 	#region Scalar
@@ -1945,6 +1947,7 @@ func fill_add_options() -> void:
 
 func update_options_menu() -> void:
 	node_list_tree.clear()
+	node_description_label.text = ""
 	var filter := filter_line_edit.text.strip_edges()
 	var use_filter := not filter.is_empty()
 	var is_first_item := true
@@ -1990,7 +1993,7 @@ func update_options_menu() -> void:
 		item.set_metadata(0, add_options.find(option))
 		if is_first_item && use_filter:
 			item.select(0)
-			#node_desc.set_text(options[i].description)
+			node_description_label.text = options[i].description
 			is_first_item = false
 
 			node_list_tree.get_window().get_ok_button().set_disabled(false)
@@ -2089,10 +2092,13 @@ func _get_node_category(vsn: VisualShaderNode) -> Category:
 
 func _on_node_list_tree_item_selected() -> void:
 	node_list_tree.get_window().get_ok_button().set_disabled(false)
+	var option_index: int = node_list_tree.get_selected().get_metadata(0)
+	node_description_label.text = add_options[option_index].description
 
 
 func _on_node_list_tree_nothing_selected() -> void:
 	node_list_tree.get_window().get_ok_button().set_disabled(true)
+	node_description_label.text = ""
 
 
 func _on_effect_name_line_edit_text_changed(new_text: String) -> void:
