@@ -20,6 +20,15 @@ enum Category {
 const VALUE_ARROW := preload("res://assets/graphics/misc/value_arrow.svg")
 const VALUE_ARROW_RIGHT := preload("res://assets/graphics/misc/value_arrow_right.svg")
 const CLOSE := preload("res://assets/graphics/misc/close.svg")
+const BOOL_ICON := preload("res://assets/graphics/effect_graph/bool.svg")
+const FLOAT_ICON := preload("res://assets/graphics/effect_graph/float.svg")
+const SAMPLER_ICON := preload("res://assets/graphics/effect_graph/image_texture.svg")
+const INT_ICON := preload("res://assets/graphics/effect_graph/int.svg")
+const TRANSFORM_3D_ICON := preload("res://assets/graphics/effect_graph/transform_3d.svg")
+const UINT_ICON := preload("res://assets/graphics/effect_graph/uint.svg")
+const VECTOR_2_ICON := preload("res://assets/graphics/effect_graph/vector2.svg")
+const VECTOR_3_ICON := preload("res://assets/graphics/effect_graph/vector3.svg")
+const VECTOR_4_ICON := preload("res://assets/graphics/effect_graph/vector4.svg")
 
 # The color values are taken from Godot's editor_settings.cpp file.
 var slot_colors := PackedColorArray(
@@ -120,7 +129,7 @@ class AddOption:
 	#bool is_native = false
 	#int temp_idx = 0
 
-	func _init(_option_name: String, _category: String, _type: String, _description: String, _ops := [], _return_type := VisualShaderNode.PORT_TYPE_SCALAR, _mode := -1, _highend := false) -> void:
+	func _init(_option_name: String, _category: String, _type: String, _description: String, _ops := [], _return_type := VisualShaderNode.PORT_TYPE_MAX, _mode := -1, _highend := false) -> void:
 		option_name = _option_name
 		type = _type
 		category = _category
@@ -1794,10 +1803,11 @@ func fill_add_options() -> void:
 	add_options.push_back(AddOption.new("Color", "Input/All", "VisualShaderNodeInput", input_param_shader_modes % ["color", "COLOR"], [ "color" ], VisualShaderNode.PORT_TYPE_VECTOR_4D, -1))
 	add_options.push_back(AddOption.new("TexturePixelSize", "Input/All", "VisualShaderNodeInput", input_param_shader_modes % ["texture_pixel_size", "TEXTURE_PIXEL_SIZE"], [ "texture_pixel_size" ], VisualShaderNode.PORT_TYPE_VECTOR_2D, -1))
 	add_options.push_back(AddOption.new("Time", "Input/All", "VisualShaderNodeFloatParameter", input_param_shader_modes % ["PXO_time", "PXO_time"], [ "PXO_time" ], VisualShaderNode.PORT_TYPE_SCALAR, -1))
-	add_options.push_back(AddOption.new("Current frame", "Input/All", "VisualShaderNodeFloatParameter", input_param_shader_modes % ["PXO_frame_index", "PXO_frame_index"], [ "PXO_frame_index" ], VisualShaderNode.PORT_TYPE_SCALAR, -1))
+	add_options.push_back(AddOption.new("Current frame index", "Input/All", "VisualShaderNodeUIntParameter", input_param_shader_modes % ["PXO_frame_index", "PXO_frame_index"], [ "PXO_frame_index" ], VisualShaderNode.PORT_TYPE_SCALAR_UINT, -1))
+	add_options.push_back(AddOption.new("Current layer index", "Input/All", "VisualShaderNodeUIntParameter", input_param_shader_modes % ["PXO_layer_index", "PXO_layer_index"], [ "PXO_layer_index" ], VisualShaderNode.PORT_TYPE_SCALAR_UINT, -1))
 	add_options.push_back(AddOption.new("UV", "Input/All", "VisualShaderNodeInput", input_param_shader_modes % ["uv", "UV"], [ "uv" ], VisualShaderNode.PORT_TYPE_VECTOR_2D, -1))
 	add_options.push_back(AddOption.new("Texture", "Input/Fragment", "VisualShaderNodeInput", input_param_shader_modes % ["texture", "TEXTURE"], [ "texture" ], VisualShaderNode.PORT_TYPE_SAMPLER, -1))
-	add_options.push_back(AddOption.new("Layer texture", "Input/Fragment", "VisualShaderNodeTexture2DParameter", input_param_shader_modes % ["PXO_layer_tex_N", "PXO_layer_tex_N"], [ "PXO_layer_tex_" ], VisualShaderNode.PORT_TYPE_SCALAR, -1))
+	add_options.push_back(AddOption.new("Layer texture", "Input/Fragment", "VisualShaderNodeTexture2DParameter", input_param_shader_modes % ["PXO_layer_tex_N", "PXO_layer_tex_N"], [ "PXO_layer_tex_" ], VisualShaderNode.PORT_TYPE_SAMPLER, -1))
 	#add_options.push_back(AddOption.new("Normal map texture", "Input/Fragment", "VisualShaderNodeInput", "", [ "normal_texture" ], VisualShaderNode.PORT_TYPE_SAMPLER, -1))
 	#endregion
 	#region Scalar
@@ -2181,6 +2191,25 @@ func update_options_menu() -> void:
 			is_first_item = false
 
 			node_list_tree.get_window().get_ok_button().set_disabled(false)
+		match option.return_type:
+			VisualShaderNode.PORT_TYPE_SCALAR:
+				item.set_icon(0, FLOAT_ICON)
+			VisualShaderNode.PORT_TYPE_SCALAR_INT:
+				item.set_icon(0, INT_ICON)
+			VisualShaderNode.PORT_TYPE_SCALAR_UINT:
+				item.set_icon(0, UINT_ICON)
+			VisualShaderNode.PORT_TYPE_VECTOR_2D:
+				item.set_icon(0, VECTOR_2_ICON)
+			VisualShaderNode.PORT_TYPE_VECTOR_3D:
+				item.set_icon(0, VECTOR_3_ICON)
+			VisualShaderNode.PORT_TYPE_VECTOR_4D:
+				item.set_icon(0, VECTOR_4_ICON)
+			VisualShaderNode.PORT_TYPE_BOOLEAN:
+				item.set_icon(0, BOOL_ICON)
+			VisualShaderNode.PORT_TYPE_TRANSFORM:
+				item.set_icon(0, TRANSFORM_3D_ICON)
+			VisualShaderNode.PORT_TYPE_SAMPLER:
+				item.set_icon(0, SAMPLER_ICON)
 
 
 ## TODO: Remove if Godot ever exposes VisualShaderNode's category.
