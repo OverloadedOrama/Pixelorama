@@ -279,9 +279,18 @@ func display_effects(cel: BaseCel, image_override: Image = null) -> Image:
 		if not effect.enabled or not is_instance_valid(effect.shader):
 			continue
 		var interpol_params := effect.get_params(frame_index)
-		interpol_params["PXO_time"] = frame.position_in_seconds(project)
-		interpol_params["PXO_frame_index"] = frame_index
-		interpol_params["PXO_layer_index"] = index
+		for uniform in effect.shader.get_shader_uniform_list():
+			var uniform_name: String = uniform.name
+			if uniform_name == "PXO_time":
+				params["PXO_time"] = frame.position_in_seconds(project)
+			elif interpol_params == "PXO_frame_index":
+				interpol_params["PXO_frame_index"] = frame_index
+			elif uniform_name == "PXO_frame_index":
+				interpol_params["PXO_layer_index"] = index
+			elif uniform_name.begins_with("PXO_layer_tex_"):
+				var layer_index := int(uniform_name.replace("PXO_layer_tex_", ""))
+				if layer_index < project.layers.size():
+					interpol_params[uniform_name] = frame.cels[layer_index].image_texture
 		var shader_image_effect := ShaderImageEffect.new()
 		shader_image_effect.generate_image(image, effect.shader, interpol_params, image_size)
 	# Inherit effects from the parents, if their blend mode is set to pass through
