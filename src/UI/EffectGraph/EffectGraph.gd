@@ -384,6 +384,8 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 	elif vsn is VisualShaderNodeIntConstant or vsn is VisualShaderNodeUIntConstant:
 		var slider := ValueSlider.new()
 		slider.custom_minimum_size = Vector2(32, 32)
+		slider.allow_greater = true
+		slider.allow_lesser = vsn is not VisualShaderNodeUIntConstant
 		slider.value = vsn.constant
 		slider.value_changed.connect(func(value: int): vsn.constant = value; _on_effect_changed())
 		graph_node.add_child(slider)
@@ -391,6 +393,8 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 	elif vsn is VisualShaderNodeFloatConstant:
 		var slider := ValueSlider.new()
 		slider.custom_minimum_size = Vector2(32, 32)
+		slider.allow_greater = true
+		slider.allow_lesser = true
 		slider.step = 0.001
 		slider.value = vsn.constant
 		slider.value_changed.connect(func(value: float): vsn.constant = value; _on_effect_changed())
@@ -398,12 +402,18 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		graph_node.set_slot(0, false, VisualShaderNode.PORT_TYPE_MAX, Color.TRANSPARENT, true, VisualShaderNode.PORT_TYPE_SCALAR, slot_colors[VisualShaderNode.PORT_TYPE_SCALAR])
 	elif vsn is VisualShaderNodeVec2Constant:
 		var slider := ShaderLoader.VALUE_SLIDER_V2_TSCN.instantiate() as ValueSliderV2
+		slider.allow_greater = true
+		slider.allow_lesser = true
+		slider.step = 0.001
 		slider.value = vsn.constant
 		slider.value_changed.connect(func(value: Vector2): vsn.constant = value; _on_effect_changed())
 		graph_node.add_child(slider)
 		graph_node.set_slot(0, false, VisualShaderNode.PORT_TYPE_MAX, Color.TRANSPARENT, true, VisualShaderNode.PORT_TYPE_VECTOR_2D, slot_colors[VisualShaderNode.PORT_TYPE_VECTOR_2D])
 	elif vsn is VisualShaderNodeVec3Constant:
 		var slider := ShaderLoader.VALUE_SLIDER_V3_TSCN.instantiate() as ValueSliderV3
+		slider.allow_greater = true
+		slider.allow_lesser = true
+		slider.step = 0.001
 		slider.value = vsn.constant
 		slider.value_changed.connect(func(value: Vector3): vsn.constant = value; _on_effect_changed())
 		graph_node.add_child(slider)
