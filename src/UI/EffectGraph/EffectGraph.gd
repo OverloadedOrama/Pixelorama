@@ -518,7 +518,7 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		option_button.add_item("Bitwise Left Shift", VisualShaderNodeIntOp.OP_BITWISE_LEFT_SHIFT)
 		option_button.add_item("Bitwise Right Shift", VisualShaderNodeIntOp.OP_BITWISE_RIGHT_SHIFT)
 		option_button.select(option_button.get_item_index(vsn.operator))
-		option_button.item_selected.connect(func(id_selected: VisualShaderNodeIntOp.Operator): vsn.operator = id_selected; _on_effect_changed())
+		option_button.item_selected.connect(func(idx_selected: VisualShaderNodeIntOp.Operator): vsn.operator = option_button.get_item_id(idx_selected); _on_effect_changed())
 		graph_node.add_child(option_button)
 		_create_input("a", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR_INT, 0)
 		_create_input("b", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR_INT, 1)
@@ -532,7 +532,7 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		option_button.add_item("Sign", VisualShaderNodeIntFunc.FUNC_SIGN)
 		option_button.add_item("Bitwise NOT", VisualShaderNodeIntFunc.FUNC_BITWISE_NOT)
 		option_button.select(option_button.get_item_index(vsn.function))
-		option_button.item_selected.connect(func(id_selected: VisualShaderNodeIntFunc.Function): vsn.function = id_selected; _on_effect_changed())
+		option_button.item_selected.connect(func(idx_selected: VisualShaderNodeIntFunc.Function): vsn.function = option_button.get_item_id(idx_selected); _on_effect_changed())
 		graph_node.add_child(option_button)
 		_create_input("input", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR_INT, 0)
 		_create_multi_output("output", graph_node, VisualShaderNode.PORT_TYPE_SCALAR_INT)
@@ -907,6 +907,36 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		_create_multi_output("uv", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_2D)
 	#endregion
 	#region Transform
+	elif vsn is VisualShaderNodeTransformOp:
+		if not ops.is_empty():
+			vsn.operator = ops[0]
+		var option_button := OptionButton.new()
+		option_button.add_item("A x B", VisualShaderNodeTransformOp.OP_AxB)
+		option_button.add_item("B x A", VisualShaderNodeTransformOp.OP_BxA)
+		option_button.add_item("A x B (per component)", VisualShaderNodeTransformOp.OP_AxB_COMP)
+		option_button.add_item("B x A (per component)", VisualShaderNodeTransformOp.OP_BxA_COMP)
+		option_button.add_item("A + B", VisualShaderNodeTransformOp.OP_ADD)
+		option_button.add_item("A - B", VisualShaderNodeTransformOp.OP_A_MINUS_B)
+		option_button.add_item("B - A", VisualShaderNodeTransformOp.OP_B_MINUS_A)
+		option_button.add_item("A / B", VisualShaderNodeTransformOp.OP_A_DIV_B)
+		option_button.add_item("B / A", VisualShaderNodeTransformOp.OP_B_DIV_A)
+		option_button.select(option_button.get_item_index(vsn.operator))
+		option_button.item_selected.connect(func(idx_selected: VisualShaderNodeTransformOp.Operator): vsn.operator = option_button.get_item_id(idx_selected); _on_effect_changed())
+		graph_node.add_child(option_button)
+		_create_input("a", graph_node, vsn, VisualShaderNode.PORT_TYPE_TRANSFORM, 0)
+		_create_input("b", graph_node, vsn, VisualShaderNode.PORT_TYPE_TRANSFORM, 1)
+		_create_multi_output("mult", graph_node, VisualShaderNode.PORT_TYPE_TRANSFORM)
+	elif vsn is VisualShaderNodeTransformFunc:
+		if not ops.is_empty():
+			vsn.function = ops[0]
+		var option_button := OptionButton.new()
+		option_button.add_item("Inverse", VisualShaderNodeTransformFunc.FUNC_INVERSE)
+		option_button.add_item("Transpose", VisualShaderNodeTransformFunc.FUNC_TRANSPOSE)
+		option_button.select(option_button.get_item_index(vsn.function))
+		option_button.item_selected.connect(func(idx_selected: VisualShaderNodeIntFunc.Function): vsn.function = option_button.get_item_id(idx_selected); _on_effect_changed())
+		graph_node.add_child(option_button)
+		_create_input("", graph_node, vsn, VisualShaderNode.PORT_TYPE_TRANSFORM, 0)
+		_create_multi_output("", graph_node, VisualShaderNode.PORT_TYPE_TRANSFORM)
 	elif vsn is VisualShaderNodeDeterminant:
 		_create_input("", graph_node, vsn, VisualShaderNode.PORT_TYPE_TRANSFORM, 0)
 		_create_multi_output("", graph_node, VisualShaderNode.PORT_TYPE_SCALAR)
@@ -1977,7 +2007,7 @@ func fill_add_options() -> void:
 	add_options.push_back(AddOption.new("Subtract (-)", "Transform/Operators", "VisualShaderNodeTransformOp", "Subtracts two transforms.", [ VisualShaderNodeTransformOp.OP_A_MINUS_B ], VisualShaderNode.PORT_TYPE_TRANSFORM));
 	add_options.push_back(AddOption.new("TransformVectorMult (*)", "Transform/Operators", "VisualShaderNodeTransformVecMult", "Multiplies vector by transform.", [], VisualShaderNode.PORT_TYPE_VECTOR_3D));
 
-	add_options.push_back(AddOption.new("TransformConstant", "Transform/Variables", "VisualShaderNodeTransformConstant", "Transform constant.", [], VisualShaderNode.PORT_TYPE_TRANSFORM));
+	#add_options.push_back(AddOption.new("TransformConstant", "Transform/Variables", "VisualShaderNodeTransformConstant", "Transform constant.", [], VisualShaderNode.PORT_TYPE_TRANSFORM));
 	add_options.push_back(AddOption.new("TransformParameter", "Transform/Variables", "VisualShaderNodeTransformParameter", "Transform parameter.", [], VisualShaderNode.PORT_TYPE_TRANSFORM));
 	#endregion
 	#region Utility
