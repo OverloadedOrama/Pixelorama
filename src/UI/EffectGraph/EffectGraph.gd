@@ -2448,6 +2448,8 @@ func _on_create_node_dialog_confirmed() -> void:
 
 
 func _on_graph_edit_connection_request(from_node_name: String, from_port: int, to_node_name: String, to_port: int) -> void:
+	if from_node_name == to_node_name:
+		return
 	var vs_from_node_id := int(from_node_name)
 	var vs_to_node_id := int(to_node_name)
 	undo_redo.create_action("Connect nodes")
