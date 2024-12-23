@@ -373,6 +373,29 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 			line_edit.text_changed.connect(func(text: String): vsn.parameter_name = text; _on_effect_changed())
 			graph_node.add_child(line_edit)
 			graph_node.set_slot(0, false, VisualShaderNode.PORT_TYPE_MAX, Color.TRANSPARENT, true, parameter_type, slot_colors[parameter_type])
+		if vsn is VisualShaderNodeTextureParameter:
+			var filter_option_button := OptionButton.new()
+			filter_option_button.add_item("Default", VisualShaderNodeTextureParameter.FILTER_DEFAULT)
+			filter_option_button.add_item("Nearest", VisualShaderNodeTextureParameter.FILTER_NEAREST)
+			filter_option_button.add_item("Linear", VisualShaderNodeTextureParameter.FILTER_LINEAR)
+			filter_option_button.select(filter_option_button.get_item_index(vsn.texture_filter))
+			filter_option_button.item_selected.connect(
+			func(id_selected: VisualShaderNodeTextureParameter.TextureFilter):
+					vsn.texture_filter = id_selected
+					_on_effect_changed()
+			)
+			graph_node.add_child(filter_option_button)
+			var repeat_option_button := OptionButton.new()
+			repeat_option_button.add_item("Default", VisualShaderNodeTextureParameter.REPEAT_DEFAULT)
+			repeat_option_button.add_item("Enabled", VisualShaderNodeTextureParameter.REPEAT_ENABLED)
+			repeat_option_button.add_item("Disabled", VisualShaderNodeTextureParameter.REPEAT_DISABLED)
+			repeat_option_button.select(repeat_option_button.get_item_index(vsn.texture_repeat))
+			repeat_option_button.item_selected.connect(
+			func(id_selected: VisualShaderNodeTextureParameter.TextureRepeat):
+					vsn.texture_repeat = id_selected
+					_on_effect_changed()
+			)
+			graph_node.add_child(repeat_option_button)
 	#region Constants
 	elif vsn is VisualShaderNodeBooleanConstant:
 		var button := CheckBox.new()
