@@ -1001,6 +1001,7 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 				vsn.operator = option_button.get_item_id(idx_selected)
 				_on_effect_changed()
 		)
+		graph_node.add_child(option_button)
 		_create_input("a", graph_node, vsn, VisualShaderNode.PORT_TYPE_TRANSFORM, 0)
 		_create_input("b", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 1)
 		_create_multi_output("", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_3D)
