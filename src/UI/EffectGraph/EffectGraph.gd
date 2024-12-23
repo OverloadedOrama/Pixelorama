@@ -331,7 +331,8 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 	if vsn is not VisualShaderNodeOutput:  # Add a close button if the node can be deleted.
 		var close_button := TextureButton.new()
 		close_button.texture_normal = CLOSE
-		close_button.pressed.connect(_on_delete_request.bind((str(id))))
+		var name_array: Array[StringName] = [str(id)]
+		close_button.pressed.connect(_on_graph_edit_delete_nodes_request.bind((name_array)))
 		graph_node.get_titlebar_hbox().add_child(close_button)
 	if vsn is VisualShaderNodeOutput:
 		_create_input("Color", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 0, false)
@@ -1069,13 +1070,9 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 func _on_delete_request(graph_node_name: StringName) -> void:
 	var id := int(String(graph_node_name))
 	var vsn := visual_shader.get_node(VisualShader.TYPE_FRAGMENT, id)
-	undo_redo.create_action("Remove node")
 	undo_redo.add_do_method(delete_node.bind(graph_node_name))
-	undo_redo.add_do_method(_on_effect_changed)
 	undo_redo.add_undo_method(visual_shader.add_node.bind(VisualShader.TYPE_FRAGMENT, vsn, spawn_node_in_position, id))
 	undo_redo.add_undo_method(add_node.bind(vsn, id))
-	undo_redo.add_undo_method(_on_effect_changed)
-	undo_redo.commit_action()
 
 
 func delete_node(graph_node_name: StringName) -> void:
@@ -2505,8 +2502,14 @@ func _on_graph_edit_popup_request(at_position: Vector2) -> void:
 
 
 func _on_graph_edit_delete_nodes_request(node_names: Array[StringName]) -> void:
+	if node_names.size() == 0:
+		return
+	undo_redo.create_action("Remove node")
 	for node_name in node_names:
 		_on_delete_request(node_name)
+	undo_redo.add_do_method(_on_effect_changed)
+	undo_redo.add_undo_method(_on_effect_changed)
+	undo_redo.commit_action()
 
 
 func _on_graph_edit_mouse_entered() -> void:
