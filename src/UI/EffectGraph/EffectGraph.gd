@@ -2500,6 +2500,8 @@ func _on_graph_edit_delete_nodes_request(node_names: Array[StringName]) -> void:
 	for node_name in node_names:
 		var id := int(String(node_name))
 		var vsn := visual_shader.get_node(VisualShader.TYPE_FRAGMENT, id)
+		if vsn is VisualShaderNodeOutput:
+			continue
 		var node_position := visual_shader.get_node_position(VisualShader.TYPE_FRAGMENT, id)
 		undo_redo.add_do_method(delete_node.bind(node_name))
 		undo_redo.add_undo_method(visual_shader.add_node.bind(VisualShader.TYPE_FRAGMENT, vsn, node_position, id))
