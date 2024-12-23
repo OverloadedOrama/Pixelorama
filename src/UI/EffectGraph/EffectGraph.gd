@@ -1067,14 +1067,6 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 	graph_edit.add_child(graph_node)
 
 
-func _on_delete_request(graph_node_name: StringName) -> void:
-	var id := int(String(graph_node_name))
-	var vsn := visual_shader.get_node(VisualShader.TYPE_FRAGMENT, id)
-	undo_redo.add_do_method(delete_node.bind(graph_node_name))
-	undo_redo.add_undo_method(visual_shader.add_node.bind(VisualShader.TYPE_FRAGMENT, vsn, spawn_node_in_position, id))
-	undo_redo.add_undo_method(add_node.bind(vsn, id))
-
-
 func delete_node(graph_node_name: StringName) -> void:
 	var graph_node := graph_edit.get_node(String(graph_node_name))
 	visual_shader.remove_node(VisualShader.TYPE_FRAGMENT, int(String(graph_node_name)))
@@ -2506,7 +2498,12 @@ func _on_graph_edit_delete_nodes_request(node_names: Array[StringName]) -> void:
 		return
 	undo_redo.create_action("Remove node")
 	for node_name in node_names:
-		_on_delete_request(node_name)
+		var id := int(String(node_name))
+		var vsn := visual_shader.get_node(VisualShader.TYPE_FRAGMENT, id)
+		var node_position := visual_shader.get_node_position(VisualShader.TYPE_FRAGMENT, id)
+		undo_redo.add_do_method(delete_node.bind(node_name))
+		undo_redo.add_undo_method(visual_shader.add_node.bind(VisualShader.TYPE_FRAGMENT, vsn, node_position, id))
+		undo_redo.add_undo_method(add_node.bind(vsn, id))
 	undo_redo.add_do_method(_on_effect_changed)
 	undo_redo.add_undo_method(_on_effect_changed)
 	undo_redo.commit_action()
