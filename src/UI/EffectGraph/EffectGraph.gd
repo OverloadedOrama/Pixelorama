@@ -83,6 +83,8 @@ var visual_shader: VisualShader:
 		if is_instance_valid(visual_shader):
 			var node_list := visual_shader.get_node_list(VisualShader.Type.TYPE_FRAGMENT)
 			for id in node_list:
+				if id < 0:
+					continue
 				var vsn := visual_shader.get_node(VisualShader.TYPE_FRAGMENT, id)
 				add_node(vsn, id)
 			for connection in visual_shader.get_node_connections(VisualShader.TYPE_FRAGMENT):
@@ -94,6 +96,8 @@ var visual_shader: VisualShader:
 				if to_node.has_meta(&"default_input_button_%s" % to_port):
 					to_node.get_meta(&"default_input_button_%s" % to_port).visible = false
 			for id in node_list:
+				if id < 0:
+					continue
 				var vsn := visual_shader.get_node(VisualShader.TYPE_FRAGMENT, id)
 				if vsn is VisualShaderNodeFrame:
 					for attached_node in vsn.attached_nodes:
@@ -2471,10 +2475,10 @@ func _on_graph_edit_disconnection_request(from_node_name: String, from_port: int
 func _on_graph_edit_graph_elements_linked_to_frame_request(elements: Array, frame: StringName) -> void:
 	undo_redo.create_action("Link nodes to frame")
 	for element in elements:
-		undo_redo.add_do_method(graph_edit.attach_graph_element_to_frame.bind(element, frame))
 		undo_redo.add_do_method(visual_shader.attach_node_to_frame.bind(VisualShader.TYPE_FRAGMENT, int(String(element)), int(String(frame))))
-		undo_redo.add_undo_method(graph_edit.detach_graph_element_from_frame.bind(element))
+		undo_redo.add_do_method(graph_edit.attach_graph_element_to_frame.bind(element, frame))
 		undo_redo.add_undo_method(visual_shader.detach_node_from_frame.bind(VisualShader.TYPE_FRAGMENT, int(String(element))))
+		undo_redo.add_undo_method(graph_edit.detach_graph_element_from_frame.bind(element))
 	undo_redo.add_do_method(_on_effect_changed)
 	undo_redo.add_undo_method(_on_effect_changed)
 	undo_redo.commit_action()
@@ -2494,18 +2498,81 @@ func _on_graph_edit_popup_request(at_position: Vector2) -> void:
 
 
 func _on_graph_edit_delete_nodes_request(node_names: Array[StringName]) -> void:
-	if node_names.size() == 0:
-		return
-	undo_redo.create_action("Remove node")
+	# Do not remove the output node.
 	for node_name in node_names:
 		var id := int(String(node_name))
 		var vsn := visual_shader.get_node(VisualShader.TYPE_FRAGMENT, id)
 		if vsn is VisualShaderNodeOutput:
-			continue
+			node_names.erase(node_name)
+	if node_names.size() == 0:
+		return
+	undo_redo.create_action("Remove node")
+	var connections := visual_shader.get_node_connections(VisualShader.TYPE_FRAGMENT)
+	for node_name in node_names:
+		var id := int(String(node_name))
+		for connection in connections:
+			var from_node: int = connection.from_node
+			var to_node: int = connection.to_node
+			if from_node == id or to_node == id:
+				var from_port: int = connection.from_port
+				var to_port: int = connection.to_port
+				undo_redo.add_do_method(visual_shader.disconnect_nodes.bind(
+					VisualShader.TYPE_FRAGMENT, from_node, from_port, to_node, to_port)
+				)
+				undo_redo.add_do_method(graph_edit.disconnect_node.bind(
+					str(from_node), from_port, str(to_node), to_port)
+				)
+				undo_redo.add_do_method(_graph_node_default_input_control_visibility.bind(
+					str(to_node), to_port, true)
+				)
+	# The VS nodes need to be added before attaching them to frames.
+	for node_name in node_names:
+		var id := int(String(node_name))
+		var vsn := visual_shader.get_node(VisualShader.TYPE_FRAGMENT, id)
 		var node_position := visual_shader.get_node_position(VisualShader.TYPE_FRAGMENT, id)
-		undo_redo.add_do_method(delete_node.bind(node_name))
 		undo_redo.add_undo_method(visual_shader.add_node.bind(VisualShader.TYPE_FRAGMENT, vsn, node_position, id))
 		undo_redo.add_undo_method(add_node.bind(vsn, id))
+
+	# Update frame references.
+	for node_name in node_names:
+		var id := int(String(node_name))
+		var vsn := visual_shader.get_node(VisualShader.TYPE_FRAGMENT, id)
+		if vsn is VisualShaderNodeFrame:
+			var attached_nodes := (vsn as VisualShaderNodeFrame).attached_nodes
+			for attached_node in attached_nodes:
+				undo_redo.add_do_method(visual_shader.detach_node_from_frame.bind(VisualShader.TYPE_FRAGMENT, attached_node))
+				undo_redo.add_do_method(graph_edit.detach_graph_element_from_frame.bind(str(attached_node)))
+				undo_redo.add_undo_method(visual_shader.attach_node_to_frame.bind(VisualShader.TYPE_FRAGMENT, attached_node, id))
+				undo_redo.add_undo_method(graph_edit.attach_graph_element_to_frame.bind(str(attached_node), node_name))
+		var frame_id := vsn.linked_parent_graph_frame
+		if frame_id == -1:
+			continue
+		undo_redo.add_do_method(visual_shader.detach_node_from_frame.bind(VisualShader.TYPE_FRAGMENT, id))
+		undo_redo.add_do_method(graph_edit.detach_graph_element_from_frame.bind(node_name))
+		undo_redo.add_undo_method(visual_shader.attach_node_to_frame.bind(VisualShader.TYPE_FRAGMENT, id, frame_id))
+		undo_redo.add_undo_method(graph_edit.attach_graph_element_to_frame.bind(node_name, str(frame_id)))
+	for node_name in node_names:
+		undo_redo.add_do_method(delete_node.bind(node_name))
+
+	var used_conns: Array[Dictionary]
+	for node_name in node_names:
+		var id := int(String(node_name))
+		for connection in connections:
+			var from_node: int = connection.from_node
+			var to_node: int = connection.to_node
+			if from_node == id or to_node == id:
+				var from_port: int = connection.from_port
+				var to_port: int = connection.to_port
+				var cancel := false
+				for used_connection in used_conns:
+					if used_connection.from_node == from_node and used_connection.from_port == from_port and used_connection.to_node == to_node and used_connection.to_port == to_port:
+						cancel = true  # to avoid ERR_ALREADY_EXISTS warning
+						break
+				if not cancel:
+					undo_redo.add_undo_method(visual_shader.connect_nodes.bind(VisualShader.TYPE_FRAGMENT, from_node, from_port, to_node, to_port))
+					undo_redo.add_undo_method(graph_edit.connect_node.bind(str(from_node), from_port, str(to_node), to_port))
+					undo_redo.add_undo_method(_graph_node_default_input_control_visibility.bind(str(to_node), to_port, false))
+					used_conns.push_back(connection)
 	undo_redo.add_do_method(_on_effect_changed)
 	undo_redo.add_undo_method(_on_effect_changed)
 	undo_redo.commit_action()
