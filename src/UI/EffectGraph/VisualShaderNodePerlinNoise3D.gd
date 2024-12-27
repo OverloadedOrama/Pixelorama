@@ -162,7 +162,12 @@ func _get_global_code(_mode: Shader.Mode) -> String:
 	"""
 
 
-func _get_code(input_vars: Array[String], output_vars: Array[String], _mode: Shader.Mode, _type: VisualShader.Type) -> String:
+func _get_code(
+	input_vars: Array[String],
+	output_vars: Array[String],
+	_mode: Shader.Mode,
+	_type: VisualShader.Type
+) -> String:
 	var uv := input_vars[0]
 	if uv.is_empty():
 		uv = "UV"
@@ -175,4 +180,7 @@ func _get_code(input_vars: Array[String], output_vars: Array[String], _mode: Sha
 	var time := input_vars[3]
 	if time.is_empty():
 		time = "0.0"
-	return output_vars[0] + " = cnoise(vec3((%s.xy + %s.xy) * %s, %s)) * 0.5 + 0.5;" % [uv, offset, scale, time]
+	return (
+		output_vars[0]
+		+ " = cnoise(vec3((%s.xy + %s.xy) * %s, %s)) * 0.5 + 0.5;" % [uv, offset, scale, time]
+	)
