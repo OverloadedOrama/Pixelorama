@@ -1983,6 +1983,7 @@ func fill_add_options() -> void:
 	#endregion
 	#region Utility
 	add_options.push_back(AddOption.new("GPU perlin noise texture", "Utility", "VisualShaderNodeCustom", "Classic Perlin-Noise-3D function (by Curly-Brace)", [VisualShaderNodePerlinNoise3D], VisualShaderNode.PORT_TYPE_SCALAR))
+	add_options.push_back(AddOption.new("Rotate", "Utility", "VisualShaderNodeCustom", "Nearest Neighbor Rotation", [VisualShaderNodeRotate], VisualShaderNode.PORT_TYPE_VECTOR_2D))
 	add_options.push_back(AddOption.new("RandomRange", "Utility", "VisualShaderNodeRandomRange", "Returns a random value between the minimum and maximum input values.", [], VisualShaderNode.PORT_TYPE_SCALAR))
 	add_options.push_back(AddOption.new("RotationByAxis", "Utility", "VisualShaderNodeRotationByAxis", "Builds a rotation matrix from the given axis and angle, multiply the input vector by it and returns both this vector and a matrix.", [], VisualShaderNode.PORT_TYPE_VECTOR_3D))
 	#endregion
@@ -2287,7 +2288,7 @@ func _get_node_category(vsn: VisualShaderNode) -> Category:
 			return Category.CATEGORY_SCALAR
 		return Category.CATEGORY_VECTOR
 
-	if vsn is VisualShaderNodePerlinNoise3D:
+	if vsn is VisualShaderNodePerlinNoise3D or vsn is VisualShaderNodeRotate:
 		return Category.CATEGORY_UTILITY
 	match vsn.get_class():
 		"VisualShaderNodeOutput", "VisualShaderNodeVaryingSetter":
