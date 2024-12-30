@@ -81,13 +81,13 @@ var visual_shader: VisualShader:
 				child.queue_free()
 		await get_tree().process_frame
 		if is_instance_valid(visual_shader):
-			var node_list := visual_shader.get_node_list(VisualShader.Type.TYPE_FRAGMENT)
+			var node_list := visual_shader.get_node_list(shader_type)
 			for id in node_list:
 				if id < 0:
 					continue
-				var vsn := visual_shader.get_node(VisualShader.TYPE_FRAGMENT, id)
+				var vsn := visual_shader.get_node(shader_type, id)
 				add_node(vsn, id)
-			for connection in visual_shader.get_node_connections(VisualShader.TYPE_FRAGMENT):
+			for connection in visual_shader.get_node_connections(shader_type):
 				var from_node_name := str(connection.from_node)
 				var to_node_name := str(connection.to_node)
 				var to_port: int = connection.to_port
@@ -98,13 +98,15 @@ var visual_shader: VisualShader:
 			for id in node_list:
 				if id < 0:
 					continue
-				var vsn := visual_shader.get_node(VisualShader.TYPE_FRAGMENT, id)
+				var vsn := visual_shader.get_node(shader_type, id)
 				if vsn is VisualShaderNodeFrame:
 					for attached_node in vsn.attached_nodes:
 						graph_edit.attach_graph_element_to_frame(str(attached_node), str(id))
 			if not visual_shader in undo_redos:
 				undo_redos[visual_shader] = UndoRedo.new()
 
+var shader_mode := Shader.MODE_CANVAS_ITEM
+var shader_type := VisualShader.TYPE_FRAGMENT
 var effects_button: MenuButton
 var add_node_button: Button
 var spawn_node_in_position := Vector2.ZERO
@@ -209,7 +211,7 @@ func _on_effects_button_id_pressed(id: int) -> void:
 
 func new_effect(effect_name: String) -> void:
 	visual_shader = VisualShader.new()
-	visual_shader.set_mode(Shader.MODE_CANVAS_ITEM)
+	visual_shader.set_mode(shader_mode)
 	var file_name := effect_name + ".tres"
 	var file_path := OpenSave.SHADERS_DIRECTORY.path_join(file_name)
 	while FileAccess.file_exists(file_path):
@@ -245,9 +247,9 @@ func add_new_node(index: int) -> void:
 			vsn = ClassDB.instantiate(option.type)
 		if not is_instance_valid(vsn):
 			return
-		var id := visual_shader.get_valid_node_id(VisualShader.TYPE_FRAGMENT)
+		var id := visual_shader.get_valid_node_id(shader_type)
 		undo_redo.create_action("Add node")
-		undo_redo.add_do_method(visual_shader.add_node.bind(VisualShader.TYPE_FRAGMENT, vsn, spawn_node_in_position, id))
+		undo_redo.add_do_method(visual_shader.add_node.bind(shader_type, vsn, spawn_node_in_position, id))
 		undo_redo.add_do_method(add_node.bind(vsn, id, option.ops))
 		undo_redo.add_do_method(_on_effect_changed)
 		undo_redo.add_undo_method(delete_node.bind(str(id)))
@@ -274,7 +276,7 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 	graph_node.name = str(id)
 	graph_node.resizable = true
 	graph_node.set_meta("visual_shader_node", vsn)  # TODO: Remove if not needed
-	graph_node.position_offset = visual_shader.get_node_position(VisualShader.TYPE_FRAGMENT, id)
+	graph_node.position_offset = visual_shader.get_node_position(shader_type, id)
 	graph_node.dragged.connect(move_node.bind(str(id)))
 	if vsn is not VisualShaderNodeOutput:  # Add a close button if the node can be deleted.
 		var close_button := TextureButton.new()
@@ -1017,7 +1019,7 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 
 func delete_node(graph_node_name: StringName) -> void:
 	var graph_node := graph_edit.get_node(String(graph_node_name))
-	visual_shader.remove_node(VisualShader.TYPE_FRAGMENT, int(String(graph_node_name)))
+	visual_shader.remove_node(shader_type, int(String(graph_node_name)))
 	graph_node.queue_free()
 
 
@@ -1029,14 +1031,14 @@ func move_node(from: Vector2, to: Vector2, graph_node_name: StringName) -> void:
 			var graph_node := graph_edit.get_node(String(graph_node_name))
 			graph_node.position_offset = to
 	)
-	undo_redo.add_do_method(visual_shader.set_node_position.bind(VisualShader.TYPE_FRAGMENT, id, to))
+	undo_redo.add_do_method(visual_shader.set_node_position.bind(shader_type, id, to))
 	undo_redo.add_do_method(_on_effect_changed)
 	undo_redo.add_undo_method(
 		func():
 			var graph_node := graph_edit.get_node(String(graph_node_name))
 			graph_node.position_offset = from
 	)
-	undo_redo.add_undo_method(visual_shader.set_node_position.bind(VisualShader.TYPE_FRAGMENT, id, from))
+	undo_redo.add_undo_method(visual_shader.set_node_position.bind(shader_type, id, from))
 	undo_redo.add_undo_method(_on_effect_changed)
 	undo_redo.commit_action()
 
@@ -1531,7 +1533,7 @@ func _check_output_connections_validity(graph_node: GraphNode) -> void:
 			graph_edit.disconnect_node(output_connection.from_node, from_port, output_connection.to_node, output_connection.to_port)
 			var vs_from_node_id := int(String(output_connection.from_node))
 			var vs_to_node_id := int(String(output_connection.to_node))
-			visual_shader.disconnect_nodes(VisualShader.TYPE_FRAGMENT, vs_from_node_id, from_port, vs_to_node_id, output_connection.to_port)
+			visual_shader.disconnect_nodes(shader_type, vs_from_node_id, from_port, vs_to_node_id, output_connection.to_port)
 
 
 func _create_vector_node(graph_node: GraphNode, vsn: VisualShaderNodeVectorBase, ops := []) -> void:
@@ -2393,11 +2395,11 @@ func _on_graph_edit_connection_request(from_node_name: String, from_port: int, t
 	undo_redo.create_action("Connect nodes")
 	undo_redo.add_do_method(graph_edit.connect_node.bind(from_node_name, from_port, to_node_name, to_port))
 	undo_redo.add_do_method(_graph_node_default_input_control_visibility.bind(to_node_name, to_port, false))
-	undo_redo.add_do_method(visual_shader.connect_nodes.bind(VisualShader.TYPE_FRAGMENT, vs_from_node_id, from_port, vs_to_node_id, to_port))
+	undo_redo.add_do_method(visual_shader.connect_nodes.bind(shader_type, vs_from_node_id, from_port, vs_to_node_id, to_port))
 	undo_redo.add_do_method(_on_effect_changed)
 	undo_redo.add_undo_method(graph_edit.disconnect_node.bind(from_node_name, from_port, to_node_name, to_port))
 	undo_redo.add_undo_method(_graph_node_default_input_control_visibility.bind(to_node_name, to_port, true))
-	undo_redo.add_undo_method(visual_shader.disconnect_nodes.bind(VisualShader.TYPE_FRAGMENT, vs_from_node_id, from_port, vs_to_node_id, to_port))
+	undo_redo.add_undo_method(visual_shader.disconnect_nodes.bind(shader_type, vs_from_node_id, from_port, vs_to_node_id, to_port))
 	undo_redo.add_undo_method(_on_effect_changed)
 	undo_redo.commit_action()
 
@@ -2408,11 +2410,11 @@ func _on_graph_edit_disconnection_request(from_node_name: String, from_port: int
 	undo_redo.create_action("Disconnect nodes")
 	undo_redo.add_do_method(graph_edit.disconnect_node.bind(from_node_name, from_port, to_node_name, to_port))
 	undo_redo.add_do_method(_graph_node_default_input_control_visibility.bind(to_node_name, to_port, true))
-	undo_redo.add_do_method(visual_shader.disconnect_nodes.bind(VisualShader.TYPE_FRAGMENT, vs_from_node_id, from_port, vs_to_node_id, to_port))
+	undo_redo.add_do_method(visual_shader.disconnect_nodes.bind(shader_type, vs_from_node_id, from_port, vs_to_node_id, to_port))
 	undo_redo.add_do_method(_on_effect_changed)
 	undo_redo.add_undo_method(graph_edit.connect_node.bind(from_node_name, from_port, to_node_name, to_port))
 	undo_redo.add_undo_method(_graph_node_default_input_control_visibility.bind(to_node_name, to_port, false))
-	undo_redo.add_undo_method(visual_shader.connect_nodes.bind(VisualShader.TYPE_FRAGMENT, vs_from_node_id, from_port, vs_to_node_id, to_port))
+	undo_redo.add_undo_method(visual_shader.connect_nodes.bind(shader_type, vs_from_node_id, from_port, vs_to_node_id, to_port))
 	undo_redo.add_undo_method(_on_effect_changed)
 	undo_redo.commit_action()
 
@@ -2420,9 +2422,9 @@ func _on_graph_edit_disconnection_request(from_node_name: String, from_port: int
 func _on_graph_edit_graph_elements_linked_to_frame_request(elements: Array, frame: StringName) -> void:
 	undo_redo.create_action("Link nodes to frame")
 	for element in elements:
-		undo_redo.add_do_method(visual_shader.attach_node_to_frame.bind(VisualShader.TYPE_FRAGMENT, int(String(element)), int(String(frame))))
+		undo_redo.add_do_method(visual_shader.attach_node_to_frame.bind(shader_type, int(String(element)), int(String(frame))))
 		undo_redo.add_do_method(graph_edit.attach_graph_element_to_frame.bind(element, frame))
-		undo_redo.add_undo_method(visual_shader.detach_node_from_frame.bind(VisualShader.TYPE_FRAGMENT, int(String(element))))
+		undo_redo.add_undo_method(visual_shader.detach_node_from_frame.bind(shader_type, int(String(element))))
 		undo_redo.add_undo_method(graph_edit.detach_graph_element_from_frame.bind(element))
 	undo_redo.add_do_method(_on_effect_changed)
 	undo_redo.add_undo_method(_on_effect_changed)
@@ -2446,13 +2448,13 @@ func _on_graph_edit_delete_nodes_request(node_names: Array[StringName]) -> void:
 	# Do not remove the output node.
 	for node_name in node_names:
 		var id := int(String(node_name))
-		var vsn := visual_shader.get_node(VisualShader.TYPE_FRAGMENT, id)
+		var vsn := visual_shader.get_node(shader_type, id)
 		if vsn is VisualShaderNodeOutput:
 			node_names.erase(node_name)
 	if node_names.size() == 0:
 		return
 	undo_redo.create_action("Remove node")
-	var connections := visual_shader.get_node_connections(VisualShader.TYPE_FRAGMENT)
+	var connections := visual_shader.get_node_connections(shader_type)
 	for node_name in node_names:
 		var id := int(String(node_name))
 		for connection in connections:
@@ -2462,7 +2464,7 @@ func _on_graph_edit_delete_nodes_request(node_names: Array[StringName]) -> void:
 				var from_port: int = connection.from_port
 				var to_port: int = connection.to_port
 				undo_redo.add_do_method(visual_shader.disconnect_nodes.bind(
-					VisualShader.TYPE_FRAGMENT, from_node, from_port, to_node, to_port)
+					shader_type, from_node, from_port, to_node, to_port)
 				)
 				undo_redo.add_do_method(graph_edit.disconnect_node.bind(
 					str(from_node), from_port, str(to_node), to_port)
@@ -2473,28 +2475,28 @@ func _on_graph_edit_delete_nodes_request(node_names: Array[StringName]) -> void:
 	# The VS nodes need to be added before attaching them to frames.
 	for node_name in node_names:
 		var id := int(String(node_name))
-		var vsn := visual_shader.get_node(VisualShader.TYPE_FRAGMENT, id)
-		var node_position := visual_shader.get_node_position(VisualShader.TYPE_FRAGMENT, id)
-		undo_redo.add_undo_method(visual_shader.add_node.bind(VisualShader.TYPE_FRAGMENT, vsn, node_position, id))
+		var vsn := visual_shader.get_node(shader_type, id)
+		var node_position := visual_shader.get_node_position(shader_type, id)
+		undo_redo.add_undo_method(visual_shader.add_node.bind(shader_type, vsn, node_position, id))
 		undo_redo.add_undo_method(add_node.bind(vsn, id))
 
 	# Update frame references.
 	for node_name in node_names:
 		var id := int(String(node_name))
-		var vsn := visual_shader.get_node(VisualShader.TYPE_FRAGMENT, id)
+		var vsn := visual_shader.get_node(shader_type, id)
 		if vsn is VisualShaderNodeFrame:
 			var attached_nodes := (vsn as VisualShaderNodeFrame).attached_nodes
 			for attached_node in attached_nodes:
-				undo_redo.add_do_method(visual_shader.detach_node_from_frame.bind(VisualShader.TYPE_FRAGMENT, attached_node))
+				undo_redo.add_do_method(visual_shader.detach_node_from_frame.bind(shader_type, attached_node))
 				undo_redo.add_do_method(graph_edit.detach_graph_element_from_frame.bind(str(attached_node)))
-				undo_redo.add_undo_method(visual_shader.attach_node_to_frame.bind(VisualShader.TYPE_FRAGMENT, attached_node, id))
+				undo_redo.add_undo_method(visual_shader.attach_node_to_frame.bind(shader_type, attached_node, id))
 				undo_redo.add_undo_method(graph_edit.attach_graph_element_to_frame.bind(str(attached_node), node_name))
 		var frame_id := vsn.linked_parent_graph_frame
 		if frame_id == -1:
 			continue
-		undo_redo.add_do_method(visual_shader.detach_node_from_frame.bind(VisualShader.TYPE_FRAGMENT, id))
+		undo_redo.add_do_method(visual_shader.detach_node_from_frame.bind(shader_type, id))
 		undo_redo.add_do_method(graph_edit.detach_graph_element_from_frame.bind(node_name))
-		undo_redo.add_undo_method(visual_shader.attach_node_to_frame.bind(VisualShader.TYPE_FRAGMENT, id, frame_id))
+		undo_redo.add_undo_method(visual_shader.attach_node_to_frame.bind(shader_type, id, frame_id))
 		undo_redo.add_undo_method(graph_edit.attach_graph_element_to_frame.bind(node_name, str(frame_id)))
 	for node_name in node_names:
 		undo_redo.add_do_method(delete_node.bind(node_name))
@@ -2514,7 +2516,7 @@ func _on_graph_edit_delete_nodes_request(node_names: Array[StringName]) -> void:
 						cancel = true  # to avoid ERR_ALREADY_EXISTS warning
 						break
 				if not cancel:
-					undo_redo.add_undo_method(visual_shader.connect_nodes.bind(VisualShader.TYPE_FRAGMENT, from_node, from_port, to_node, to_port))
+					undo_redo.add_undo_method(visual_shader.connect_nodes.bind(shader_type, from_node, from_port, to_node, to_port))
 					undo_redo.add_undo_method(graph_edit.connect_node.bind(str(from_node), from_port, str(to_node), to_port))
 					undo_redo.add_undo_method(_graph_node_default_input_control_visibility.bind(str(to_node), to_port, false))
 					used_conns.push_back(connection)
