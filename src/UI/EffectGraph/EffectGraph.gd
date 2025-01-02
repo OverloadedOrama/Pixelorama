@@ -110,6 +110,7 @@ var shader_type := VisualShader.TYPE_FRAGMENT
 var effects_button: MenuButton
 var add_node_button: Button
 var spawn_node_in_position := Vector2.ZERO
+var drag_buffer: Array[DragOp] = []
 
 @onready var graph_edit := $GraphEdit as GraphEdit
 @onready var filter_line_edit: LineEdit = %FilterLineEdit
@@ -117,7 +118,7 @@ var spawn_node_in_position := Vector2.ZERO
 @onready var node_description_label: RichTextLabel = %NodeDescriptionLabel
 @onready var effect_name_line_edit: LineEdit = %EffectNameLineEdit
 
-
+# TODO: Change these classes to structs when they get added to GDScript.
 class AddOption:
 	var option_name := ""
 	var category := ""
@@ -142,6 +143,19 @@ class AddOption:
 		return_type = _return_type
 		mode = _mode
 		highend = _highend
+
+
+class DragOp:
+	var type := VisualShader.TYPE_MAX
+	var node := 0
+	var from: Vector2
+	var to: Vector2
+
+	func _init(_type: VisualShader.Type, _node: int, _from: Vector2, _to: Vector2) -> void:
+		type = _type
+		node = _node
+		from = _from
+		to = _to
 
 
 func _ready() -> void:
@@ -287,11 +301,11 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 	if vsn is VisualShaderNodeOutput:
 		_create_input("Color", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 0, false)
 		_create_input("Alpha", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 1, false)
-		_create_input("Normal", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 2, false)
-		_create_input("Normal Map", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 3, false)
-		_create_input("Normal Map Depth", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 4, false)
-		_create_input("Light Vertex", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 5, false)
-		_create_input("Shadow Vertex", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 6, false)
+		#_create_input("Normal", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 2, false)
+		#_create_input("Normal Map", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 3, false)
+		#_create_input("Normal Map Depth", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 4, false)
+		#_create_input("Light Vertex", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 5, false)
+		#_create_input("Shadow Vertex", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 6, false)
 	elif vsn is VisualShaderNodeInput:
 		if not ops.is_empty():
 			vsn.input_name = ops[0]
@@ -1023,24 +1037,11 @@ func delete_node(graph_node_name: StringName) -> void:
 	graph_node.queue_free()
 
 
-func move_node(from: Vector2, to: Vector2, graph_node_name: StringName) -> void:
-	var id := int(String(graph_node_name))
-	undo_redo.create_action("Move node")
-	undo_redo.add_do_method(
-		func():
-			var graph_node := graph_edit.get_node(String(graph_node_name))
-			graph_node.position_offset = to
-	)
-	undo_redo.add_do_method(visual_shader.set_node_position.bind(shader_type, id, to))
-	undo_redo.add_do_method(_on_effect_changed)
-	undo_redo.add_undo_method(
-		func():
-			var graph_node := graph_edit.get_node(String(graph_node_name))
-			graph_node.position_offset = from
-	)
-	undo_redo.add_undo_method(visual_shader.set_node_position.bind(shader_type, id, from))
-	undo_redo.add_undo_method(_on_effect_changed)
-	undo_redo.commit_action()
+## Actual movement logic is handled in [method _on_graph_edit_end_node_move],
+## so we can have a single undo/redo action for all moved nodes.
+func move_node(from: Vector2, to: Vector2, graph_node_name: String) -> void:
+	var id := int(graph_node_name)
+	drag_buffer.push_back(DragOp.new(shader_type, id, from, to))
 
 
 func _create_label(text: String, graph_node: GraphNode, left_slot: VisualShaderNode.PortType, right_slot: VisualShaderNode.PortType) -> Label:
@@ -1785,6 +1786,332 @@ func _create_port_type_option_button() -> OptionButton:
 	return option_button
 
 
+func update_options_menu() -> void:
+	node_list_tree.clear()
+	node_description_label.text = ""
+	var filter := filter_line_edit.text.strip_edges()
+	var use_filter := not filter.is_empty()
+	var is_first_item := true
+	var root := node_list_tree.create_item()
+	var folders := {}  # String, TreeItem
+	var options: Array[AddOption]
+	if not use_filter:
+		options = add_options
+	else:
+		for i in add_options.size():
+			var option := add_options[i]
+			if option.option_name.containsn(filter):
+				options.append(option)
+	for i in options.size():
+		var option := options[i]
+		if option.highend and not is_instance_valid(RenderingServer.get_rendering_device()):
+			continue
+		var path := option.category
+		var subfolders := path.split("/")
+		var category: TreeItem
+		if not folders.has(path):
+			category = root
+			var path_temp := ""
+			for j in subfolders.size():
+				path_temp += subfolders[j]
+				if not folders.has(path_temp):
+					category = node_list_tree.create_item(category)
+					category.set_selectable(0, false)
+					category.set_collapsed(!use_filter)
+					category.set_text(0, subfolders[j])
+					folders[path_temp] = category
+				else:
+					category = folders[path_temp]
+		else:
+			category = folders[path]
+		var item := node_list_tree.create_item(category)
+		#if (options[i].highend && low_driver) {
+			#item->set_custom_color(0, unsupported_color)
+		#} else if (options[i].highend) {
+			#item->set_custom_color(0, supported_color)
+		#}
+		item.set_text(0, option.option_name)
+		item.set_metadata(0, add_options.find(option))
+		if is_first_item && use_filter:
+			item.select(0)
+			node_description_label.text = options[i].description
+			is_first_item = false
+
+			node_list_tree.get_window().get_ok_button().set_disabled(false)
+		match option.return_type:
+			VisualShaderNode.PORT_TYPE_SCALAR:
+				item.set_icon(0, FLOAT_ICON)
+			VisualShaderNode.PORT_TYPE_SCALAR_INT:
+				item.set_icon(0, INT_ICON)
+			VisualShaderNode.PORT_TYPE_SCALAR_UINT:
+				item.set_icon(0, UINT_ICON)
+			VisualShaderNode.PORT_TYPE_VECTOR_2D:
+				item.set_icon(0, VECTOR_2_ICON)
+			VisualShaderNode.PORT_TYPE_VECTOR_3D:
+				item.set_icon(0, VECTOR_3_ICON)
+			VisualShaderNode.PORT_TYPE_VECTOR_4D:
+				item.set_icon(0, VECTOR_4_ICON)
+			VisualShaderNode.PORT_TYPE_BOOLEAN:
+				item.set_icon(0, BOOL_ICON)
+			VisualShaderNode.PORT_TYPE_TRANSFORM:
+				item.set_icon(0, TRANSFORM_3D_ICON)
+			VisualShaderNode.PORT_TYPE_SAMPLER:
+				item.set_icon(0, SAMPLER_ICON)
+
+
+func _on_node_list_tree_item_selected() -> void:
+	node_list_tree.get_window().get_ok_button().set_disabled(false)
+	var option_index: int = node_list_tree.get_selected().get_metadata(0)
+	node_description_label.text = add_options[option_index].description
+
+
+func _on_node_list_tree_nothing_selected() -> void:
+	node_list_tree.get_window().get_ok_button().set_disabled(true)
+	node_description_label.text = ""
+
+
+func _on_effect_name_line_edit_text_changed(new_text: String) -> void:
+	effect_name_line_edit.get_window().get_ok_button().set_disabled(new_text.is_empty())
+
+
+func _on_create_effect_dialog_confirmed() -> void:
+	new_effect(effect_name_line_edit.text)
+
+
+func _on_create_node_dialog_confirmed() -> void:
+	add_new_node(node_list_tree.get_selected().get_metadata(0))
+
+
+func _on_graph_edit_end_node_move() -> void:
+	undo_redo.create_action("Move node(s)")
+	for drag_node in drag_buffer:
+		var graph_node_name := str(drag_node.node)
+		undo_redo.add_do_method(
+			func():
+				var graph_node := graph_edit.get_node(graph_node_name) as GraphElement
+				graph_node.position_offset = drag_node.to
+		)
+		undo_redo.add_do_method(visual_shader.set_node_position.bind(drag_node.type, drag_node.node, drag_node.to))
+		undo_redo.add_undo_method(
+			func():
+				var graph_node := graph_edit.get_node(graph_node_name) as GraphElement
+				graph_node.position_offset = drag_node.from
+		)
+		undo_redo.add_undo_method(visual_shader.set_node_position.bind(drag_node.type, drag_node.node, drag_node.from))
+	undo_redo.add_do_method(_on_effect_changed)
+	undo_redo.add_undo_method(_on_effect_changed)
+	undo_redo.commit_action()
+	drag_buffer.clear()
+
+
+func _on_graph_edit_connection_request(from_node_name: String, from_port: int, to_node_name: String, to_port: int) -> void:
+	if from_node_name == to_node_name:
+		return
+	var vs_from_node_id := int(from_node_name)
+	var vs_to_node_id := int(to_node_name)
+	undo_redo.create_action("Connect nodes")
+	undo_redo.add_do_method(graph_edit.connect_node.bind(from_node_name, from_port, to_node_name, to_port))
+	undo_redo.add_do_method(_graph_node_default_input_control_visibility.bind(to_node_name, to_port, false))
+	undo_redo.add_do_method(visual_shader.connect_nodes.bind(shader_type, vs_from_node_id, from_port, vs_to_node_id, to_port))
+	undo_redo.add_do_method(_on_effect_changed)
+	undo_redo.add_undo_method(graph_edit.disconnect_node.bind(from_node_name, from_port, to_node_name, to_port))
+	undo_redo.add_undo_method(_graph_node_default_input_control_visibility.bind(to_node_name, to_port, true))
+	undo_redo.add_undo_method(visual_shader.disconnect_nodes.bind(shader_type, vs_from_node_id, from_port, vs_to_node_id, to_port))
+	undo_redo.add_undo_method(_on_effect_changed)
+	undo_redo.commit_action()
+
+
+func _on_graph_edit_disconnection_request(from_node_name: String, from_port: int, to_node_name: String, to_port: int) -> void:
+	var vs_from_node_id := int(from_node_name)
+	var vs_to_node_id := int(to_node_name)
+	undo_redo.create_action("Disconnect nodes")
+	undo_redo.add_do_method(graph_edit.disconnect_node.bind(from_node_name, from_port, to_node_name, to_port))
+	undo_redo.add_do_method(_graph_node_default_input_control_visibility.bind(to_node_name, to_port, true))
+	undo_redo.add_do_method(visual_shader.disconnect_nodes.bind(shader_type, vs_from_node_id, from_port, vs_to_node_id, to_port))
+	undo_redo.add_do_method(_on_effect_changed)
+	undo_redo.add_undo_method(graph_edit.connect_node.bind(from_node_name, from_port, to_node_name, to_port))
+	undo_redo.add_undo_method(_graph_node_default_input_control_visibility.bind(to_node_name, to_port, false))
+	undo_redo.add_undo_method(visual_shader.connect_nodes.bind(shader_type, vs_from_node_id, from_port, vs_to_node_id, to_port))
+	undo_redo.add_undo_method(_on_effect_changed)
+	undo_redo.commit_action()
+
+
+func _on_graph_edit_graph_elements_linked_to_frame_request(elements: Array, frame: StringName) -> void:
+	undo_redo.create_action("Link nodes to frame")
+	for element in elements:
+		undo_redo.add_do_method(visual_shader.attach_node_to_frame.bind(shader_type, int(String(element)), int(String(frame))))
+		undo_redo.add_do_method(graph_edit.attach_graph_element_to_frame.bind(element, frame))
+		undo_redo.add_undo_method(visual_shader.detach_node_from_frame.bind(shader_type, int(String(element))))
+		undo_redo.add_undo_method(graph_edit.detach_graph_element_from_frame.bind(element))
+	undo_redo.add_do_method(_on_effect_changed)
+	undo_redo.add_undo_method(_on_effect_changed)
+	undo_redo.commit_action()
+
+
+func _graph_node_default_input_control_visibility(node_name: StringName, port: int, vis: bool) -> void:
+	var node := graph_edit.get_node(String(node_name))
+	if node.has_meta(&"default_input_button_%s" % port):
+		node.get_meta(&"default_input_button_%s" % port).visible = vis
+
+
+func _on_graph_edit_popup_request(at_position: Vector2) -> void:
+	if not is_instance_valid(visual_shader):
+		return
+	node_list_tree.get_window().popup_centered()
+	spawn_node_in_position = (at_position + graph_edit.scroll_offset) / graph_edit.zoom
+
+
+func _on_graph_edit_delete_nodes_request(node_names: Array[StringName]) -> void:
+	# Do not remove the output node.
+	for node_name in node_names:
+		var id := int(String(node_name))
+		var vsn := visual_shader.get_node(shader_type, id)
+		if vsn is VisualShaderNodeOutput:
+			node_names.erase(node_name)
+	if node_names.size() == 0:
+		return
+	undo_redo.create_action("Remove node")
+	var connections := visual_shader.get_node_connections(shader_type)
+	for node_name in node_names:
+		var id := int(String(node_name))
+		for connection in connections:
+			var from_node: int = connection.from_node
+			var to_node: int = connection.to_node
+			if from_node == id or to_node == id:
+				var from_port: int = connection.from_port
+				var to_port: int = connection.to_port
+				undo_redo.add_do_method(visual_shader.disconnect_nodes.bind(
+					shader_type, from_node, from_port, to_node, to_port)
+				)
+				undo_redo.add_do_method(graph_edit.disconnect_node.bind(
+					str(from_node), from_port, str(to_node), to_port)
+				)
+				undo_redo.add_do_method(_graph_node_default_input_control_visibility.bind(
+					str(to_node), to_port, true)
+				)
+	# The VS nodes need to be added before attaching them to frames.
+	for node_name in node_names:
+		var id := int(String(node_name))
+		var vsn := visual_shader.get_node(shader_type, id)
+		var node_position := visual_shader.get_node_position(shader_type, id)
+		undo_redo.add_undo_method(visual_shader.add_node.bind(shader_type, vsn, node_position, id))
+		undo_redo.add_undo_method(add_node.bind(vsn, id))
+
+	# Update frame references.
+	for node_name in node_names:
+		var id := int(String(node_name))
+		var vsn := visual_shader.get_node(shader_type, id)
+		if vsn is VisualShaderNodeFrame:
+			var attached_nodes := (vsn as VisualShaderNodeFrame).attached_nodes
+			for attached_node in attached_nodes:
+				undo_redo.add_do_method(visual_shader.detach_node_from_frame.bind(shader_type, attached_node))
+				undo_redo.add_do_method(graph_edit.detach_graph_element_from_frame.bind(str(attached_node)))
+				undo_redo.add_undo_method(visual_shader.attach_node_to_frame.bind(shader_type, attached_node, id))
+				undo_redo.add_undo_method(graph_edit.attach_graph_element_to_frame.bind(str(attached_node), node_name))
+		var frame_id := vsn.linked_parent_graph_frame
+		if frame_id == -1:
+			continue
+		undo_redo.add_do_method(visual_shader.detach_node_from_frame.bind(shader_type, id))
+		undo_redo.add_do_method(graph_edit.detach_graph_element_from_frame.bind(node_name))
+		undo_redo.add_undo_method(visual_shader.attach_node_to_frame.bind(shader_type, id, frame_id))
+		undo_redo.add_undo_method(graph_edit.attach_graph_element_to_frame.bind(node_name, str(frame_id)))
+	for node_name in node_names:
+		undo_redo.add_do_method(delete_node.bind(node_name))
+
+	var used_conns: Array[Dictionary]
+	for node_name in node_names:
+		var id := int(String(node_name))
+		for connection in connections:
+			var from_node: int = connection.from_node
+			var to_node: int = connection.to_node
+			if from_node == id or to_node == id:
+				var from_port: int = connection.from_port
+				var to_port: int = connection.to_port
+				var cancel := false
+				for used_connection in used_conns:
+					if used_connection.from_node == from_node and used_connection.from_port == from_port and used_connection.to_node == to_node and used_connection.to_port == to_port:
+						cancel = true  # to avoid ERR_ALREADY_EXISTS warning
+						break
+				if not cancel:
+					undo_redo.add_undo_method(visual_shader.connect_nodes.bind(shader_type, from_node, from_port, to_node, to_port))
+					undo_redo.add_undo_method(graph_edit.connect_node.bind(str(from_node), from_port, str(to_node), to_port))
+					undo_redo.add_undo_method(_graph_node_default_input_control_visibility.bind(str(to_node), to_port, false))
+					used_conns.push_back(connection)
+	undo_redo.add_do_method(_on_effect_changed)
+	undo_redo.add_undo_method(_on_effect_changed)
+	undo_redo.commit_action()
+
+
+func _on_graph_edit_mouse_entered() -> void:
+	can_undo = true
+
+
+func _on_graph_edit_mouse_exited() -> void:
+	can_undo = false
+
+
+func _on_filter_line_edit_text_changed(_new_text: String) -> void:
+	update_options_menu()
+
+
+func _add_valid_connection_types() -> void:
+	graph_edit.add_valid_connection_type(VisualShaderNode.PortType.PORT_TYPE_SCALAR, VisualShaderNode.PortType.PORT_TYPE_SCALAR_INT)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PortType.PORT_TYPE_SCALAR, VisualShaderNode.PortType.PORT_TYPE_SCALAR_UINT)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_SCALAR, VisualShaderNode.PORT_TYPE_VECTOR_2D)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_SCALAR, VisualShaderNode.PORT_TYPE_VECTOR_3D)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_SCALAR, VisualShaderNode.PORT_TYPE_VECTOR_4D)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_SCALAR, VisualShaderNode.PORT_TYPE_BOOLEAN)
+
+	graph_edit.add_valid_connection_type(VisualShaderNode.PortType.PORT_TYPE_SCALAR_INT, VisualShaderNode.PortType.PORT_TYPE_SCALAR)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PortType.PORT_TYPE_SCALAR_INT, VisualShaderNode.PortType.PORT_TYPE_SCALAR_UINT)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_SCALAR_INT, VisualShaderNode.PORT_TYPE_VECTOR_2D)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_SCALAR_INT, VisualShaderNode.PORT_TYPE_VECTOR_3D)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_SCALAR_INT, VisualShaderNode.PORT_TYPE_VECTOR_4D)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_SCALAR_INT, VisualShaderNode.PORT_TYPE_BOOLEAN)
+
+	graph_edit.add_valid_connection_type(VisualShaderNode.PortType.PORT_TYPE_SCALAR_UINT, VisualShaderNode.PortType.PORT_TYPE_SCALAR)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PortType.PORT_TYPE_SCALAR_UINT, VisualShaderNode.PortType.PORT_TYPE_SCALAR_INT)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_SCALAR_UINT, VisualShaderNode.PORT_TYPE_VECTOR_2D)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_SCALAR_UINT, VisualShaderNode.PORT_TYPE_VECTOR_3D)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_SCALAR_UINT, VisualShaderNode.PORT_TYPE_VECTOR_4D)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_SCALAR_UINT, VisualShaderNode.PORT_TYPE_BOOLEAN)
+
+	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_VECTOR_2D, VisualShaderNode.PORT_TYPE_SCALAR)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_VECTOR_2D, VisualShaderNode.PORT_TYPE_SCALAR_INT)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_VECTOR_2D, VisualShaderNode.PORT_TYPE_SCALAR_UINT)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_VECTOR_2D, VisualShaderNode.PORT_TYPE_VECTOR_2D)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_VECTOR_2D, VisualShaderNode.PORT_TYPE_VECTOR_3D)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_VECTOR_2D, VisualShaderNode.PORT_TYPE_VECTOR_4D)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_VECTOR_2D, VisualShaderNode.PORT_TYPE_BOOLEAN)
+
+	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_VECTOR_3D, VisualShaderNode.PORT_TYPE_SCALAR)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_VECTOR_3D, VisualShaderNode.PORT_TYPE_SCALAR_INT)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_VECTOR_3D, VisualShaderNode.PORT_TYPE_SCALAR_UINT)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_VECTOR_3D, VisualShaderNode.PORT_TYPE_VECTOR_2D)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_VECTOR_3D, VisualShaderNode.PORT_TYPE_VECTOR_3D)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_VECTOR_3D, VisualShaderNode.PORT_TYPE_VECTOR_4D)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_VECTOR_3D, VisualShaderNode.PORT_TYPE_BOOLEAN)
+
+	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_VECTOR_4D, VisualShaderNode.PORT_TYPE_SCALAR)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_VECTOR_4D, VisualShaderNode.PORT_TYPE_SCALAR_INT)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_VECTOR_4D, VisualShaderNode.PORT_TYPE_SCALAR_UINT)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_VECTOR_4D, VisualShaderNode.PORT_TYPE_VECTOR_2D)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_VECTOR_4D, VisualShaderNode.PORT_TYPE_VECTOR_3D)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_VECTOR_4D, VisualShaderNode.PORT_TYPE_VECTOR_4D)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_VECTOR_4D, VisualShaderNode.PORT_TYPE_BOOLEAN)
+
+	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_BOOLEAN, VisualShaderNode.PORT_TYPE_SCALAR)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_BOOLEAN, VisualShaderNode.PORT_TYPE_SCALAR_INT)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_BOOLEAN, VisualShaderNode.PORT_TYPE_SCALAR_UINT)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_BOOLEAN, VisualShaderNode.PORT_TYPE_VECTOR_2D)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_BOOLEAN, VisualShaderNode.PORT_TYPE_VECTOR_3D)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_BOOLEAN, VisualShaderNode.PORT_TYPE_VECTOR_4D)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_BOOLEAN, VisualShaderNode.PORT_TYPE_BOOLEAN)
+
+	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_TRANSFORM, VisualShaderNode.PORT_TYPE_TRANSFORM)
+	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_SAMPLER, VisualShaderNode.PORT_TYPE_SAMPLER)
+
+
 func fill_add_options() -> void:
 	#region Color
 	add_options.push_back(AddOption.new("ColorFunc", "Color/Common", "VisualShaderNodeColorFunc", "Color function.", [], VisualShaderNode.PORT_TYPE_VECTOR_3D))
@@ -2200,79 +2527,6 @@ func fill_add_options() -> void:
 	#endregion
 
 
-func update_options_menu() -> void:
-	node_list_tree.clear()
-	node_description_label.text = ""
-	var filter := filter_line_edit.text.strip_edges()
-	var use_filter := not filter.is_empty()
-	var is_first_item := true
-	var root := node_list_tree.create_item()
-	var folders := {}  # String, TreeItem
-	var options: Array[AddOption]
-	if not use_filter:
-		options = add_options
-	else:
-		for i in add_options.size():
-			var option := add_options[i]
-			if option.option_name.containsn(filter):
-				options.append(option)
-	for i in options.size():
-		var option := options[i]
-		if option.highend and not is_instance_valid(RenderingServer.get_rendering_device()):
-			continue
-		var path := option.category
-		var subfolders := path.split("/")
-		var category: TreeItem
-		if not folders.has(path):
-			category = root
-			var path_temp := ""
-			for j in subfolders.size():
-				path_temp += subfolders[j]
-				if not folders.has(path_temp):
-					category = node_list_tree.create_item(category)
-					category.set_selectable(0, false)
-					category.set_collapsed(!use_filter)
-					category.set_text(0, subfolders[j])
-					folders[path_temp] = category
-				else:
-					category = folders[path_temp]
-		else:
-			category = folders[path]
-		var item := node_list_tree.create_item(category)
-		#if (options[i].highend && low_driver) {
-			#item->set_custom_color(0, unsupported_color)
-		#} else if (options[i].highend) {
-			#item->set_custom_color(0, supported_color)
-		#}
-		item.set_text(0, option.option_name)
-		item.set_metadata(0, add_options.find(option))
-		if is_first_item && use_filter:
-			item.select(0)
-			node_description_label.text = options[i].description
-			is_first_item = false
-
-			node_list_tree.get_window().get_ok_button().set_disabled(false)
-		match option.return_type:
-			VisualShaderNode.PORT_TYPE_SCALAR:
-				item.set_icon(0, FLOAT_ICON)
-			VisualShaderNode.PORT_TYPE_SCALAR_INT:
-				item.set_icon(0, INT_ICON)
-			VisualShaderNode.PORT_TYPE_SCALAR_UINT:
-				item.set_icon(0, UINT_ICON)
-			VisualShaderNode.PORT_TYPE_VECTOR_2D:
-				item.set_icon(0, VECTOR_2_ICON)
-			VisualShaderNode.PORT_TYPE_VECTOR_3D:
-				item.set_icon(0, VECTOR_3_ICON)
-			VisualShaderNode.PORT_TYPE_VECTOR_4D:
-				item.set_icon(0, VECTOR_4_ICON)
-			VisualShaderNode.PORT_TYPE_BOOLEAN:
-				item.set_icon(0, BOOL_ICON)
-			VisualShaderNode.PORT_TYPE_TRANSFORM:
-				item.set_icon(0, TRANSFORM_3D_ICON)
-			VisualShaderNode.PORT_TYPE_SAMPLER:
-				item.set_icon(0, SAMPLER_ICON)
-
-
 ## TODO: Remove if Godot ever exposes VisualShaderNode's category.
 func _get_node_category(vsn: VisualShaderNode) -> Category:
 	if vsn is VisualShaderNodeVectorBase:
@@ -2362,234 +2616,3 @@ func _get_node_category(vsn: VisualShaderNode) -> Category:
 			return Category.CATEGORY_PARTICLE
 
 	return Category.CATEGORY_NONE
-
-
-func _on_node_list_tree_item_selected() -> void:
-	node_list_tree.get_window().get_ok_button().set_disabled(false)
-	var option_index: int = node_list_tree.get_selected().get_metadata(0)
-	node_description_label.text = add_options[option_index].description
-
-
-func _on_node_list_tree_nothing_selected() -> void:
-	node_list_tree.get_window().get_ok_button().set_disabled(true)
-	node_description_label.text = ""
-
-
-func _on_effect_name_line_edit_text_changed(new_text: String) -> void:
-	effect_name_line_edit.get_window().get_ok_button().set_disabled(new_text.is_empty())
-
-
-func _on_create_effect_dialog_confirmed() -> void:
-	new_effect(effect_name_line_edit.text)
-
-
-func _on_create_node_dialog_confirmed() -> void:
-	add_new_node(node_list_tree.get_selected().get_metadata(0))
-
-
-func _on_graph_edit_connection_request(from_node_name: String, from_port: int, to_node_name: String, to_port: int) -> void:
-	if from_node_name == to_node_name:
-		return
-	var vs_from_node_id := int(from_node_name)
-	var vs_to_node_id := int(to_node_name)
-	undo_redo.create_action("Connect nodes")
-	undo_redo.add_do_method(graph_edit.connect_node.bind(from_node_name, from_port, to_node_name, to_port))
-	undo_redo.add_do_method(_graph_node_default_input_control_visibility.bind(to_node_name, to_port, false))
-	undo_redo.add_do_method(visual_shader.connect_nodes.bind(shader_type, vs_from_node_id, from_port, vs_to_node_id, to_port))
-	undo_redo.add_do_method(_on_effect_changed)
-	undo_redo.add_undo_method(graph_edit.disconnect_node.bind(from_node_name, from_port, to_node_name, to_port))
-	undo_redo.add_undo_method(_graph_node_default_input_control_visibility.bind(to_node_name, to_port, true))
-	undo_redo.add_undo_method(visual_shader.disconnect_nodes.bind(shader_type, vs_from_node_id, from_port, vs_to_node_id, to_port))
-	undo_redo.add_undo_method(_on_effect_changed)
-	undo_redo.commit_action()
-
-
-func _on_graph_edit_disconnection_request(from_node_name: String, from_port: int, to_node_name: String, to_port: int) -> void:
-	var vs_from_node_id := int(from_node_name)
-	var vs_to_node_id := int(to_node_name)
-	undo_redo.create_action("Disconnect nodes")
-	undo_redo.add_do_method(graph_edit.disconnect_node.bind(from_node_name, from_port, to_node_name, to_port))
-	undo_redo.add_do_method(_graph_node_default_input_control_visibility.bind(to_node_name, to_port, true))
-	undo_redo.add_do_method(visual_shader.disconnect_nodes.bind(shader_type, vs_from_node_id, from_port, vs_to_node_id, to_port))
-	undo_redo.add_do_method(_on_effect_changed)
-	undo_redo.add_undo_method(graph_edit.connect_node.bind(from_node_name, from_port, to_node_name, to_port))
-	undo_redo.add_undo_method(_graph_node_default_input_control_visibility.bind(to_node_name, to_port, false))
-	undo_redo.add_undo_method(visual_shader.connect_nodes.bind(shader_type, vs_from_node_id, from_port, vs_to_node_id, to_port))
-	undo_redo.add_undo_method(_on_effect_changed)
-	undo_redo.commit_action()
-
-
-func _on_graph_edit_graph_elements_linked_to_frame_request(elements: Array, frame: StringName) -> void:
-	undo_redo.create_action("Link nodes to frame")
-	for element in elements:
-		undo_redo.add_do_method(visual_shader.attach_node_to_frame.bind(shader_type, int(String(element)), int(String(frame))))
-		undo_redo.add_do_method(graph_edit.attach_graph_element_to_frame.bind(element, frame))
-		undo_redo.add_undo_method(visual_shader.detach_node_from_frame.bind(shader_type, int(String(element))))
-		undo_redo.add_undo_method(graph_edit.detach_graph_element_from_frame.bind(element))
-	undo_redo.add_do_method(_on_effect_changed)
-	undo_redo.add_undo_method(_on_effect_changed)
-	undo_redo.commit_action()
-
-
-func _graph_node_default_input_control_visibility(node_name: StringName, port: int, vis: bool) -> void:
-	var node := graph_edit.get_node(String(node_name))
-	if node.has_meta(&"default_input_button_%s" % port):
-		node.get_meta(&"default_input_button_%s" % port).visible = vis
-
-
-func _on_graph_edit_popup_request(at_position: Vector2) -> void:
-	if not is_instance_valid(visual_shader):
-		return
-	node_list_tree.get_window().popup_centered()
-	spawn_node_in_position = (at_position + graph_edit.scroll_offset) / graph_edit.zoom
-
-
-func _on_graph_edit_delete_nodes_request(node_names: Array[StringName]) -> void:
-	# Do not remove the output node.
-	for node_name in node_names:
-		var id := int(String(node_name))
-		var vsn := visual_shader.get_node(shader_type, id)
-		if vsn is VisualShaderNodeOutput:
-			node_names.erase(node_name)
-	if node_names.size() == 0:
-		return
-	undo_redo.create_action("Remove node")
-	var connections := visual_shader.get_node_connections(shader_type)
-	for node_name in node_names:
-		var id := int(String(node_name))
-		for connection in connections:
-			var from_node: int = connection.from_node
-			var to_node: int = connection.to_node
-			if from_node == id or to_node == id:
-				var from_port: int = connection.from_port
-				var to_port: int = connection.to_port
-				undo_redo.add_do_method(visual_shader.disconnect_nodes.bind(
-					shader_type, from_node, from_port, to_node, to_port)
-				)
-				undo_redo.add_do_method(graph_edit.disconnect_node.bind(
-					str(from_node), from_port, str(to_node), to_port)
-				)
-				undo_redo.add_do_method(_graph_node_default_input_control_visibility.bind(
-					str(to_node), to_port, true)
-				)
-	# The VS nodes need to be added before attaching them to frames.
-	for node_name in node_names:
-		var id := int(String(node_name))
-		var vsn := visual_shader.get_node(shader_type, id)
-		var node_position := visual_shader.get_node_position(shader_type, id)
-		undo_redo.add_undo_method(visual_shader.add_node.bind(shader_type, vsn, node_position, id))
-		undo_redo.add_undo_method(add_node.bind(vsn, id))
-
-	# Update frame references.
-	for node_name in node_names:
-		var id := int(String(node_name))
-		var vsn := visual_shader.get_node(shader_type, id)
-		if vsn is VisualShaderNodeFrame:
-			var attached_nodes := (vsn as VisualShaderNodeFrame).attached_nodes
-			for attached_node in attached_nodes:
-				undo_redo.add_do_method(visual_shader.detach_node_from_frame.bind(shader_type, attached_node))
-				undo_redo.add_do_method(graph_edit.detach_graph_element_from_frame.bind(str(attached_node)))
-				undo_redo.add_undo_method(visual_shader.attach_node_to_frame.bind(shader_type, attached_node, id))
-				undo_redo.add_undo_method(graph_edit.attach_graph_element_to_frame.bind(str(attached_node), node_name))
-		var frame_id := vsn.linked_parent_graph_frame
-		if frame_id == -1:
-			continue
-		undo_redo.add_do_method(visual_shader.detach_node_from_frame.bind(shader_type, id))
-		undo_redo.add_do_method(graph_edit.detach_graph_element_from_frame.bind(node_name))
-		undo_redo.add_undo_method(visual_shader.attach_node_to_frame.bind(shader_type, id, frame_id))
-		undo_redo.add_undo_method(graph_edit.attach_graph_element_to_frame.bind(node_name, str(frame_id)))
-	for node_name in node_names:
-		undo_redo.add_do_method(delete_node.bind(node_name))
-
-	var used_conns: Array[Dictionary]
-	for node_name in node_names:
-		var id := int(String(node_name))
-		for connection in connections:
-			var from_node: int = connection.from_node
-			var to_node: int = connection.to_node
-			if from_node == id or to_node == id:
-				var from_port: int = connection.from_port
-				var to_port: int = connection.to_port
-				var cancel := false
-				for used_connection in used_conns:
-					if used_connection.from_node == from_node and used_connection.from_port == from_port and used_connection.to_node == to_node and used_connection.to_port == to_port:
-						cancel = true  # to avoid ERR_ALREADY_EXISTS warning
-						break
-				if not cancel:
-					undo_redo.add_undo_method(visual_shader.connect_nodes.bind(shader_type, from_node, from_port, to_node, to_port))
-					undo_redo.add_undo_method(graph_edit.connect_node.bind(str(from_node), from_port, str(to_node), to_port))
-					undo_redo.add_undo_method(_graph_node_default_input_control_visibility.bind(str(to_node), to_port, false))
-					used_conns.push_back(connection)
-	undo_redo.add_do_method(_on_effect_changed)
-	undo_redo.add_undo_method(_on_effect_changed)
-	undo_redo.commit_action()
-
-
-func _on_graph_edit_mouse_entered() -> void:
-	can_undo = true
-
-
-func _on_graph_edit_mouse_exited() -> void:
-	can_undo = false
-
-
-func _on_filter_line_edit_text_changed(_new_text: String) -> void:
-	update_options_menu()
-
-
-func _add_valid_connection_types() -> void:
-	graph_edit.add_valid_connection_type(VisualShaderNode.PortType.PORT_TYPE_SCALAR, VisualShaderNode.PortType.PORT_TYPE_SCALAR_INT)
-	graph_edit.add_valid_connection_type(VisualShaderNode.PortType.PORT_TYPE_SCALAR, VisualShaderNode.PortType.PORT_TYPE_SCALAR_UINT)
-	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_SCALAR, VisualShaderNode.PORT_TYPE_VECTOR_2D)
-	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_SCALAR, VisualShaderNode.PORT_TYPE_VECTOR_3D)
-	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_SCALAR, VisualShaderNode.PORT_TYPE_VECTOR_4D)
-	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_SCALAR, VisualShaderNode.PORT_TYPE_BOOLEAN)
-
-	graph_edit.add_valid_connection_type(VisualShaderNode.PortType.PORT_TYPE_SCALAR_INT, VisualShaderNode.PortType.PORT_TYPE_SCALAR)
-	graph_edit.add_valid_connection_type(VisualShaderNode.PortType.PORT_TYPE_SCALAR_INT, VisualShaderNode.PortType.PORT_TYPE_SCALAR_UINT)
-	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_SCALAR_INT, VisualShaderNode.PORT_TYPE_VECTOR_2D)
-	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_SCALAR_INT, VisualShaderNode.PORT_TYPE_VECTOR_3D)
-	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_SCALAR_INT, VisualShaderNode.PORT_TYPE_VECTOR_4D)
-	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_SCALAR_INT, VisualShaderNode.PORT_TYPE_BOOLEAN)
-
-	graph_edit.add_valid_connection_type(VisualShaderNode.PortType.PORT_TYPE_SCALAR_UINT, VisualShaderNode.PortType.PORT_TYPE_SCALAR)
-	graph_edit.add_valid_connection_type(VisualShaderNode.PortType.PORT_TYPE_SCALAR_UINT, VisualShaderNode.PortType.PORT_TYPE_SCALAR_INT)
-	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_SCALAR_UINT, VisualShaderNode.PORT_TYPE_VECTOR_2D)
-	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_SCALAR_UINT, VisualShaderNode.PORT_TYPE_VECTOR_3D)
-	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_SCALAR_UINT, VisualShaderNode.PORT_TYPE_VECTOR_4D)
-	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_SCALAR_UINT, VisualShaderNode.PORT_TYPE_BOOLEAN)
-
-	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_VECTOR_2D, VisualShaderNode.PORT_TYPE_SCALAR)
-	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_VECTOR_2D, VisualShaderNode.PORT_TYPE_SCALAR_INT)
-	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_VECTOR_2D, VisualShaderNode.PORT_TYPE_SCALAR_UINT)
-	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_VECTOR_2D, VisualShaderNode.PORT_TYPE_VECTOR_2D)
-	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_VECTOR_2D, VisualShaderNode.PORT_TYPE_VECTOR_3D)
-	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_VECTOR_2D, VisualShaderNode.PORT_TYPE_VECTOR_4D)
-	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_VECTOR_2D, VisualShaderNode.PORT_TYPE_BOOLEAN)
-
-	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_VECTOR_3D, VisualShaderNode.PORT_TYPE_SCALAR)
-	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_VECTOR_3D, VisualShaderNode.PORT_TYPE_SCALAR_INT)
-	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_VECTOR_3D, VisualShaderNode.PORT_TYPE_SCALAR_UINT)
-	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_VECTOR_3D, VisualShaderNode.PORT_TYPE_VECTOR_2D)
-	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_VECTOR_3D, VisualShaderNode.PORT_TYPE_VECTOR_3D)
-	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_VECTOR_3D, VisualShaderNode.PORT_TYPE_VECTOR_4D)
-	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_VECTOR_3D, VisualShaderNode.PORT_TYPE_BOOLEAN)
-
-	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_VECTOR_4D, VisualShaderNode.PORT_TYPE_SCALAR)
-	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_VECTOR_4D, VisualShaderNode.PORT_TYPE_SCALAR_INT)
-	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_VECTOR_4D, VisualShaderNode.PORT_TYPE_SCALAR_UINT)
-	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_VECTOR_4D, VisualShaderNode.PORT_TYPE_VECTOR_2D)
-	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_VECTOR_4D, VisualShaderNode.PORT_TYPE_VECTOR_3D)
-	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_VECTOR_4D, VisualShaderNode.PORT_TYPE_VECTOR_4D)
-	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_VECTOR_4D, VisualShaderNode.PORT_TYPE_BOOLEAN)
-
-	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_BOOLEAN, VisualShaderNode.PORT_TYPE_SCALAR)
-	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_BOOLEAN, VisualShaderNode.PORT_TYPE_SCALAR_INT)
-	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_BOOLEAN, VisualShaderNode.PORT_TYPE_SCALAR_UINT)
-	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_BOOLEAN, VisualShaderNode.PORT_TYPE_VECTOR_2D)
-	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_BOOLEAN, VisualShaderNode.PORT_TYPE_VECTOR_3D)
-	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_BOOLEAN, VisualShaderNode.PORT_TYPE_VECTOR_4D)
-	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_BOOLEAN, VisualShaderNode.PORT_TYPE_BOOLEAN)
-
-	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_TRANSFORM, VisualShaderNode.PORT_TYPE_TRANSFORM)
-	graph_edit.add_valid_connection_type(VisualShaderNode.PORT_TYPE_SAMPLER, VisualShaderNode.PORT_TYPE_SAMPLER)
