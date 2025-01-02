@@ -65,6 +65,7 @@ size_flags_horizontal = 3
 [connection signal="connection_request" from="GraphEdit" to="." method="_on_graph_edit_connection_request"]
 [connection signal="delete_nodes_request" from="GraphEdit" to="." method="_on_graph_edit_delete_nodes_request"]
 [connection signal="disconnection_request" from="GraphEdit" to="." method="_on_graph_edit_disconnection_request"]
+[connection signal="end_node_move" from="GraphEdit" to="." method="_on_graph_edit_end_node_move"]
 [connection signal="graph_elements_linked_to_frame_request" from="GraphEdit" to="." method="_on_graph_edit_graph_elements_linked_to_frame_request"]
 [connection signal="mouse_entered" from="GraphEdit" to="." method="_on_graph_edit_mouse_entered"]
 [connection signal="mouse_exited" from="GraphEdit" to="." method="_on_graph_edit_mouse_exited"]
