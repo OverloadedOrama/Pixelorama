@@ -2574,6 +2574,7 @@ func fill_add_options() -> void:
 	add_options.push_back(AddOption.new("Rotate", "UV", "VisualShaderNodeCustom", "UV Rotate.", [VisualShaderNodeUVRotate], VisualShaderNode.PORT_TYPE_VECTOR_2D))
 	add_options.push_back(AddOption.new("Tiler", "UV", "VisualShaderNodeCustom", "Tile a given UV into the given UV tiles and rotate them.", [VisualShaderNodeTiler], VisualShaderNode.PORT_TYPE_VECTOR_4D))
 	add_options.push_back(AddOption.new("Twirl", "UV", "VisualShaderNodeCustom", "UV Twirl.", [VisualShaderNodeUVTwirl], VisualShaderNode.PORT_TYPE_VECTOR_2D))
+	add_options.push_back(AddOption.new("Flipbook", "UV", "VisualShaderNodeCustom", "UV Flipbook Animation.", [VisualShaderNodeUVFlipbook], VisualShaderNode.PORT_TYPE_VECTOR_2D))
 	add_options.push_back(AddOption.new("UV to Sphere Coord", "UV", "VisualShaderNodeCustom", "UV to Sphere Coord.", [VisualShaderNodeUVtoSphereCoord], VisualShaderNode.PORT_TYPE_VECTOR_2D))
 	#endregion
 	#region Wave
