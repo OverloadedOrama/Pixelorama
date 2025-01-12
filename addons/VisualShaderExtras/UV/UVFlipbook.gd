@@ -1,5 +1,5 @@
 # from https://github.com/thnewlands/unity-surfaceshader-flipbook
-# 
+#
 # MIT License
 #
 # Copyright (c) 2017 Thomas Newlands
@@ -93,7 +93,7 @@ func _get_global_code(mode):
 			__starting_frame += int(fract(TIME * __anim_speed) * float(__ending_frame));
 			float frame = float(clamp(__starting_frame, 0, __ending_frame));
 			vec2 offPerFrame = vec2((1.0 / float(__columns)), (1.0 / float(__rows)));
-			
+
 			vec2 sprite_size = vec2(__uv.x / float(__columns), __uv.y / float(__rows));
 			vec2 current_sprite = vec2(0.0, 1.0 - offPerFrame.y);
 			current_sprite.x += frame * offPerFrame.x;
@@ -101,18 +101,17 @@ func _get_global_code(mode):
 			float _mod = modf(frame / float(__columns), rowIndex);
 			current_sprite.y -= rowIndex * offPerFrame.y;
 			current_sprite.x -= rowIndex * float(__columns) * offPerFrame.x;
-			
+
 			vec2 sprite_uv = (sprite_size + current_sprite);
-			
+
 			return sprite_uv;
 		}
 	"""
 
 func _get_code(input_vars, output_vars, mode, type):
 	var uv = "UV"
-	
+
 	if input_vars[0]:
 		uv = input_vars[0]
-	
-	return "%s.xy = flipbook_anim(%s.xy, %s, %s, %s, %s, %s );" % [output_vars[0], uv, input_vars[1], input_vars[2], input_vars[3], input_vars[4], input_vars[5]]
 
+	return "%s.xy = flipbook_anim(%s.xy, %s, %s, %s, %s, %s );" % [output_vars[0], uv, input_vars[1], input_vars[2], input_vars[3], input_vars[4], input_vars[5]]
