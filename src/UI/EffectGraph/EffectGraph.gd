@@ -1031,24 +1031,7 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 	#endregion
 	elif vsn is VisualShaderNodeCustom:
 		vsn.set("expanded_output_ports", [0])
-		graph_node.title = vsn._get_name()
-		if vsn.has_method(&"_get_property_count"):
-			for i in vsn._get_property_count():
-				var option_button := OptionButton.new()
-				for option in vsn._get_property_options(i):
-					option_button.add_item(option)
-				option_button.select(vsn.get_option_index(i))
-				option_button.item_selected.connect(
-					func(idx_selected: int):
-						# TODO: Change this to support multiple properties.
-						vsn.set("properties", "0,%s;" % idx_selected)
-						_on_effect_changed()
-				)
-				graph_node.add_child(option_button)
-		for i in vsn._get_input_port_count():
-			_create_input(vsn._get_input_port_name(i), graph_node, vsn, vsn._get_input_port_type(i), i)
-		for i in vsn._get_output_port_count():
-			_create_multi_output(vsn._get_output_port_name(i), graph_node, vsn._get_output_port_type(i))
+		_create_custom_node(graph_node, vsn)
 
 	graph_edit.add_child(graph_node)
 
@@ -1794,6 +1777,42 @@ func _create_code_text_edit(graph_node: GraphNode, vsn: VisualShaderNodeExpressi
 	graph_node.add_child(text_edit)
 
 
+func _create_custom_node(graph_node: GraphNode, vsn: VisualShaderNodeCustom) -> void:
+	var children := graph_node.get_children(true)
+	for i in range(1, children.size()):
+		var child := children[i]
+		graph_node.remove_child(child)
+		child.queue_free()
+	graph_node.title = vsn._get_name()
+	if vsn.has_method(&"_get_property_count"):
+		for i in vsn._get_property_count():
+			var option_button := OptionButton.new()
+			for option in vsn._get_property_options(i):
+				option_button.add_item(option)
+			option_button.select(vsn.get_option_index(i))
+			#var shader_path := visual_shader.resource_path
+			option_button.item_selected.connect(
+				func(idx_selected: int):
+					# TODO: Change this to support multiple properties.
+					vsn.set("properties", "0,%s;" % idx_selected)
+					_on_effect_changed()
+					# TODO: Figure out a way to recreate the custom node AND reloading the shader.
+					# The shader needs to be reloaded because we use vsn.set().
+					# If Godot exposes more stuff to GDScript, this will be very easy.
+					#for ref_count in visual_shader.get_reference_count():
+						#visual_shader.unreference()
+					#visual_shader = ResourceLoader.load(shader_path, "VisualShader", ResourceLoader.CACHE_MODE_REPLACE_DEEP)
+					#visual_shader = ResourceLoader.load(shader_path, "VisualShader")
+					#_create_custom_node(graph_node, vsn)
+			)
+			graph_node.add_child(option_button)
+	#await get_tree().process_frame
+	for i in vsn._get_input_port_count():
+		_create_input(vsn._get_input_port_name(i), graph_node, vsn, vsn._get_input_port_type(i), i)
+	for i in vsn._get_output_port_count():
+		_create_multi_output(vsn._get_output_port_name(i), graph_node, vsn._get_output_port_type(i))
+
+
 func _create_port_type_option_button() -> OptionButton:
 	var option_button := OptionButton.new()
 	option_button.add_item("Float", VisualShaderNode.PORT_TYPE_SCALAR)
@@ -2334,8 +2353,7 @@ func fill_add_options() -> void:
 	add_options.push_back(AddOption.new("TransformParameter", "Transform/Variables", "VisualShaderNodeTransformParameter", "Transform parameter.", [], VisualShaderNode.PORT_TYPE_TRANSFORM));
 	#endregion
 	#region Utility
-	add_options.push_back(AddOption.new("GPU perlin noise texture", "Utility", "VisualShaderNodeCustom", "Classic Perlin-Noise-3D function (by Curly-Brace)", [VisualShaderNodePerlinNoise3D], VisualShaderNode.PORT_TYPE_SCALAR))
-	add_options.push_back(AddOption.new("Rotate", "Utility", "VisualShaderNodeCustom", "Nearest Neighbor Rotation", [VisualShaderNodeRotate], VisualShaderNode.PORT_TYPE_VECTOR_2D))
+	add_options.push_back(AddOption.new("GPU perlin noise", "Utility", "VisualShaderNodeCustom", "Classic Perlin-Noise-3D function (by Curly-Brace)", [VisualShaderNodePerlinNoise3D], VisualShaderNode.PORT_TYPE_SCALAR))
 	add_options.push_back(AddOption.new("RandomRange", "Utility", "VisualShaderNodeRandomRange", "Returns a random value between the minimum and maximum input values.", [], VisualShaderNode.PORT_TYPE_SCALAR))
 	add_options.push_back(AddOption.new("RotationByAxis", "Utility", "VisualShaderNodeRotationByAxis", "Builds a rotation matrix from the given axis and angle, multiply the input vector by it and returns both this vector and a matrix.", [], VisualShaderNode.PORT_TYPE_VECTOR_3D))
 	#endregion

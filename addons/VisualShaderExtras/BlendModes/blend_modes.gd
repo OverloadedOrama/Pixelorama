@@ -3,7 +3,6 @@ class_name VisualShaderNodeBlendModes
 extends VisualShaderNodeCustom
 
 func _init():
-	var op = get_option_index(0)
 	set_input_port_default_value(2, 0.5)
 
 func _get_name():
@@ -24,7 +23,7 @@ func _get_property_count():
 func _get_property_name(index):
 	return ""
 
-func _get_property_options(index: int):
+func _get_property_options(index: int) -> PackedStringArray:
 	return [
 	"Additive",
 	"AddSub",
@@ -414,56 +413,65 @@ func _get_global_code(mode):
 
 
 func _get_code(input_vars, output_vars, mode, type):
-	var op = get_option_index(0)
+	var op := get_option_index(0)
+	var top_color := "COLOR"
+	if not input_vars[0].is_empty():
+		top_color = input_vars[0]
+	var bottom_color := "vec4(0.0, 0.0, 0.0, 0.0)"
+	if not input_vars[1].is_empty():
+		bottom_color = input_vars[1]
+	var opacity := "2.0"
+	if not input_vars[2].is_empty():
+		opacity = input_vars[2]
 	match op:
 		0:
-			return "%s.rgb = blend_additive(%s.rgb, %s.rgb, %s);" % [output_vars[0], input_vars[0], input_vars[1], input_vars[2]]
+			return "%s.rgb = blend_additive(%s.rgb, %s.rgb, %s);" % [output_vars[0], top_color, bottom_color, opacity]
 		1:
-			return "%s.rgb = blend_addsub(%s.rgb, %s.rgb, %s);" % [output_vars[0], input_vars[0], input_vars[1], input_vars[2]]
+			return "%s.rgb = blend_addsub(%s.rgb, %s.rgb, %s);" % [output_vars[0], top_color, bottom_color, opacity]
 		2:
-			return "%s.rgb = blend_burn(%s.rgb, %s.rgb, %s);" % [output_vars[0], input_vars[0], input_vars[1], input_vars[2]]
+			return "%s.rgb = blend_burn(%s.rgb, %s.rgb, %s);" % [output_vars[0], top_color, bottom_color, opacity]
 		3:
-			return "%s.rgb = blend_darken(%s.rgb, %s.rgb, %s);" % [output_vars[0], input_vars[0], input_vars[1], input_vars[2]]
+			return "%s.rgb = blend_darken(%s.rgb, %s.rgb, %s);" % [output_vars[0], top_color, bottom_color, opacity]
 		4:
-			return "%s.rgb = blend_difference(%s.rgb, %s.rgb, %s);" % [output_vars[0], input_vars[0], input_vars[1], input_vars[2]]
+			return "%s.rgb = blend_difference(%s.rgb, %s.rgb, %s);" % [output_vars[0], top_color, bottom_color, opacity]
 		5:
-			var noise_seed := "0.0"
-			if input_vars.size() > 3:
+			var noise_seed := "vec3(0.0)"
+			if not input_vars[3].is_empty():
 				noise_seed = input_vars[3]
-			return "%s.rgb = blend_dissolve(%s.rgb, %s.rgb, %s.rgb, %s);" % [output_vars[0], noise_seed, input_vars[0], input_vars[1], input_vars[2]]
+			return "%s.rgb = blend_dissolve(%s.rgb, %s.rgb, %s.rgb, %s);" % [output_vars[0], noise_seed, top_color, bottom_color, opacity]
 		6:
-			return "%s.rgb = blend_dodge(%s.rgb, %s.rgb, %s);" % [output_vars[0], input_vars[0], input_vars[1], input_vars[2]]
+			return "%s.rgb = blend_dodge(%s.rgb, %s.rgb, %s);" % [output_vars[0], top_color, bottom_color, opacity]
 		7:
-			return "%s.rgb = blend_exclusion(%s.rgb, %s.rgb, %s);" % [output_vars[0], input_vars[0], input_vars[1], input_vars[2]]
+			return "%s.rgb = blend_exclusion(%s.rgb, %s.rgb, %s);" % [output_vars[0], top_color, bottom_color, opacity]
 		8:
-			return "%s.rgb = blend_gamma_dark(%s.rgb, %s.rgb, %s);" % [output_vars[0], input_vars[0], input_vars[1], input_vars[2]]
+			return "%s.rgb = blend_gamma_dark(%s.rgb, %s.rgb, %s);" % [output_vars[0], top_color, bottom_color, opacity]
 		9:
-			return "%s.rgb = blend_gamma_illumination(%s.rgb, %s.rgb, %s);" % [output_vars[0], input_vars[0], input_vars[1], input_vars[2]]
+			return "%s.rgb = blend_gamma_illumination(%s.rgb, %s.rgb, %s);" % [output_vars[0], top_color, bottom_color, opacity]
 		10:
-			return "%s.rgb = blend_gamma_light(%s.rgb, %s.rgb, %s);" % [output_vars[0], input_vars[0], input_vars[1], input_vars[2]]
+			return "%s.rgb = blend_gamma_light(%s.rgb, %s.rgb, %s);" % [output_vars[0], top_color, bottom_color, opacity]
 		11:
-			return "%s.rgb = blend_hard_light(%s.rgb, %s.rgb, %s);" % [output_vars[0], input_vars[0], input_vars[1], input_vars[2]]
+			return "%s.rgb = blend_hard_light(%s.rgb, %s.rgb, %s);" % [output_vars[0], top_color, bottom_color, opacity]
 		12:
-			return "%s.rgb = blend_hard_mix(%s.rgb, %s.rgb, %s);" % [output_vars[0], input_vars[0], input_vars[1], input_vars[2]]
+			return "%s.rgb = blend_hard_mix(%s.rgb, %s.rgb, %s);" % [output_vars[0], top_color, bottom_color, opacity]
 		13:
-			return "%s.rgb = blend_lighten(%s.rgb, %s.rgb, %s);" % [output_vars[0], input_vars[0], input_vars[1], input_vars[2]]
+			return "%s.rgb = blend_lighten(%s.rgb, %s.rgb, %s);" % [output_vars[0], top_color, bottom_color, opacity]
 		14:
-			return "%s.rgb = blend_linear_burn(%s.rgb, %s.rgb, %s);" % [output_vars[0], input_vars[0], input_vars[1], input_vars[2]]
+			return "%s.rgb = blend_linear_burn(%s.rgb, %s.rgb, %s);" % [output_vars[0], top_color, bottom_color, opacity]
 		15:
-			return "%s.rgb = blend_linear_light(%s.rgb, %s.rgb, %s);" % [output_vars[0], input_vars[0], input_vars[1], input_vars[2]]
+			return "%s.rgb = blend_linear_light(%s.rgb, %s.rgb, %s);" % [output_vars[0], top_color, bottom_color, opacity]
 		16:
-			return "%s.rgb = blend_luminosity(%s.rgb, %s.rgb, %s);" % [output_vars[0], input_vars[0], input_vars[1], input_vars[2]]
+			return "%s.rgb = blend_luminosity(%s.rgb, %s.rgb, %s);" % [output_vars[0], top_color, bottom_color, opacity]
 		17:
-			return "%s.rgb = blend_multiply(%s.rgb, %s.rgb, %s);" % [output_vars[0], input_vars[0], input_vars[1], input_vars[2]]
+			return "%s.rgb = blend_multiply(%s.rgb, %s.rgb, %s);" % [output_vars[0], top_color, bottom_color, opacity]
 		18:
-			return "%s.rgb = blend_normal(%s.rgb, %s.rgb, %s);" % [output_vars[0], input_vars[0], input_vars[1], input_vars[2]]
+			return "%s.rgb = blend_normal(%s.rgb, %s.rgb, %s);" % [output_vars[0], top_color, bottom_color, opacity]
 		19:
-			return "%s.rgb = blend_overlay(%s.rgb, %s.rgb, %s);" % [output_vars[0], input_vars[0], input_vars[1], input_vars[2]]
+			return "%s.rgb = blend_overlay(%s.rgb, %s.rgb, %s);" % [output_vars[0], top_color, bottom_color, opacity]
 		20:
-			return "%s.rgb = blend_pin_light(%s.rgb, %s.rgb, %s);" % [output_vars[0], input_vars[0], input_vars[1], input_vars[2]]
+			return "%s.rgb = blend_pin_light(%s.rgb, %s.rgb, %s);" % [output_vars[0], top_color, bottom_color, opacity]
 		21:
-			return "%s.rgb = blend_screen(%s.rgb, %s.rgb, %s);" % [output_vars[0], input_vars[0], input_vars[1], input_vars[2]]
+			return "%s.rgb = blend_screen(%s.rgb, %s.rgb, %s);" % [output_vars[0], top_color, bottom_color, opacity]
 		22:
-			return "%s.rgb = blend_soft_light(%s.rgb, %s.rgb, %s);" % [output_vars[0], input_vars[0], input_vars[1], input_vars[2]]
+			return "%s.rgb = blend_soft_light(%s.rgb, %s.rgb, %s);" % [output_vars[0], top_color, bottom_color, opacity]
 		23:
-			return "%s.rgb = blend_vivid_light(%s.rgb, %s.rgb, %s);" % [output_vars[0], input_vars[0], input_vars[1], input_vars[2]]
+			return "%s.rgb = blend_vivid_light(%s.rgb, %s.rgb, %s);" % [output_vars[0], top_color, bottom_color, opacity]
