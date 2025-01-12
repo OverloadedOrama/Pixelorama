@@ -55,4 +55,7 @@ func _get_global_code(mode):
 	"""
 
 func _get_code(input_vars, output_vars, mode, type):
-	return "%s.xy = uv_to_sphere_coord(%s.xyz, %s.xyz);" % [output_vars[0], input_vars[0], input_vars[1]]
+	var sphere_surface_point := "vec3(UV, 0.0)"
+	if not input_vars[0].is_empty():
+		sphere_surface_point = input_vars[0]
+	return "%s.xy = uv_to_sphere_coord(%s.xyz, %s.xyz);" % [output_vars[0], sphere_surface_point, input_vars[1]]
