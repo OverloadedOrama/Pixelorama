@@ -88,7 +88,7 @@ func _get_global_code(mode):
 			hsv.z += val_offset;
 			return hsv;
 		}
-		
+
 	"""
 
 func _get_code(input_vars, output_vars, mode, type):
