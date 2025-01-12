@@ -2160,8 +2160,9 @@ func fill_add_options() -> void:
 	add_options.push_back(AddOption.new("ColorOp", "Color/Common", "VisualShaderNodeColorOp", "Color operator.", [], VisualShaderNode.PORT_TYPE_VECTOR_3D))
 
 	add_options.push_back(AddOption.new("Grayscale", "Color/Functions", "VisualShaderNodeColorFunc", "Grayscale function.", [ VisualShaderNodeColorFunc.FUNC_GRAYSCALE ], VisualShaderNode.PORT_TYPE_VECTOR_3D))
-	add_options.push_back(AddOption.new("HSV2RGB", "Color/Functions", "VisualShaderNodeColorFunc", "Converts HSV vector to RGB equivalent.", [ VisualShaderNodeColorFunc.FUNC_HSV2RGB, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D))
-	add_options.push_back(AddOption.new("RGB2HSV", "Color/Functions", "VisualShaderNodeColorFunc", "Converts RGB vector to HSV equivalent.", [ VisualShaderNodeColorFunc.FUNC_RGB2HSV, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D))
+	add_options.push_back(AddOption.new("HSV to RGB", "Color/Functions", "VisualShaderNodeColorFunc", "Converts HSV vector to RGB equivalent.", [ VisualShaderNodeColorFunc.FUNC_HSV2RGB, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D))
+	add_options.push_back(AddOption.new("RGB to HSV", "Color/Functions", "VisualShaderNodeColorFunc", "Converts RGB vector to HSV equivalent.", [ VisualShaderNodeColorFunc.FUNC_RGB2HSV, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D))
+	add_options.push_back(AddOption.new("HSV Adjustment", "Color/Functions", "VisualShaderNodeCustom", "Convert RGB input colors to HSV and offset their values.", [VisualShaderNodeCustomHSVAdjustment], VisualShaderNode.PORT_TYPE_VECTOR_3D))
 	add_options.push_back(AddOption.new("Sepia", "Color/Functions", "VisualShaderNodeColorFunc", "Sepia function.", [ VisualShaderNodeColorFunc.FUNC_SEPIA ], VisualShaderNode.PORT_TYPE_VECTOR_3D))
 
 	add_options.push_back(AddOption.new("Burn", "Color/Operators", "VisualShaderNodeColorOp", "Burn operator.", [ VisualShaderNodeColorOp.OP_BURN ], VisualShaderNode.PORT_TYPE_VECTOR_3D))
@@ -2573,12 +2574,14 @@ func fill_add_options() -> void:
 	add_options.push_back(AddOption.new("Rotate", "UV", "VisualShaderNodeCustom", "UV Rotate.", [VisualShaderNodeUVRotate], VisualShaderNode.PORT_TYPE_VECTOR_2D))
 	add_options.push_back(AddOption.new("Tiler", "UV", "VisualShaderNodeCustom", "Tile a given UV into the given UV tiles and rotate them.", [VisualShaderNodeTiler], VisualShaderNode.PORT_TYPE_VECTOR_4D))
 	add_options.push_back(AddOption.new("Twirl", "UV", "VisualShaderNodeCustom", "UV Twirl.", [VisualShaderNodeUVTwirl], VisualShaderNode.PORT_TYPE_VECTOR_2D))
+	add_options.push_back(AddOption.new("UV to Sphere Coord", "UV", "VisualShaderNodeCustom", "UV to Sphere Coord.", [VisualShaderNodeUVtoSphereCoord], VisualShaderNode.PORT_TYPE_VECTOR_2D))
 	#endregion
 	#region Wave
 	add_options.push_back(AddOption.new("Triangle Wave", "Wave", "VisualShaderNodeCustom", "Triangle Wave function.", [VisualShaderNodeTriangleWave], VisualShaderNode.PORT_TYPE_SCALAR))
 	add_options.push_back(AddOption.new("Square Wave", "Wave", "VisualShaderNodeCustom", "Square Wave function.", [VisualShaderNodeSquareWave], VisualShaderNode.PORT_TYPE_SCALAR))
 	add_options.push_back(AddOption.new("Sawtooth Wave", "Wave", "VisualShaderNodeCustom", "Sawtooth Wave function.", [VisualShaderNodeSawtoothWave], VisualShaderNode.PORT_TYPE_SCALAR))
 	add_options.push_back(AddOption.new("Sine Wave", "Wave", "VisualShaderNodeCustom", "Sine Wave function.", [VisualShaderNodeSineWave], VisualShaderNode.PORT_TYPE_SCALAR))
+	add_options.push_back(AddOption.new("Sine Wave Angular", "Wave", "VisualShaderNodeCustom", "Sine Wave function with angular frequency input.", [VisualShaderNodeSineWaveAngular], VisualShaderNode.PORT_TYPE_SCALAR))
 	#endregion
 	#region Special
 	add_options.push_back(AddOption.new("Frame", "Special", "VisualShaderNodeFrame", "A rectangular area with a description string for better graph organization."))

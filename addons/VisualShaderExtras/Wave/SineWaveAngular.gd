@@ -66,5 +66,5 @@ func _get_global_code(mode):
 	"""
 
 func _get_code(input_vars, output_vars, mode, type):
-	
+
 	return "%s = sine_wave_angular(%s, %s, %s, %s, %s);" % [output_vars[0], input_vars[0], input_vars[1], input_vars[2], input_vars[3], input_vars[4]]
