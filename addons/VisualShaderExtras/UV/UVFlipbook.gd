@@ -90,7 +90,7 @@ func _get_output_port_type(port):
 func _get_global_code(mode):
 	return """
 		vec2 flipbook_anim(vec2 __uv, int __columns, int __rows, int __starting_frame, int __ending_frame, float __anim_speed) {
-			__starting_frame += int(fract(TIME * __anim_speed) * float(__ending_frame));
+			__starting_frame += int(fract(__anim_speed) * float(__ending_frame));
 			float frame = float(clamp(__starting_frame, 0, __ending_frame));
 			vec2 offPerFrame = vec2((1.0 / float(__columns)), (1.0 / float(__rows)));
 
@@ -109,9 +109,9 @@ func _get_global_code(mode):
 	"""
 
 func _get_code(input_vars, output_vars, mode, type):
-	var uv = "UV"
+	var uv := "UV"
 
-	if input_vars[0]:
+	if not input_vars[0].is_empty():
 		uv = input_vars[0]
 
 	return "%s.xy = flipbook_anim(%s.xy, %s, %s, %s, %s, %s );" % [output_vars[0], uv, input_vars[1], input_vars[2], input_vars[3], input_vars[4], input_vars[5]]
