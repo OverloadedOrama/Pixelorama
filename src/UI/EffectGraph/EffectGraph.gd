@@ -134,7 +134,16 @@ class AddOption:
 	#bool is_native = false
 	#int temp_idx = 0
 
-	func _init(_option_name: String, _category: String, _type: String, _description: String, _ops := [], _return_type := VisualShaderNode.PORT_TYPE_MAX, _mode := -1, _highend := false) -> void:
+	func _init(
+		_option_name: String,
+		_category: String,
+		_type: String,
+		_description: String,
+		_ops := [],
+		_return_type := VisualShaderNode.PORT_TYPE_MAX,
+		_mode := -1,
+		_highend := false
+	) -> void:
 		option_name = _option_name
 		type = _type
 		category = _category
@@ -1023,6 +1032,19 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 	elif vsn is VisualShaderNodeCustom:
 		vsn.set("expanded_output_ports", [0])
 		graph_node.title = vsn._get_name()
+		if vsn.has_method(&"_get_property_count"):
+			for i in vsn._get_property_count():
+				var option_button := OptionButton.new()
+				for option in vsn._get_property_options(i):
+					option_button.add_item(option)
+				option_button.select(vsn.get_option_index(i))
+				option_button.item_selected.connect(
+					func(idx_selected: int):
+						# TODO: Change this to support multiple properties.
+						vsn.set("properties", "0,%s;" % idx_selected)
+						_on_effect_changed()
+				)
+				graph_node.add_child(option_button)
 		for i in vsn._get_input_port_count():
 			_create_input(vsn._get_input_port_name(i), graph_node, vsn, vsn._get_input_port_type(i), i)
 		for i in vsn._get_output_port_count():
@@ -2114,6 +2136,7 @@ func _add_valid_connection_types() -> void:
 
 func fill_add_options() -> void:
 	#region Color
+	add_options.push_back(AddOption.new("Blend modes", "Color/Common", "VisualShaderNodeCustom", "Color function.", [VisualShaderNodeBlendModes], VisualShaderNode.PORT_TYPE_VECTOR_3D))
 	add_options.push_back(AddOption.new("ColorFunc", "Color/Common", "VisualShaderNodeColorFunc", "Color function.", [], VisualShaderNode.PORT_TYPE_VECTOR_3D))
 	add_options.push_back(AddOption.new("ColorOp", "Color/Common", "VisualShaderNodeColorOp", "Color operator.", [], VisualShaderNode.PORT_TYPE_VECTOR_3D))
 
@@ -2519,6 +2542,25 @@ func fill_add_options() -> void:
 	add_options.push_back(AddOption.new("Vector3Parameter", "Vector/Variables", "VisualShaderNodeVec3Parameter", "3D vector parameter.", [], VisualShaderNode.PORT_TYPE_VECTOR_3D));
 	add_options.push_back(AddOption.new("Vector4Constant", "Vector/Variables", "VisualShaderNodeVec4Constant", "4D vector constant.", [], VisualShaderNode.PORT_TYPE_VECTOR_4D));
 	add_options.push_back(AddOption.new("Vector4Parameter", "Vector/Variables", "VisualShaderNodeVec4Parameter", "4D vector parameter.", [], VisualShaderNode.PORT_TYPE_VECTOR_4D))
+	#endregion
+	#region Procedural
+	#add_options.push_back(AddOption.new("Box", "Procedural", "VisualShaderNodeCustom", "Signed Distance Field (SDF) Box Shape", [VisualShaderNodeBox], VisualShaderNode.PORT_TYPE_VECTOR_3D))
+	#add_options.push_back(AddOption.new("Circle", "Procedural", "VisualShaderNodeCustom", "Signed Distance Field (SDF) Box Shape", [VisualShaderNodeCircle], VisualShaderNode.PORT_TYPE_VECTOR_3D))
+	add_options.push_back(AddOption.new("Checkerboard", "Procedural", "VisualShaderNodeCustom", "Checkerboard Pattern with two given input colors.", [VisualShaderNodeCheckerboard], VisualShaderNode.PORT_TYPE_VECTOR_3D))
+	add_options.push_back(AddOption.new("Radial Gradient", "Procedural", "VisualShaderNodeCustom", "UV Radial gradient with an adjustable fraction size.", [VisualShaderNodeRadialGradient], VisualShaderNode.PORT_TYPE_SCALAR))
+	add_options.push_back(AddOption.new("PSRD Noise 2D", "Procedural", "VisualShaderNodeCustom", "Seamless performant 2D noise for shaders.", [VisualShaderNodePSRDNoise2D], VisualShaderNode.PORT_TYPE_SCALAR))
+	add_options.push_back(AddOption.new("PSRD Noise 3D", "Procedural", "VisualShaderNodeCustom", "Seamless performant 3D noise for shaders.", [VisualShaderNodePSRDNoise3D], VisualShaderNode.PORT_TYPE_SCALAR))
+	#endregion
+	#region UV
+	add_options.push_back(AddOption.new("Rotate", "UV", "VisualShaderNodeCustom", "UV Rotate.", [VisualShaderNodeUVRotate], VisualShaderNode.PORT_TYPE_VECTOR_2D))
+	add_options.push_back(AddOption.new("Tiler", "UV", "VisualShaderNodeCustom", "Tile a given UV into the given UV tiles and rotate them.", [VisualShaderNodeTiler], VisualShaderNode.PORT_TYPE_VECTOR_4D))
+	add_options.push_back(AddOption.new("Twirl", "UV", "VisualShaderNodeCustom", "UV Twirl.", [VisualShaderNodeUVTwirl], VisualShaderNode.PORT_TYPE_VECTOR_2D))
+	#endregion
+	#region Wave
+	add_options.push_back(AddOption.new("Triangle Wave", "Wave", "VisualShaderNodeCustom", "Triangle Wave function.", [VisualShaderNodeTriangleWave], VisualShaderNode.PORT_TYPE_SCALAR))
+	add_options.push_back(AddOption.new("Square Wave", "Wave", "VisualShaderNodeCustom", "Square Wave function.", [VisualShaderNodeSquareWave], VisualShaderNode.PORT_TYPE_SCALAR))
+	add_options.push_back(AddOption.new("Sawtooth Wave", "Wave", "VisualShaderNodeCustom", "Sawtooth Wave function.", [VisualShaderNodeSawtoothWave], VisualShaderNode.PORT_TYPE_SCALAR))
+	add_options.push_back(AddOption.new("Sine Wave", "Wave", "VisualShaderNodeCustom", "Sine Wave function.", [VisualShaderNodeSineWave], VisualShaderNode.PORT_TYPE_SCALAR))
 	#endregion
 	#region Special
 	add_options.push_back(AddOption.new("Frame", "Special", "VisualShaderNodeFrame", "A rectangular area with a description string for better graph organization."))
