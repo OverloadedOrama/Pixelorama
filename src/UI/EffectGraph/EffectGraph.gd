@@ -2553,8 +2553,13 @@ func fill_add_options() -> void:
 	#endregion
 	#region UV
 	add_options.push_back(AddOption.new("Rotate", "UV", "VisualShaderNodeCustom", "UV Rotate.", [VisualShaderNodeUVRotate], VisualShaderNode.PORT_TYPE_VECTOR_2D))
-	add_options.push_back(AddOption.new("Tiler", "UV", "VisualShaderNodeCustom", "Tile a given UV into the given UV tiles and rotate them.", [VisualShaderNodeTiler], VisualShaderNode.PORT_TYPE_VECTOR_4D))
+	add_options.push_back(AddOption.new("Tile", "UV", "VisualShaderNodeCustom", "Tile a given UV into the given UV tiles and rotate them.", [VisualShaderNodeTiler], VisualShaderNode.PORT_TYPE_VECTOR_4D))
 	add_options.push_back(AddOption.new("Twirl", "UV", "VisualShaderNodeCustom", "UV Twirl.", [VisualShaderNodeUVTwirl], VisualShaderNode.PORT_TYPE_VECTOR_2D))
+	add_options.push_back(AddOption.new("Distortion", "UV", "VisualShaderNodeCustom", "Wave-like UV distortion.", [VisualShaderNodeUVdistortion], VisualShaderNode.PORT_TYPE_VECTOR_2D))
+	add_options.push_back(AddOption.new("Flip", "UV", "VisualShaderNodeCustom", "Flip UV horizontal or vertical.", [VisualShaderNodeUVflip], VisualShaderNode.PORT_TYPE_VECTOR_2D))
+	add_options.push_back(AddOption.new("Lens Distortion", "UV", "VisualShaderNodeCustom", "Lens distortion effect.\n[factor] > 0 - fisheye / barrel;\n[factor] < 0 - antifisheye / pincushion.", [VisualShaderNodeUVlensDistortion], VisualShaderNode.PORT_TYPE_VECTOR_2D))
+	add_options.push_back(AddOption.new("Pixelate", "UV", "VisualShaderNodeCustom", "Pixelate UV by size factor.", [VisualShaderNodeUVpixelate], VisualShaderNode.PORT_TYPE_VECTOR_2D))
+	add_options.push_back(AddOption.new("Spherical UV", "UV", "VisualShaderNodeCustom", "Makes UV look like a sphere. Can be used to make 2d planets.", [VisualShaderNodeUVspherical], VisualShaderNode.PORT_TYPE_VECTOR_2D))
 	add_options.push_back(AddOption.new("Flipbook", "UV", "VisualShaderNodeCustom", "UV Flipbook Animation.", [VisualShaderNodeUVFlipbook], VisualShaderNode.PORT_TYPE_VECTOR_2D))
 	add_options.push_back(AddOption.new("UV to Sphere Coord", "UV", "VisualShaderNodeCustom", "UV to Sphere Coord.", [VisualShaderNodeUVtoSphereCoord], VisualShaderNode.PORT_TYPE_VECTOR_2D))
 	#endregion
