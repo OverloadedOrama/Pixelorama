@@ -53,8 +53,8 @@ func _get_global_code(mode):
 
 func _get_code(input_vars, output_vars, mode, type):
 	var uv = "UV"
-	
+
 	if input_vars[0]:
 		uv = input_vars[0]
-	
+
 	return "%s.xy = _pixelateUV(%s.xy, %s.xy);" % [output_vars[0], uv, input_vars[1]]
