@@ -72,9 +72,9 @@ func _get_global_code(mode):
 
 func _get_code(input_vars, output_vars, mode, type):
 	var uv = "UV"
-	
+
 	if input_vars[0]:
 		uv = input_vars[0]
-	
+
 	return "%s.xy = _transformUV(%s.xy, %s.xy, %s.xy, %s.xy, %s, %s.xy);" % [
 			output_vars[0], uv, input_vars[2], input_vars[3], input_vars[1], input_vars[4], input_vars[5]]
