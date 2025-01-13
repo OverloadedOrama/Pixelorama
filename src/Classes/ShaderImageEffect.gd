@@ -30,18 +30,6 @@ func generate_image(
 	shader.code = shader.code.replace("unshaded", "unshaded, blend_premul_alpha")
 	var filter := RenderingServer.CANVAS_ITEM_TEXTURE_FILTER_NEAREST
 	var repeat := RenderingServer.CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT
-	var filter_str := "PXO_SET_FILTER="
-	var repeat_str := "PXO_SET_REPEAT="
-	var filter_idx := shader.code.find(filter_str)
-	if filter_idx != -1:
-		var filter_to_set := int(shader.code[filter_idx + filter_str.length()])
-		if filter_to_set > 0 and filter_to_set < RenderingServer.CANVAS_ITEM_TEXTURE_FILTER_MAX:
-			filter = filter_to_set
-	var repeat_idx := shader.code.find(repeat_str)
-	if repeat_idx != -1:
-		var repeat_to_set := int(shader.code[repeat_idx + repeat_str.length()])
-		if repeat_to_set > 0 and repeat_to_set < RenderingServer.CANVAS_ITEM_TEXTURE_REPEAT_MAX:
-			repeat = repeat_to_set
 	var vp := RenderingServer.viewport_create()
 	var canvas := RenderingServer.canvas_create()
 	RenderingServer.viewport_attach_canvas(vp, canvas)
