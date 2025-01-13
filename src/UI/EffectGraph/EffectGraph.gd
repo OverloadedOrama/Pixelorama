@@ -2156,24 +2156,12 @@ func _add_valid_connection_types() -> void:
 func fill_add_options() -> void:
 	#region Color
 	add_options.push_back(AddOption.new("Blend modes", "Color/Common", "VisualShaderNodeCustom", "Color function.", [VisualShaderNodeBlendModes], VisualShaderNode.PORT_TYPE_VECTOR_3D))
-	add_options.push_back(AddOption.new("ColorFunc", "Color/Common", "VisualShaderNodeColorFunc", "Color function.", [], VisualShaderNode.PORT_TYPE_VECTOR_3D))
-	add_options.push_back(AddOption.new("ColorOp", "Color/Common", "VisualShaderNodeColorOp", "Color operator.", [], VisualShaderNode.PORT_TYPE_VECTOR_3D))
 
 	add_options.push_back(AddOption.new("Grayscale", "Color/Functions", "VisualShaderNodeColorFunc", "Grayscale function.", [ VisualShaderNodeColorFunc.FUNC_GRAYSCALE ], VisualShaderNode.PORT_TYPE_VECTOR_3D))
 	add_options.push_back(AddOption.new("HSV to RGB", "Color/Functions", "VisualShaderNodeColorFunc", "Converts HSV vector to RGB equivalent.", [ VisualShaderNodeColorFunc.FUNC_HSV2RGB, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D))
 	add_options.push_back(AddOption.new("RGB to HSV", "Color/Functions", "VisualShaderNodeColorFunc", "Converts RGB vector to HSV equivalent.", [ VisualShaderNodeColorFunc.FUNC_RGB2HSV, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D))
 	add_options.push_back(AddOption.new("HSV Adjustment", "Color/Functions", "VisualShaderNodeCustom", "Convert RGB input colors to HSV and offset their values.", [VisualShaderNodeCustomHSVAdjustment], VisualShaderNode.PORT_TYPE_VECTOR_3D))
 	add_options.push_back(AddOption.new("Sepia", "Color/Functions", "VisualShaderNodeColorFunc", "Sepia function.", [ VisualShaderNodeColorFunc.FUNC_SEPIA ], VisualShaderNode.PORT_TYPE_VECTOR_3D))
-
-	add_options.push_back(AddOption.new("Burn", "Color/Operators", "VisualShaderNodeColorOp", "Burn operator.", [ VisualShaderNodeColorOp.OP_BURN ], VisualShaderNode.PORT_TYPE_VECTOR_3D))
-	add_options.push_back(AddOption.new("Darken", "Color/Operators", "VisualShaderNodeColorOp", "Darken operator.", [ VisualShaderNodeColorOp.OP_DARKEN ], VisualShaderNode.PORT_TYPE_VECTOR_3D))
-	add_options.push_back(AddOption.new("Difference", "Color/Operators", "VisualShaderNodeColorOp", "Difference operator.", [ VisualShaderNodeColorOp.OP_DIFFERENCE ], VisualShaderNode.PORT_TYPE_VECTOR_3D))
-	add_options.push_back(AddOption.new("Dodge", "Color/Operators", "VisualShaderNodeColorOp", "Dodge operator.", [ VisualShaderNodeColorOp.OP_DODGE ], VisualShaderNode.PORT_TYPE_VECTOR_3D))
-	add_options.push_back(AddOption.new("HardLight", "Color/Operators", "VisualShaderNodeColorOp", "HardLight operator.", [ VisualShaderNodeColorOp.OP_HARD_LIGHT ], VisualShaderNode.PORT_TYPE_VECTOR_3D))
-	add_options.push_back(AddOption.new("Lighten", "Color/Operators", "VisualShaderNodeColorOp", "Lighten operator.", [ VisualShaderNodeColorOp.OP_LIGHTEN ], VisualShaderNode.PORT_TYPE_VECTOR_3D))
-	add_options.push_back(AddOption.new("Overlay", "Color/Operators", "VisualShaderNodeColorOp", "Overlay operator.", [ VisualShaderNodeColorOp.OP_OVERLAY ], VisualShaderNode.PORT_TYPE_VECTOR_3D))
-	add_options.push_back(AddOption.new("Screen", "Color/Operators", "VisualShaderNodeColorOp", "Screen operator.", [ VisualShaderNodeColorOp.OP_SCREEN ], VisualShaderNode.PORT_TYPE_VECTOR_3D))
-	add_options.push_back(AddOption.new("SoftLight", "Color/Operators", "VisualShaderNodeColorOp", "SoftLight operator.", [ VisualShaderNodeColorOp.OP_SOFT_LIGHT ], VisualShaderNode.PORT_TYPE_VECTOR_3D))
 
 	add_options.push_back(AddOption.new("ColorConstant", "Color/Variables", "VisualShaderNodeColorConstant", "Color constant.", [], VisualShaderNode.PORT_TYPE_VECTOR_4D))
 	add_options.push_back(AddOption.new("ColorParameter", "Color/Variables", "VisualShaderNodeColorParameter", "Color parameter.", [], VisualShaderNode.PORT_TYPE_VECTOR_4D))
@@ -2218,12 +2206,6 @@ func fill_add_options() -> void:
 	#add_options.push_back(AddOption.new("Normal map texture", "Input/Fragment", "VisualShaderNodeInput", "", [ "normal_texture" ], VisualShaderNode.PORT_TYPE_SAMPLER, -1))
 	#endregion
 	#region Scalar
-	add_options.push_back(AddOption.new("FloatFunc", "Scalar/Common", "VisualShaderNodeFloatFunc", ("Float function."), [], VisualShaderNode.PORT_TYPE_SCALAR));
-	add_options.push_back(AddOption.new("FloatOp", "Scalar/Common", "VisualShaderNodeFloatOp", ("Float operator."), [], VisualShaderNode.PORT_TYPE_SCALAR));
-	add_options.push_back(AddOption.new("IntFunc", "Scalar/Common", "VisualShaderNodeIntFunc", ("Integer function."), [], VisualShaderNode.PORT_TYPE_SCALAR_INT));
-	add_options.push_back(AddOption.new("IntOp", "Scalar/Common", "VisualShaderNodeIntOp", ("Integer operator."), [], VisualShaderNode.PORT_TYPE_SCALAR_INT));
-	add_options.push_back(AddOption.new("UIntFunc", "Scalar/Common", "VisualShaderNodeUIntFunc", ("Unsigned integer function."), [], VisualShaderNode.PORT_TYPE_SCALAR_UINT));
-	add_options.push_back(AddOption.new("UIntOp", "Scalar/Common", "VisualShaderNodeUIntOp", ("Unsigned integer operator."), [], VisualShaderNode.PORT_TYPE_SCALAR_UINT));
 	# FUNCTIONS
 	add_options.push_back(AddOption.new("Abs", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("Returns the absolute value of the parameter."), [ VisualShaderNodeFloatFunc.FUNC_ABS ], VisualShaderNode.PORT_TYPE_SCALAR));
 	add_options.push_back(AddOption.new("Abs", "Scalar/Functions", "VisualShaderNodeIntFunc", ("Returns the absolute value of the parameter."), [ VisualShaderNodeIntFunc.FUNC_ABS ], VisualShaderNode.PORT_TYPE_SCALAR_INT));
@@ -2314,7 +2296,6 @@ func fill_add_options() -> void:
 
 	#endregion
 	#region Textures
-	add_options.push_back(AddOption.new("UVFunc", "Textures/Common", "VisualShaderNodeUVFunc", "Function to be applied on texture coordinates.", [], VisualShaderNode.PORT_TYPE_VECTOR_2D))
 	add_options.push_back(AddOption.new("UVPolarCoord", "Textures/Common", "VisualShaderNodeUVPolarCoord", "Polar coordinates conversion applied on texture coordinates.", [], VisualShaderNode.PORT_TYPE_VECTOR_2D))
 	#add_options.push_back(AddOption.new("CubeMap", "Textures/Functions", "VisualShaderNodeCubemap", "Perform the cubic texture lookup.", [], VisualShaderNode.PORT_TYPE_VECTOR_4D))
 	#add_options.push_back(AddOption.new("CurveTexture", "Textures/Functions", "VisualShaderNodeCurveTexture", "Perform the curve texture lookup.", [], VisualShaderNode.PORT_TYPE_SCALAR));
@@ -2331,9 +2312,6 @@ func fill_add_options() -> void:
 	add_options.push_back(AddOption.new("Texture2DParameter", "Textures/Variables", "VisualShaderNodeTexture2DParameter", "2D texture parameter lookup.", [], VisualShaderNode.PORT_TYPE_SAMPLER))
 	#endregion
 	#region Transform
-	add_options.push_back(AddOption.new("TransformFunc", "Transform/Common", "VisualShaderNodeTransformFunc", "Transform function.", [], VisualShaderNode.PORT_TYPE_TRANSFORM))
-	add_options.push_back(AddOption.new("TransformOp", "Transform/Common", "VisualShaderNodeTransformOp", "Transform operator.", [], VisualShaderNode.PORT_TYPE_TRANSFORM))
-
 	add_options.push_back(AddOption.new("OuterProduct", "Transform/Composition", "VisualShaderNodeOuterProduct", "Calculate the outer product of a pair of vectors.\n\nOuterProduct treats the first parameter 'c' as a column vector (matrix with one column) and the second parameter 'r' as a row vector (matrix with one row) and does a linear algebraic matrix multiply 'c * r', yielding a matrix whose number of rows is the number of components in 'c' and whose number of columns is the number of components in 'r'.", [], VisualShaderNode.PORT_TYPE_TRANSFORM));
 	add_options.push_back(AddOption.new("TransformCompose", "Transform/Composition", "VisualShaderNodeTransformCompose", "Composes transform from four vectors.", [], VisualShaderNode.PORT_TYPE_TRANSFORM))
 	add_options.push_back(AddOption.new("TransformDecompose", "Transform/Composition", "VisualShaderNodeTransformDecompose", "Decomposes transform to four vectors."));
@@ -2359,11 +2337,6 @@ func fill_add_options() -> void:
 	add_options.push_back(AddOption.new("RotationByAxis", "Utility", "VisualShaderNodeRotationByAxis", "Builds a rotation matrix from the given axis and angle, multiply the input vector by it and returns both this vector and a matrix.", [], VisualShaderNode.PORT_TYPE_VECTOR_3D))
 	#endregion
 	#region Vector
-	add_options.push_back(AddOption.new("VectorFunc", "Vector/Common", "VisualShaderNodeVectorFunc", "Vector function.", [], VisualShaderNode.PORT_TYPE_VECTOR_3D));
-	add_options.push_back(AddOption.new("VectorOp", "Vector/Common", "VisualShaderNodeVectorOp", "Vector operator.", [], VisualShaderNode.PORT_TYPE_VECTOR_3D));
-	add_options.push_back(AddOption.new("VectorCompose", "Vector/Common", "VisualShaderNodeVectorCompose", "Composes vector from scalars."));
-	add_options.push_back(AddOption.new("VectorDecompose", "Vector/Common", "VisualShaderNodeVectorDecompose", "Decomposes vector to scalars."));
-
 	add_options.push_back(AddOption.new("Vector2Compose", "Vector/Composition", "VisualShaderNodeVectorCompose", "Composes 2D vector from two scalars.", [ VisualShaderNodeVectorCompose.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
 	add_options.push_back(AddOption.new("Vector2Decompose", "Vector/Composition", "VisualShaderNodeVectorDecompose", "Decomposes 2D vector to two scalars.", [ VisualShaderNodeVectorDecompose.OP_TYPE_VECTOR_2D ]));
 	add_options.push_back(AddOption.new("Vector3Compose", "Vector/Composition", "VisualShaderNodeVectorCompose", "Composes 3D vector from three scalars.", [ VisualShaderNodeVectorCompose.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
