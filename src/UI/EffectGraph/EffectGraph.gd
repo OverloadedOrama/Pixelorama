@@ -2332,7 +2332,6 @@ func fill_add_options() -> void:
 	add_options.push_back(AddOption.new("TransformParameter", "Transform/Variables", "VisualShaderNodeTransformParameter", "Transform parameter.", [], VisualShaderNode.PORT_TYPE_TRANSFORM));
 	#endregion
 	#region Utility
-	add_options.push_back(AddOption.new("GPU perlin noise", "Utility", "VisualShaderNodeCustom", "Classic Perlin-Noise-3D function (by Curly-Brace)", [VisualShaderNodePerlinNoise3D], VisualShaderNode.PORT_TYPE_SCALAR))
 	add_options.push_back(AddOption.new("RandomRange", "Utility", "VisualShaderNodeRandomRange", "Returns a random value between the minimum and maximum input values.", [], VisualShaderNode.PORT_TYPE_SCALAR))
 	add_options.push_back(AddOption.new("RotationByAxis", "Utility", "VisualShaderNodeRotationByAxis", "Builds a rotation matrix from the given axis and angle, multiply the input vector by it and returns both this vector and a matrix.", [], VisualShaderNode.PORT_TYPE_VECTOR_3D))
 	#endregion
@@ -2540,8 +2539,15 @@ func fill_add_options() -> void:
 	#add_options.push_back(AddOption.new("Circle", "Procedural", "VisualShaderNodeCustom", "Signed Distance Field (SDF) Box Shape", [VisualShaderNodeCircle], VisualShaderNode.PORT_TYPE_VECTOR_3D))
 	add_options.push_back(AddOption.new("Checkerboard", "Procedural", "VisualShaderNodeCustom", "Checkerboard Pattern with two given input colors.", [VisualShaderNodeCheckerboard], VisualShaderNode.PORT_TYPE_VECTOR_3D))
 	add_options.push_back(AddOption.new("Radial Gradient", "Procedural", "VisualShaderNodeCustom", "UV Radial gradient with an adjustable fraction size.", [VisualShaderNodeRadialGradient], VisualShaderNode.PORT_TYPE_SCALAR))
-	add_options.push_back(AddOption.new("PSRD Noise 2D", "Procedural", "VisualShaderNodeCustom", "Seamless performant 2D noise for shaders.", [VisualShaderNodePSRDNoise2D], VisualShaderNode.PORT_TYPE_SCALAR))
-	add_options.push_back(AddOption.new("PSRD Noise 3D", "Procedural", "VisualShaderNodeCustom", "Seamless performant 3D noise for shaders.", [VisualShaderNodePSRDNoise3D], VisualShaderNode.PORT_TYPE_SCALAR))
+	add_options.push_back(AddOption.new("Fire FX", "Procedural", "VisualShaderNodeCustom", "3-step fire based on perlin noise.", [VisualShaderNodeRGBAfireFX], VisualShaderNode.PORT_TYPE_VECTOR_3D))
+	#endregion
+	#region Noise
+	add_options.push_back(AddOption.new("Generic Noise 2D", "Noise", "VisualShaderNodeCustom", "GenericNoise using hash random function.", [VisualShaderNodeNoiseGeneric2d], VisualShaderNode.PORT_TYPE_SCALAR))
+	add_options.push_back(AddOption.new("Perlin Noise 2D", "Noise", "VisualShaderNodeCustom", "Classic 2D perlin noise with ability to set period.\nIf you dont want any period - set it to zero.", [VisualShaderNodeNoisePerlin2d], VisualShaderNode.PORT_TYPE_SCALAR))
+	add_options.push_back(AddOption.new("Perlin Noise 3D", "Noise", "VisualShaderNodeCustom", "Classic 3D perlin noise.", [VisualShaderNodeNoisePerlin3d], VisualShaderNode.PORT_TYPE_SCALAR))
+	add_options.push_back(AddOption.new("Perlin Noise 4D", "Noise", "VisualShaderNodeCustom", "Classic 4D perlin noise.", [VisualShaderNodeNoisePerlin4d], VisualShaderNode.PORT_TYPE_SCALAR))
+	add_options.push_back(AddOption.new("PSRD Noise 2D", "Noise", "VisualShaderNodeCustom", "Seamless performant 2D noise for shaders.", [VisualShaderNodePSRDNoise2D], VisualShaderNode.PORT_TYPE_SCALAR))
+	add_options.push_back(AddOption.new("PSRD Noise 3D", "Noise", "VisualShaderNodeCustom", "Seamless performant 3D noise for shaders.", [VisualShaderNodePSRDNoise3D], VisualShaderNode.PORT_TYPE_SCALAR))
 	#endregion
 	#region UV
 	add_options.push_back(AddOption.new("Rotate", "UV", "VisualShaderNodeCustom", "UV Rotate.", [VisualShaderNodeUVRotate], VisualShaderNode.PORT_TYPE_VECTOR_2D))
