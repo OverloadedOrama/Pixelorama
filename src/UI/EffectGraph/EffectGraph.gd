@@ -309,7 +309,7 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		graph_node.get_titlebar_hbox().add_child(close_button)
 	if vsn is VisualShaderNodeOutput:
 		_create_input("Color", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 0, false)
-		_create_input("Alpha", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 1, false)
+		_create_input("Alpha", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 1, false)
 		#_create_input("Normal", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 2, false)
 		#_create_input("Normal Map", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 3, false)
 		#_create_input("Normal Map Depth", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 4, false)
@@ -2162,6 +2162,8 @@ func fill_add_options() -> void:
 	add_options.push_back(AddOption.new("RGB to HSV", "Color/Functions", "VisualShaderNodeColorFunc", "Converts RGB vector to HSV equivalent.", [ VisualShaderNodeColorFunc.FUNC_RGB2HSV, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D))
 	add_options.push_back(AddOption.new("HSV Adjustment", "Color/Functions", "VisualShaderNodeCustom", "Convert RGB input colors to HSV and offset their values.", [VisualShaderNodeCustomHSVAdjustment], VisualShaderNode.PORT_TYPE_VECTOR_3D))
 	add_options.push_back(AddOption.new("Sepia", "Color/Functions", "VisualShaderNodeColorFunc", "Sepia function.", [ VisualShaderNodeColorFunc.FUNC_SEPIA ], VisualShaderNode.PORT_TYPE_VECTOR_3D))
+	add_options.push_back(AddOption.new("CGA 4-color Palette", "Color/Functions", "VisualShaderNodeCustom", "Swaps color to CGA 4-color palette.", [VisualShaderNodeRGBAturnCGA4Palette], VisualShaderNode.PORT_TYPE_VECTOR_3D))
+	add_options.push_back(AddOption.new("GameBoy Palette", "Color/Functions", "VisualShaderNodeCustom", "Swaps color to GameBoy palette.", [VisualShaderNodeRGBAturnGameBoyPalette], VisualShaderNode.PORT_TYPE_VECTOR_3D))
 
 	add_options.push_back(AddOption.new("ColorConstant", "Color/Variables", "VisualShaderNodeColorConstant", "Color constant.", [], VisualShaderNode.PORT_TYPE_VECTOR_4D))
 	add_options.push_back(AddOption.new("ColorParameter", "Color/Variables", "VisualShaderNodeColorParameter", "Color parameter.", [], VisualShaderNode.PORT_TYPE_VECTOR_4D))
