@@ -3,11 +3,11 @@ extends VisualShaderNodeCustom
 class_name VisualShaderNodeRGBAgradient4corners
 
 func _init():
-	set_input_port_default_value(1, Vector3(1.0, 1.0, 1.0))
+	set_input_port_default_value(1, Vector3(1.0, 0.0, 0.0))
 	set_input_port_default_value(2, 1.0)
-	set_input_port_default_value(3, Vector3(1.0, 1.0, 1.0))
+	set_input_port_default_value(3, Vector3(0.0, 1.0, 0.0))
 	set_input_port_default_value(4, 1.0)
-	set_input_port_default_value(5, Vector3(1.0, 1.0, 1.0))
+	set_input_port_default_value(5, Vector3(0.0, 0.0, 1.0))
 	set_input_port_default_value(6, 1.0)
 	set_input_port_default_value(7, Vector3(1.0, 1.0, 1.0))
 	set_input_port_default_value(8, 1.0)
@@ -95,10 +95,10 @@ func _get_global_code(mode):
 
 func _get_code(input_vars, output_vars, mode, type):
 	var uv = "UV"
-	
+
 	if input_vars[0]:
 		uv = input_vars[0]
-	
+
 	return """vec4 %s%s = _gradient4cornersFunc(%s.xy, vec4(%s, %s), vec4(%s, %s), vec4(%s, %s), vec4(%s, %s));
 %s = %s%s.rgb;
 %s = %s%s.a;""" % [
