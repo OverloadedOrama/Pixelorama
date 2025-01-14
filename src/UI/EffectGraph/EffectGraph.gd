@@ -2162,6 +2162,7 @@ func fill_add_options() -> void:
 	add_options.push_back(AddOption.new("RGB to HSV", "Color/Functions", "VisualShaderNodeColorFunc", "Converts RGB vector to HSV equivalent.", [ VisualShaderNodeColorFunc.FUNC_RGB2HSV, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D))
 	add_options.push_back(AddOption.new("HSV Adjustment", "Color/Functions", "VisualShaderNodeCustom", "Convert RGB input colors to HSV and offset their values.", [VisualShaderNodeCustomHSVAdjustment], VisualShaderNode.PORT_TYPE_VECTOR_3D))
 	add_options.push_back(AddOption.new("Sepia", "Color/Functions", "VisualShaderNodeColorFunc", "Sepia function.", [ VisualShaderNodeColorFunc.FUNC_SEPIA ], VisualShaderNode.PORT_TYPE_VECTOR_3D))
+	add_options.push_back(AddOption.new("Posterize", "Color/Functions", "VisualShaderNodeCustom", "Rounds values based on the value coming through [steps].", [VisualShaderNodeRGBAposterize], VisualShaderNode.PORT_TYPE_VECTOR_3D))
 	add_options.push_back(AddOption.new("CGA 4-color Palette", "Color/Functions", "VisualShaderNodeCustom", "Swaps color to CGA 4-color palette.", [VisualShaderNodeRGBAturnCGA4Palette], VisualShaderNode.PORT_TYPE_VECTOR_3D))
 	add_options.push_back(AddOption.new("GameBoy Palette", "Color/Functions", "VisualShaderNodeCustom", "Swaps color to GameBoy palette.", [VisualShaderNodeRGBAturnGameBoyPalette], VisualShaderNode.PORT_TYPE_VECTOR_3D))
 
@@ -2541,6 +2542,7 @@ func fill_add_options() -> void:
 	#add_options.push_back(AddOption.new("Circle", "Procedural", "VisualShaderNodeCustom", "Signed Distance Field (SDF) Box Shape", [VisualShaderNodeCircle], VisualShaderNode.PORT_TYPE_VECTOR_3D))
 	add_options.push_back(AddOption.new("Checkerboard", "Procedural", "VisualShaderNodeCustom", "Checkerboard Pattern with two given input colors.", [VisualShaderNodeCheckerboard], VisualShaderNode.PORT_TYPE_VECTOR_3D))
 	add_options.push_back(AddOption.new("Radial Gradient", "Procedural", "VisualShaderNodeCustom", "UV Radial gradient with an adjustable fraction size.", [VisualShaderNodeRadialGradient], VisualShaderNode.PORT_TYPE_SCALAR))
+	add_options.push_back(AddOption.new("Gradient 4-Corners", "Procedural", "VisualShaderNodeCustom", "Generates gradient based on corners colors.", [VisualShaderNodeRGBAgradient4corners], VisualShaderNode.PORT_TYPE_VECTOR_3D))
 	add_options.push_back(AddOption.new("Fire FX", "Procedural", "VisualShaderNodeCustom", "3-step fire based on perlin noise.", [VisualShaderNodeRGBAfireFX], VisualShaderNode.PORT_TYPE_VECTOR_3D))
 	#endregion
 	#region Noise
