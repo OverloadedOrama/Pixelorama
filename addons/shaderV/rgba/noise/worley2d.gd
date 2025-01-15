@@ -70,10 +70,10 @@ func _get_global_code(mode):
 
 func _get_code(input_vars, output_vars, mode, type):
 	var uv = "UV"
-	
+
 	if input_vars[0]:
 		uv = input_vars[0]
-	
+
 	return """vec2 %s%s = _cellular2dNoiseFunc((%s.xy+%s.xy)*%s, min(max(%s, 0.0), 1.0));
 %s = %s%s.x;
 %s = %s%s.y;""" % [
