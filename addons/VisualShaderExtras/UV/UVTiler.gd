@@ -26,9 +26,9 @@ func _get_name():
 	return "UVTiler"
 
 func _init() -> void:
-	set_input_port_default_value(0, Vector2(2, 2))
-	set_input_port_default_value(1, 4.0)
-	set_input_port_default_value(2, 0.0)
+	set_input_port_default_value(1, Vector2(2, 2))
+	set_input_port_default_value(2, 4.0)
+	set_input_port_default_value(3, 0.0)
 
 func _get_category():
 	return "VisualShaderExtras/UV"
@@ -40,15 +40,17 @@ func _get_return_icon_type():
 	return VisualShaderNode.PORT_TYPE_VECTOR_4D
 
 func _get_input_port_count():
-	return 3
+	return 4
 
 func _get_input_port_name(port):
 	match port:
 		0:
-			return "Tiling"
+			return "uv"
 		1:
-			return "Split"
+			return "Tiling"
 		2:
+			return "Split"
+		3:
 			return "Rotation (Radians)"
 
 func _get_input_port_type(port):
@@ -56,8 +58,10 @@ func _get_input_port_type(port):
 		0:
 			return VisualShaderNode.PORT_TYPE_VECTOR_2D
 		1:
-			return VisualShaderNode.PORT_TYPE_SCALAR
+			return VisualShaderNode.PORT_TYPE_VECTOR_2D
 		2:
+			return VisualShaderNode.PORT_TYPE_SCALAR
+		3:
 			return VisualShaderNode.PORT_TYPE_SCALAR
 
 func _get_output_port_count():
@@ -86,17 +90,21 @@ func _get_global_code(mode):
 
 func _get_code(input_vars, output_vars, mode, type):
 	var rot:String
-	rot = "st = rotate(st, %s);" % input_vars[2] if input_vars[2] != "" else ""
+	rot = "st = rotate(st, %s);" % input_vars[3] if input_vars[3] != "" else ""
 
+	var uv: String = input_vars[0]
+	if uv.is_empty():
+		uv = "UV"
 	return """
-	vec2 st = UV.xy/{in_tilexy}.xy;
+	vec2 st = {uv}.xy/{in_tilexy}.xy;
 	st = tile(st,{split});
 	{rot}
 	{out_uv} = st;
 	""".format(
 		{
-		"in_tilexy":input_vars[0],
-		"split":  	input_vars[1],
+		"uv": uv,
+		"in_tilexy":input_vars[1],
+		"split":  	input_vars[2],
 		"out_uv":	output_vars[0],
 		"rot":		rot
 		})
