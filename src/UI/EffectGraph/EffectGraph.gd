@@ -2156,8 +2156,6 @@ func _add_valid_connection_types() -> void:
 
 func fill_add_options() -> void:
 	#region Color
-	add_options.push_back(AddOption.new("Blend modes", "Color/Common", "VisualShaderNodeCustom", "Color function.", [VisualShaderNodeBlendModes], VisualShaderNode.PORT_TYPE_VECTOR_3D))
-
 	add_options.push_back(AddOption.new("Grayscale", "Color/Functions", "VisualShaderNodeColorFunc", "Grayscale function.", [ VisualShaderNodeColorFunc.FUNC_GRAYSCALE ], VisualShaderNode.PORT_TYPE_VECTOR_3D))
 	add_options.push_back(AddOption.new("HSV to RGB", "Color/Functions", "VisualShaderNodeColorFunc", "Converts HSV vector to RGB equivalent.", [ VisualShaderNodeColorFunc.FUNC_HSV2RGB, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D))
 	add_options.push_back(AddOption.new("RGB to HSV", "Color/Functions", "VisualShaderNodeColorFunc", "Converts RGB vector to HSV equivalent.", [ VisualShaderNodeColorFunc.FUNC_RGB2HSV, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D))
@@ -2169,6 +2167,8 @@ func fill_add_options() -> void:
 
 	add_options.push_back(AddOption.new("ColorConstant", "Color/Variables", "VisualShaderNodeColorConstant", "Color constant.", [], VisualShaderNode.PORT_TYPE_VECTOR_4D))
 	add_options.push_back(AddOption.new("ColorParameter", "Color/Variables", "VisualShaderNodeColorParameter", "Color parameter.", [], VisualShaderNode.PORT_TYPE_VECTOR_4D))
+
+	add_options.push_back(AddOption.new("Blend modes", "Color", "VisualShaderNodeCustom", "Color function.", [VisualShaderNodeBlendModes], VisualShaderNode.PORT_TYPE_VECTOR_3D))
 	#endregion
 	#region Conditional
 	var compare_func_desc := tr("Returns the boolean result of the %s comparison between two parameters.")
@@ -2300,7 +2300,6 @@ func fill_add_options() -> void:
 
 	#endregion
 	#region Textures
-	add_options.push_back(AddOption.new("UVPolarCoord", "Textures/Common", "VisualShaderNodeUVPolarCoord", "Polar coordinates conversion applied on texture coordinates.", [], VisualShaderNode.PORT_TYPE_VECTOR_2D))
 	#add_options.push_back(AddOption.new("CubeMap", "Textures/Functions", "VisualShaderNodeCubemap", "Perform the cubic texture lookup.", [], VisualShaderNode.PORT_TYPE_VECTOR_4D))
 	#add_options.push_back(AddOption.new("CurveTexture", "Textures/Functions", "VisualShaderNodeCurveTexture", "Perform the curve texture lookup.", [], VisualShaderNode.PORT_TYPE_SCALAR));
 	#add_options.push_back(AddOption.new("CurveXYZTexture", "Textures/Functions", "VisualShaderNodeCurveXYZTexture", "Perform the three components curve texture lookup.", [], VisualShaderNode.PORT_TYPE_VECTOR_3D));
@@ -2334,9 +2333,40 @@ func fill_add_options() -> void:
 	add_options.push_back(AddOption.new("TransformParameter", "Transform/Variables", "VisualShaderNodeTransformParameter", "Transform parameter.", [], VisualShaderNode.PORT_TYPE_TRANSFORM));
 	#endregion
 	#region Utility
+	#region Noise
+	add_options.push_back(AddOption.new("Fractal Generic Noise 2D", "Utility/Noise/Fractal", "VisualShaderNodeCustom", "Fractal generic noise using hash random function.", [VisualShaderNodeNoiseGeneric2dFractal], VisualShaderNode.PORT_TYPE_SCALAR))
+	add_options.push_back(AddOption.new("Fractal Perlin Noise 2D", "Utility/Noise/Fractal", "VisualShaderNodeCustom", "Fractal 2D Perlin Noise.", [VisualShaderNodeNoisePerlin2dFractal], VisualShaderNode.PORT_TYPE_SCALAR))
+	add_options.push_back(AddOption.new("Fractal Perlin Noise 3D", "Utility/Noise/Fractal", "VisualShaderNodeCustom", "Fractal 3D Perlin noise.", [VisualShaderNodeNoisePerlin3dFractal], VisualShaderNode.PORT_TYPE_SCALAR))
+	add_options.push_back(AddOption.new("Fractal Perlin Noise 4D", "Utility/Noise/Fractal", "VisualShaderNodeCustom", "Fractal 4D Perlin noise.", [VisualShaderNodeNoisePerlin4dFractal], VisualShaderNode.PORT_TYPE_SCALAR))
+	add_options.push_back(AddOption.new("Fractal Simplex Noise 2D", "Utility/Noise/Fractal", "VisualShaderNodeCustom", "Fractal 2D Simplex noise.", [VisualShaderNodeNoiseSimplex2dFractal], VisualShaderNode.PORT_TYPE_SCALAR))
+	add_options.push_back(AddOption.new("Fractal Simplex Noise 3D", "Utility/Noise/Fractal", "VisualShaderNodeCustom", "Fractal 3D Simplex noise.", [VisualShaderNodeNoiseSimplex3dFractal], VisualShaderNode.PORT_TYPE_SCALAR))
+	add_options.push_back(AddOption.new("Fractal Simplex Noise 4D", "Utility/Noise/Fractal", "VisualShaderNodeCustom", "Fractal 4D Simplex noise.", [VisualShaderNodeNoiseSimplex4dFractal], VisualShaderNode.PORT_TYPE_SCALAR))
+	add_options.push_back(AddOption.new("Fractal Worley Noise 2D", "Utility/Noise/Fractal", "VisualShaderNodeCustom", "Fractal 2D Worley noise.", [VisualShaderNodeNoiseWorley2dFractal], VisualShaderNode.PORT_TYPE_VECTOR_2D))
+	add_options.push_back(AddOption.new("Fractal Worley Noise 3D", "Utility/Noise/Fractal", "VisualShaderNodeCustom", "Fractal 3D Worley noise.", [VisualShaderNodeNoiseWorley3dFractal], VisualShaderNode.PORT_TYPE_VECTOR_2D))
+	add_options.push_back(AddOption.new("Generic Noise 2D", "Utility/Noise", "VisualShaderNodeCustom", "Generic noise using hash random function.", [VisualShaderNodeNoiseGeneric2d], VisualShaderNode.PORT_TYPE_SCALAR))
+	add_options.push_back(AddOption.new("Perlin Noise 2D", "Utility/Noise", "VisualShaderNodeCustom", "Classic 2D Perlin noise with ability to set period.\nIf you dont want any period - set it to zero.", [VisualShaderNodeNoisePerlin2d], VisualShaderNode.PORT_TYPE_SCALAR))
+	add_options.push_back(AddOption.new("Perlin Noise 3D", "Utility/Noise", "VisualShaderNodeCustom", "Classic 3D Perlin noise.", [VisualShaderNodeNoisePerlin3d], VisualShaderNode.PORT_TYPE_SCALAR))
+	add_options.push_back(AddOption.new("Perlin Noise 4D", "Utility/Noise", "VisualShaderNodeCustom", "Classic 4D Perlin noise.", [VisualShaderNodeNoisePerlin4d], VisualShaderNode.PORT_TYPE_SCALAR))
+	add_options.push_back(AddOption.new("Simplex Noise 2D", "Utility/Noise", "VisualShaderNodeCustom", "2D Simplex noise.", [VisualShaderNodeNoiseSimplex2d], VisualShaderNode.PORT_TYPE_SCALAR))
+	add_options.push_back(AddOption.new("Simplex Noise 3D", "Utility/Noise", "VisualShaderNodeCustom", "3D Simplex noise.", [VisualShaderNodeNoiseSimplex3d], VisualShaderNode.PORT_TYPE_SCALAR))
+	add_options.push_back(AddOption.new("Simplex Noise 4D", "Utility/Noise", "VisualShaderNodeCustom", "4D Simplex noise.", [VisualShaderNodeNoiseSimplex4d], VisualShaderNode.PORT_TYPE_SCALAR))
+	add_options.push_back(AddOption.new("Worley Noise 2D", "Utility/Noise", "VisualShaderNodeCustom", "2D Worley noise.", [VisualShaderNodeNoiseWorley2d], VisualShaderNode.PORT_TYPE_VECTOR_2D))
+	add_options.push_back(AddOption.new("Worley Noise 2x2", "Utility/Noise", "VisualShaderNodeCustom", "2x2 Worley noise.", [VisualShaderNodeNoiseWorley2x2], VisualShaderNode.PORT_TYPE_SCALAR))
+	add_options.push_back(AddOption.new("Worley Noise 2x2x2", "Utility/Noise", "VisualShaderNodeCustom", "2x2x2 Worley noise.", [VisualShaderNodeNoiseWorley2x2x2], VisualShaderNode.PORT_TYPE_SCALAR))
+	add_options.push_back(AddOption.new("Worley Noise 3D", "Utility/Noise", "VisualShaderNodeCustom", "3D Worley noise.", [VisualShaderNodeNoiseWorley3d], VisualShaderNode.PORT_TYPE_VECTOR_2D))
+	add_options.push_back(AddOption.new("PSRD Noise 2D", "Utility/Noise", "VisualShaderNodeCustom", "Seamless performant 2D noise for shaders.", [VisualShaderNodePSRDNoise2D], VisualShaderNode.PORT_TYPE_SCALAR))
+	add_options.push_back(AddOption.new("PSRD Noise 3D", "Utility/Noise", "VisualShaderNodeCustom", "Seamless performant 3D noise for shaders.", [VisualShaderNodePSRDNoise3D], VisualShaderNode.PORT_TYPE_SCALAR))
+	#endregion
+	#region Wave
+	add_options.push_back(AddOption.new("Triangle Wave", "Utility/Wave", "VisualShaderNodeCustom", "Triangle Wave function.", [VisualShaderNodeTriangleWave], VisualShaderNode.PORT_TYPE_SCALAR))
+	add_options.push_back(AddOption.new("Square Wave", "Utility/Wave", "VisualShaderNodeCustom", "Square Wave function.", [VisualShaderNodeSquareWave], VisualShaderNode.PORT_TYPE_SCALAR))
+	add_options.push_back(AddOption.new("Sawtooth Wave", "Utility/Wave", "VisualShaderNodeCustom", "Sawtooth Wave function.", [VisualShaderNodeSawtoothWave], VisualShaderNode.PORT_TYPE_SCALAR))
+	add_options.push_back(AddOption.new("Sine Wave", "Utility/Wave", "VisualShaderNodeCustom", "Sine Wave function.", [VisualShaderNodeSineWave], VisualShaderNode.PORT_TYPE_SCALAR))
+	add_options.push_back(AddOption.new("Sine Wave Angular", "Utility/Wave", "VisualShaderNodeCustom", "Sine Wave function with angular frequency input.", [VisualShaderNodeSineWaveAngular], VisualShaderNode.PORT_TYPE_SCALAR))
+	#endregion
+	#endregion
 	add_options.push_back(AddOption.new("RandomRange", "Utility", "VisualShaderNodeRandomRange", "Returns a random value between the minimum and maximum input values.", [], VisualShaderNode.PORT_TYPE_SCALAR))
 	add_options.push_back(AddOption.new("RotationByAxis", "Utility", "VisualShaderNodeRotationByAxis", "Builds a rotation matrix from the given axis and angle, multiply the input vector by it and returns both this vector and a matrix.", [], VisualShaderNode.PORT_TYPE_VECTOR_3D))
-	#endregion
 	#region Vector
 	add_options.push_back(AddOption.new("Vector2Compose", "Vector/Composition", "VisualShaderNodeVectorCompose", "Composes 2D vector from two scalars.", [ VisualShaderNodeVectorCompose.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
 	add_options.push_back(AddOption.new("Vector2Decompose", "Vector/Composition", "VisualShaderNodeVectorDecompose", "Decomposes 2D vector to two scalars.", [ VisualShaderNodeVectorDecompose.OP_TYPE_VECTOR_2D ]));
@@ -2544,33 +2574,10 @@ func fill_add_options() -> void:
 	add_options.push_back(AddOption.new("Gradient 4-Corners", "Procedural", "VisualShaderNodeCustom", "Generates gradient based on corners colors.", [VisualShaderNodeRGBAgradient4corners], VisualShaderNode.PORT_TYPE_VECTOR_3D))
 	add_options.push_back(AddOption.new("Fire FX", "Procedural", "VisualShaderNodeCustom", "3-step fire based on perlin noise.", [VisualShaderNodeRGBAfireFX], VisualShaderNode.PORT_TYPE_VECTOR_3D))
 	#endregion
-	#region Noise
-	add_options.push_back(AddOption.new("Fractal Generic Noise 2D", "Noise/Fractal", "VisualShaderNodeCustom", "Fractal generic noise using hash random function.", [VisualShaderNodeNoiseGeneric2dFractal], VisualShaderNode.PORT_TYPE_SCALAR))
-	add_options.push_back(AddOption.new("Fractal Perlin Noise 2D", "Noise/Fractal", "VisualShaderNodeCustom", "Fractal 2D Perlin Noise.", [VisualShaderNodeNoisePerlin2dFractal], VisualShaderNode.PORT_TYPE_SCALAR))
-	add_options.push_back(AddOption.new("Fractal Perlin Noise 3D", "Noise/Fractal", "VisualShaderNodeCustom", "Fractal 3D Perlin noise.", [VisualShaderNodeNoisePerlin3dFractal], VisualShaderNode.PORT_TYPE_SCALAR))
-	add_options.push_back(AddOption.new("Fractal Perlin Noise 4D", "Noise/Fractal", "VisualShaderNodeCustom", "Fractal 4D Perlin noise.", [VisualShaderNodeNoisePerlin4dFractal], VisualShaderNode.PORT_TYPE_SCALAR))
-	add_options.push_back(AddOption.new("Fractal Simplex Noise 2D", "Noise/Fractal", "VisualShaderNodeCustom", "Fractal 2D Simplex noise.", [VisualShaderNodeNoiseSimplex2dFractal], VisualShaderNode.PORT_TYPE_SCALAR))
-	add_options.push_back(AddOption.new("Fractal Simplex Noise 3D", "Noise/Fractal", "VisualShaderNodeCustom", "Fractal 3D Simplex noise.", [VisualShaderNodeNoiseSimplex3dFractal], VisualShaderNode.PORT_TYPE_SCALAR))
-	add_options.push_back(AddOption.new("Fractal Simplex Noise 4D", "Noise/Fractal", "VisualShaderNodeCustom", "Fractal 4D Simplex noise.", [VisualShaderNodeNoiseSimplex4dFractal], VisualShaderNode.PORT_TYPE_SCALAR))
-	add_options.push_back(AddOption.new("Fractal Worley Noise 2D", "Noise/Fractal", "VisualShaderNodeCustom", "Fractal 2D Worley noise.", [VisualShaderNodeNoiseWorley2dFractal], VisualShaderNode.PORT_TYPE_VECTOR_2D))
-	add_options.push_back(AddOption.new("Fractal Worley Noise 3D", "Noise/Fractal", "VisualShaderNodeCustom", "Fractal 3D Worley noise.", [VisualShaderNodeNoiseWorley3dFractal], VisualShaderNode.PORT_TYPE_VECTOR_2D))
-	add_options.push_back(AddOption.new("Generic Noise 2D", "Noise", "VisualShaderNodeCustom", "Generic noise using hash random function.", [VisualShaderNodeNoiseGeneric2d], VisualShaderNode.PORT_TYPE_SCALAR))
-	add_options.push_back(AddOption.new("Perlin Noise 2D", "Noise", "VisualShaderNodeCustom", "Classic 2D Perlin noise with ability to set period.\nIf you dont want any period - set it to zero.", [VisualShaderNodeNoisePerlin2d], VisualShaderNode.PORT_TYPE_SCALAR))
-	add_options.push_back(AddOption.new("Perlin Noise 3D", "Noise", "VisualShaderNodeCustom", "Classic 3D Perlin noise.", [VisualShaderNodeNoisePerlin3d], VisualShaderNode.PORT_TYPE_SCALAR))
-	add_options.push_back(AddOption.new("Perlin Noise 4D", "Noise", "VisualShaderNodeCustom", "Classic 4D Perlin noise.", [VisualShaderNodeNoisePerlin4d], VisualShaderNode.PORT_TYPE_SCALAR))
-	add_options.push_back(AddOption.new("Simplex Noise 2D", "Noise", "VisualShaderNodeCustom", "2D Simplex noise.", [VisualShaderNodeNoiseSimplex2d], VisualShaderNode.PORT_TYPE_SCALAR))
-	add_options.push_back(AddOption.new("Simplex Noise 3D", "Noise", "VisualShaderNodeCustom", "3D Simplex noise.", [VisualShaderNodeNoiseSimplex3d], VisualShaderNode.PORT_TYPE_SCALAR))
-	add_options.push_back(AddOption.new("Simplex Noise 4D", "Noise", "VisualShaderNodeCustom", "4D Simplex noise.", [VisualShaderNodeNoiseSimplex4d], VisualShaderNode.PORT_TYPE_SCALAR))
-	add_options.push_back(AddOption.new("Worley Noise 2D", "Noise", "VisualShaderNodeCustom", "2D Worley noise.", [VisualShaderNodeNoiseWorley2d], VisualShaderNode.PORT_TYPE_VECTOR_2D))
-	add_options.push_back(AddOption.new("Worley Noise 2x2", "Noise", "VisualShaderNodeCustom", "2x2 Worley noise.", [VisualShaderNodeNoiseWorley2x2], VisualShaderNode.PORT_TYPE_SCALAR))
-	add_options.push_back(AddOption.new("Worley Noise 2x2x2", "Noise", "VisualShaderNodeCustom", "2x2x2 Worley noise.", [VisualShaderNodeNoiseWorley2x2x2], VisualShaderNode.PORT_TYPE_SCALAR))
-	add_options.push_back(AddOption.new("Worley Noise 3D", "Noise", "VisualShaderNodeCustom", "3D Worley noise.", [VisualShaderNodeNoiseWorley3d], VisualShaderNode.PORT_TYPE_VECTOR_2D))
-	add_options.push_back(AddOption.new("PSRD Noise 2D", "Noise", "VisualShaderNodeCustom", "Seamless performant 2D noise for shaders.", [VisualShaderNodePSRDNoise2D], VisualShaderNode.PORT_TYPE_SCALAR))
-	add_options.push_back(AddOption.new("PSRD Noise 3D", "Noise", "VisualShaderNodeCustom", "Seamless performant 3D noise for shaders.", [VisualShaderNodePSRDNoise3D], VisualShaderNode.PORT_TYPE_SCALAR))
-	#endregion
 	#region UV
 	add_options.push_back(AddOption.new("UVPanning", "UV", "VisualShaderNodeUVFunc", "Apply panning function on texture coordinates.", [ VisualShaderNodeUVFunc.FUNC_PANNING ], VisualShaderNode.PORT_TYPE_VECTOR_2D))
 	add_options.push_back(AddOption.new("UVScaling", "UV", "VisualShaderNodeUVFunc", "Apply scaling function on texture coordinates.", [ VisualShaderNodeUVFunc.FUNC_SCALING ], VisualShaderNode.PORT_TYPE_VECTOR_2D))
+	add_options.push_back(AddOption.new("UVPolarCoord", "UV", "VisualShaderNodeUVPolarCoord", "Polar coordinates conversion applied on texture coordinates.", [], VisualShaderNode.PORT_TYPE_VECTOR_2D))
 	add_options.push_back(AddOption.new("Rotate", "UV", "VisualShaderNodeCustom", "UV Rotate.", [VisualShaderNodeUVRotate], VisualShaderNode.PORT_TYPE_VECTOR_2D))
 	add_options.push_back(AddOption.new("Tile", "UV", "VisualShaderNodeCustom", "Tile a given UV into the given UV tiles and rotate them.", [VisualShaderNodeTiler], VisualShaderNode.PORT_TYPE_VECTOR_4D))
 	add_options.push_back(AddOption.new("Twirl", "UV", "VisualShaderNodeCustom", "UV Twirl.", [VisualShaderNodeUVTwirl], VisualShaderNode.PORT_TYPE_VECTOR_2D))
@@ -2581,13 +2588,6 @@ func fill_add_options() -> void:
 	add_options.push_back(AddOption.new("Spherical UV", "UV", "VisualShaderNodeCustom", "Makes UV look like a sphere. Can be used to make 2d planets.", [VisualShaderNodeUVspherical], VisualShaderNode.PORT_TYPE_VECTOR_2D))
 	add_options.push_back(AddOption.new("Flipbook", "UV", "VisualShaderNodeCustom", "UV Flipbook Animation.", [VisualShaderNodeUVFlipbook], VisualShaderNode.PORT_TYPE_VECTOR_2D))
 	add_options.push_back(AddOption.new("UV to Sphere Coord", "UV", "VisualShaderNodeCustom", "UV to Sphere Coord.", [VisualShaderNodeUVtoSphereCoord], VisualShaderNode.PORT_TYPE_VECTOR_2D))
-	#endregion
-	#region Wave
-	add_options.push_back(AddOption.new("Triangle Wave", "Wave", "VisualShaderNodeCustom", "Triangle Wave function.", [VisualShaderNodeTriangleWave], VisualShaderNode.PORT_TYPE_SCALAR))
-	add_options.push_back(AddOption.new("Square Wave", "Wave", "VisualShaderNodeCustom", "Square Wave function.", [VisualShaderNodeSquareWave], VisualShaderNode.PORT_TYPE_SCALAR))
-	add_options.push_back(AddOption.new("Sawtooth Wave", "Wave", "VisualShaderNodeCustom", "Sawtooth Wave function.", [VisualShaderNodeSawtoothWave], VisualShaderNode.PORT_TYPE_SCALAR))
-	add_options.push_back(AddOption.new("Sine Wave", "Wave", "VisualShaderNodeCustom", "Sine Wave function.", [VisualShaderNodeSineWave], VisualShaderNode.PORT_TYPE_SCALAR))
-	add_options.push_back(AddOption.new("Sine Wave Angular", "Wave", "VisualShaderNodeCustom", "Sine Wave function with angular frequency input.", [VisualShaderNodeSineWaveAngular], VisualShaderNode.PORT_TYPE_SCALAR))
 	#endregion
 	#region Special
 	add_options.push_back(AddOption.new("Frame", "Special", "VisualShaderNodeFrame", "A rectangular area with a description string for better graph organization."))
@@ -2613,11 +2613,13 @@ func _get_node_category(vsn: VisualShaderNode) -> Category:
 			return Category.CATEGORY_SCALAR
 		return Category.CATEGORY_VECTOR
 
-	if vsn is VisualShaderNodePerlinNoise3D:
-		return Category.CATEGORY_UTILITY
 	if vsn is VisualShaderNodeCustom:
 		if "UV" in vsn._get_category():
 			return Category.CATEGORY_UV
+		elif "Wave" in vsn._get_category():
+			return Category.CATEGORY_UTILITY
+		elif "Noise" in vsn._get_name():
+			return Category.CATEGORY_UTILITY
 	match vsn.get_class():
 		"VisualShaderNodeOutput", "VisualShaderNodeVaryingSetter":
 			return Category.CATEGORY_OUTPUT
