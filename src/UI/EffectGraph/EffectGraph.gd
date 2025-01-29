@@ -1,6 +1,5 @@
 extends PanelContainer
 
-## This would not be needed if Godot had exposed VisualShaderNode's category enum.
 enum Category {
 	CATEGORY_NONE,
 	CATEGORY_OUTPUT,
@@ -14,6 +13,7 @@ enum Category {
 	CATEGORY_VECTOR,
 	CATEGORY_SPECIAL,
 	CATEGORY_PARTICLE,
+	CATEGORY_UV,
 	CATEGORY_MAX
 }
 
@@ -57,7 +57,8 @@ var category_colors := PackedColorArray(
 		Color(0.2, 0.2, 0.2),  # Utility
 		Color(0.2, 0.2, 0.5),  # Vector
 		Color(0.098, 0.361, 0.294),  # Special
-		Color(0.12, 0.358, 0.8)  # Particle
+		Color(0.12, 0.358, 0.8),  # Particle
+		Color(0.67, 0.22, 0.46, 1.0)  # UV
 	]
 )
 var can_undo := false
@@ -2309,8 +2310,6 @@ func fill_add_options() -> void:
 	add_options.push_back(AddOption.new("Texture sampler", "Textures/Functions", "VisualShaderNodeTexture", "Perform the 2D texture lookup.", [VisualShaderNodeTexture.SOURCE_PORT], VisualShaderNode.PORT_TYPE_VECTOR_4D))
 	#add_options.push_back(AddOption.new("Texture2DArray", "Textures/Functions", "VisualShaderNodeTexture2DArray", "Perform the 2D-array texture lookup.", [], VisualShaderNode.PORT_TYPE_VECTOR_4D))
 	#add_options.push_back(AddOption.new("Texture3D", "Textures/Functions", "VisualShaderNodeTexture3D", "Perform the 3D texture lookup.", [], VisualShaderNode.PORT_TYPE_VECTOR_4D))
-	add_options.push_back(AddOption.new("UVPanning", "Textures/Functions", "VisualShaderNodeUVFunc", "Apply panning function on texture coordinates.", [ VisualShaderNodeUVFunc.FUNC_PANNING ], VisualShaderNode.PORT_TYPE_VECTOR_2D))
-	add_options.push_back(AddOption.new("UVScaling", "Textures/Functions", "VisualShaderNodeUVFunc", "Apply scaling function on texture coordinates.", [ VisualShaderNodeUVFunc.FUNC_SCALING ], VisualShaderNode.PORT_TYPE_VECTOR_2D))
 	#add_options.push_back(AddOption.new("CubeMapParameter", "Textures/Variables", "VisualShaderNodeCubemapParameter", "Cubic texture parameter lookup.", [], VisualShaderNode.PORT_TYPE_SAMPLER))
 	add_options.push_back(AddOption.new("Texture2DParameter", "Textures/Variables", "VisualShaderNodeTexture2DParameter", "2D texture parameter lookup.", [], VisualShaderNode.PORT_TYPE_SAMPLER))
 	#endregion
@@ -2570,6 +2569,8 @@ func fill_add_options() -> void:
 	add_options.push_back(AddOption.new("PSRD Noise 3D", "Noise", "VisualShaderNodeCustom", "Seamless performant 3D noise for shaders.", [VisualShaderNodePSRDNoise3D], VisualShaderNode.PORT_TYPE_SCALAR))
 	#endregion
 	#region UV
+	add_options.push_back(AddOption.new("UVPanning", "UV", "VisualShaderNodeUVFunc", "Apply panning function on texture coordinates.", [ VisualShaderNodeUVFunc.FUNC_PANNING ], VisualShaderNode.PORT_TYPE_VECTOR_2D))
+	add_options.push_back(AddOption.new("UVScaling", "UV", "VisualShaderNodeUVFunc", "Apply scaling function on texture coordinates.", [ VisualShaderNodeUVFunc.FUNC_SCALING ], VisualShaderNode.PORT_TYPE_VECTOR_2D))
 	add_options.push_back(AddOption.new("Rotate", "UV", "VisualShaderNodeCustom", "UV Rotate.", [VisualShaderNodeUVRotate], VisualShaderNode.PORT_TYPE_VECTOR_2D))
 	add_options.push_back(AddOption.new("Tile", "UV", "VisualShaderNodeCustom", "Tile a given UV into the given UV tiles and rotate them.", [VisualShaderNodeTiler], VisualShaderNode.PORT_TYPE_VECTOR_4D))
 	add_options.push_back(AddOption.new("Twirl", "UV", "VisualShaderNodeCustom", "UV Twirl.", [VisualShaderNodeUVTwirl], VisualShaderNode.PORT_TYPE_VECTOR_2D))
@@ -2612,8 +2613,11 @@ func _get_node_category(vsn: VisualShaderNode) -> Category:
 			return Category.CATEGORY_SCALAR
 		return Category.CATEGORY_VECTOR
 
-	if vsn is VisualShaderNodePerlinNoise3D or vsn is VisualShaderNodeRotate:
+	if vsn is VisualShaderNodePerlinNoise3D:
 		return Category.CATEGORY_UTILITY
+	if vsn is VisualShaderNodeCustom:
+		if "UV" in vsn._get_category():
+			return Category.CATEGORY_UV
 	match vsn.get_class():
 		"VisualShaderNodeOutput", "VisualShaderNodeVaryingSetter":
 			return Category.CATEGORY_OUTPUT
@@ -2648,8 +2652,6 @@ func _get_node_category(vsn: VisualShaderNode) -> Category:
 		"VisualShaderNodeLinearSceneDepth",\
 		"VisualShaderNodeWorldPositionFromDepth",\
 		"VisualShaderNodeScreenNormalWorldSpace",\
-		"VisualShaderNodeUVFunc",\
-		"VisualShaderNodeUVPolarCoord",\
 		"VisualShaderNodeSDFToScreenUV",\
 		"VisualShaderNodeScreenUVToSDF",\
 		"VisualShaderNodeTextureSDF",\
@@ -2682,5 +2684,8 @@ func _get_node_category(vsn: VisualShaderNode) -> Category:
 		"VisualShaderNodeParticleAccelerator",\
 		"VisualShaderNodeParticleEmit":
 			return Category.CATEGORY_PARTICLE
+		"VisualShaderNodeUVFunc",\
+		"VisualShaderNodeUVPolarCoord":
+			return Category.CATEGORY_UV
 
 	return Category.CATEGORY_NONE
