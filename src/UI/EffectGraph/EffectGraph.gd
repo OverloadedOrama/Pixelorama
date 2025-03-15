@@ -803,6 +803,27 @@ func add_node(vsn: VisualShaderNode, id: int, ops := []) -> void:
 		)
 		graph_node.add_child(option_button)
 		_create_smooth_step_node(graph_node, vsn)
+	elif vsn is VisualShaderNodeRemap:
+		vsn.set("expanded_output_ports", [0])
+		if not ops.is_empty():
+			vsn.op_type = ops[0]
+		var option_button := OptionButton.new()
+		option_button.add_item("Scalar", VisualShaderNodeRemap.OP_TYPE_SCALAR)
+		option_button.add_item("Vector2", VisualShaderNodeRemap.OP_TYPE_VECTOR_2D)
+		option_button.add_item("Vector2Scalar", VisualShaderNodeRemap.OP_TYPE_VECTOR_2D_SCALAR)
+		option_button.add_item("Vector3", VisualShaderNodeRemap.OP_TYPE_VECTOR_3D)
+		option_button.add_item("Vector3Scalar", VisualShaderNodeRemap.OP_TYPE_VECTOR_3D_SCALAR)
+		option_button.add_item("Vector4", VisualShaderNodeRemap.OP_TYPE_VECTOR_4D)
+		option_button.add_item("Vector4Scalar", VisualShaderNodeRemap.OP_TYPE_VECTOR_4D_SCALAR)
+		option_button.select(option_button.get_item_index(vsn.op_type))
+		option_button.item_selected.connect(
+			func(id_selected: VisualShaderNodeRemap.OpType):
+				vsn.op_type = id_selected
+				_create_remap_node(graph_node, vsn)
+				_on_effect_changed()
+		)
+		graph_node.add_child(option_button)
+		_create_remap_node(graph_node, vsn)
 	#endregion
 	#region Textures
 	elif vsn is VisualShaderNodeTexture:
@@ -1532,6 +1553,66 @@ func _create_compare_node(graph_node: GraphNode, vsn: VisualShaderNodeCompare) -
 	_check_output_connections_validity(graph_node)
 
 
+func _create_remap_node(graph_node: GraphNode, vsn: VisualShaderNodeRemap) -> void:
+	var children := graph_node.get_children(true)
+	for i in range(2, children.size()):
+		var child := children[i]
+		graph_node.remove_child(child)
+		child.queue_free()
+	var op_type := vsn.op_type
+	if op_type == VisualShaderNodeRemap.OP_TYPE_SCALAR:
+		_create_input("value", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 0)
+		_create_input("input min", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 1)
+		_create_input("input max", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 2)
+		_create_input("output min", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 3)
+		_create_input("output max", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 4)
+		_create_label("value", graph_node, VisualShaderNode.PORT_TYPE_MAX, VisualShaderNode.PORT_TYPE_SCALAR)
+	elif op_type == VisualShaderNodeRemap.OP_TYPE_VECTOR_2D:
+		_create_input("value", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_2D, 0)
+		_create_input("input min", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_2D, 1)
+		_create_input("input max", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_2D, 2)
+		_create_input("output min", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_2D, 3)
+		_create_input("output max", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_2D, 4)
+		_create_multi_output("value", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_2D)
+	elif op_type == VisualShaderNodeRemap.OP_TYPE_VECTOR_2D_SCALAR:
+		_create_input("value", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_2D, 0)
+		_create_input("input min", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 1)
+		_create_input("input max", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 2)
+		_create_input("output min", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 3)
+		_create_input("output max", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 4)
+		_create_multi_output("value", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_2D)
+	elif op_type == VisualShaderNodeRemap.OP_TYPE_VECTOR_3D:
+		_create_input("value", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 0)
+		_create_input("input min", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 1)
+		_create_input("input max", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 2)
+		_create_input("output min", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 3)
+		_create_input("output max", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 4)
+		_create_multi_output("value", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_3D)
+	elif op_type == VisualShaderNodeRemap.OP_TYPE_VECTOR_3D_SCALAR:
+		_create_input("value", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_3D, 0)
+		_create_input("input min", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 1)
+		_create_input("input max", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 2)
+		_create_input("output min", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 3)
+		_create_input("output max", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 4)
+		_create_multi_output("value", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_3D)
+	elif op_type == VisualShaderNodeRemap.OP_TYPE_VECTOR_4D:
+		_create_input("value", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_4D, 0)
+		_create_input("input min", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_4D, 1)
+		_create_input("input max", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_4D, 2)
+		_create_input("output min", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_4D, 3)
+		_create_input("output max", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_4D, 4)
+		_create_multi_output("value", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_4D)
+	elif op_type == VisualShaderNodeRemap.OP_TYPE_VECTOR_4D_SCALAR:
+		_create_input("value", graph_node, vsn, VisualShaderNode.PORT_TYPE_VECTOR_4D, 0)
+		_create_input("input min", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 1)
+		_create_input("input max", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 2)
+		_create_input("output min", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 3)
+		_create_input("output max", graph_node, vsn, VisualShaderNode.PORT_TYPE_SCALAR, 4)
+		_create_multi_output("value", graph_node, VisualShaderNode.PORT_TYPE_VECTOR_4D)
+
+	_check_output_connections_validity(graph_node)
+
+
 func _check_output_connections_validity(graph_node: GraphNode) -> void:
 	var output_connections := graph_edit.get_connection_list().filter(func(dict: Dictionary): return dict.from_node == graph_node.name)
 	for output_connection in output_connections:
@@ -2249,7 +2330,7 @@ func fill_add_options() -> void:
 	add_options.push_back(AddOption.new("Pow", "Scalar/Functions", "VisualShaderNodeFloatOp", ("Returns the value of the first parameter raised to the power of the second."), [ VisualShaderNodeFloatOp.OP_POW ], VisualShaderNode.PORT_TYPE_SCALAR));
 	add_options.push_back(AddOption.new("Radians", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("Converts a quantity in degrees to radians."), [ VisualShaderNodeFloatFunc.FUNC_RADIANS ], VisualShaderNode.PORT_TYPE_SCALAR));
 	add_options.push_back(AddOption.new("Reciprocal", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("1.0 / scalar"), [ VisualShaderNodeFloatFunc.FUNC_RECIPROCAL ], VisualShaderNode.PORT_TYPE_SCALAR));
-	#add_options.push_back(AddOption.new("Remap", "Scalar/Functions", "VisualShaderNodeRemap", ("Remaps a value from the input range to the output range."), [ VisualShaderNodeRemap.OP_TYPE_SCALAR ], VisualShaderNode.PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption.new("Remap", "Scalar/Functions", "VisualShaderNodeRemap", ("Remaps a value from the input range to the output range."), [ VisualShaderNodeRemap.OP_TYPE_SCALAR ], VisualShaderNode.PORT_TYPE_SCALAR));
 	add_options.push_back(AddOption.new("Round", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("Finds the nearest integer to the parameter."), [ VisualShaderNodeFloatFunc.FUNC_ROUND ], VisualShaderNode.PORT_TYPE_SCALAR));
 	add_options.push_back(AddOption.new("RoundEven", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("Finds the nearest even integer to the parameter."), [ VisualShaderNodeFloatFunc.FUNC_ROUNDEVEN ], VisualShaderNode.PORT_TYPE_SCALAR));
 	add_options.push_back(AddOption.new("Saturate", "Scalar/Functions", "VisualShaderNodeFloatFunc", ("Clamps the value between 0.0 and 1.0."), [ VisualShaderNodeFloatFunc.FUNC_SATURATE ], VisualShaderNode.PORT_TYPE_SCALAR));
@@ -2492,12 +2573,12 @@ func fill_add_options() -> void:
 	add_options.push_back(AddOption.new("Refract", "Vector/Functions", "VisualShaderNodeVectorRefract", "Returns the vector that points in the direction of refraction.", [], VisualShaderNode.PORT_TYPE_VECTOR_2D));
 	add_options.push_back(AddOption.new("Refract", "Vector/Functions", "VisualShaderNodeVectorRefract", "Returns the vector that points in the direction of refraction.", [], VisualShaderNode.PORT_TYPE_VECTOR_3D));
 	add_options.push_back(AddOption.new("Refract", "Vector/Functions", "VisualShaderNodeVectorRefract", "Returns the vector that points in the direction of refraction.", [], VisualShaderNode.PORT_TYPE_VECTOR_4D));
-	#add_options.push_back(AddOption.new("Remap", "Vector/Functions", "VisualShaderNodeRemap", "Remaps a vector from the input range to the output range.", [ VisualShaderNodeRemap.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
-	#add_options.push_back(AddOption.new("Remap", "Vector/Functions", "VisualShaderNodeRemap", "Remaps a vector from the input range to the output range.", [ VisualShaderNodeRemap.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
-	#add_options.push_back(AddOption.new("Remap", "Vector/Functions", "VisualShaderNodeRemap", "Remaps a vector from the input range to the output range.", [ VisualShaderNodeRemap.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
-	#add_options.push_back(AddOption.new("RemapS", "Vector/Functions", "VisualShaderNodeRemap", "Remaps a vector from the input range to the output range. Ranges defined with scalars.", [ VisualShaderNodeRemap.OP_TYPE_VECTOR_2D_SCALAR ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
-	#add_options.push_back(AddOption.new("RemapS", "Vector/Functions", "VisualShaderNodeRemap", "Remaps a vector from the input range to the output range. Ranges defined with scalars.", [ VisualShaderNodeRemap.OP_TYPE_VECTOR_3D_SCALAR ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
-	#add_options.push_back(AddOption.new("RemapS", "Vector/Functions", "VisualShaderNodeRemap", "Remaps a vector from the input range to the output range. Ranges defined with scalars.", [ VisualShaderNodeRemap.OP_TYPE_VECTOR_4D_SCALAR ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("Remap", "Vector/Functions", "VisualShaderNodeRemap", "Remaps a vector from the input range to the output range.", [ VisualShaderNodeRemap.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("Remap", "Vector/Functions", "VisualShaderNodeRemap", "Remaps a vector from the input range to the output range.", [ VisualShaderNodeRemap.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("Remap", "Vector/Functions", "VisualShaderNodeRemap", "Remaps a vector from the input range to the output range.", [ VisualShaderNodeRemap.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption.new("RemapS", "Vector/Functions", "VisualShaderNodeRemap", "Remaps a vector from the input range to the output range. Ranges defined with scalars.", [ VisualShaderNodeRemap.OP_TYPE_VECTOR_2D_SCALAR ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption.new("RemapS", "Vector/Functions", "VisualShaderNodeRemap", "Remaps a vector from the input range to the output range. Ranges defined with scalars.", [ VisualShaderNodeRemap.OP_TYPE_VECTOR_3D_SCALAR ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption.new("RemapS", "Vector/Functions", "VisualShaderNodeRemap", "Remaps a vector from the input range to the output range. Ranges defined with scalars.", [ VisualShaderNodeRemap.OP_TYPE_VECTOR_4D_SCALAR ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
 	add_options.push_back(AddOption.new("Round", "Vector/Functions", "VisualShaderNodeVectorFunc", "Finds the nearest integer to the parameter.", [ VisualShaderNodeVectorFunc.FUNC_ROUND, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_2D ], VisualShaderNode.PORT_TYPE_VECTOR_2D));
 	add_options.push_back(AddOption.new("Round", "Vector/Functions", "VisualShaderNodeVectorFunc", "Finds the nearest integer to the parameter.", [ VisualShaderNodeVectorFunc.FUNC_ROUND, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_3D ], VisualShaderNode.PORT_TYPE_VECTOR_3D));
 	add_options.push_back(AddOption.new("Round", "Vector/Functions", "VisualShaderNodeVectorFunc", "Finds the nearest integer to the parameter.", [ VisualShaderNodeVectorFunc.FUNC_ROUND, VisualShaderNodeVectorFunc.OP_TYPE_VECTOR_4D ], VisualShaderNode.PORT_TYPE_VECTOR_4D));
@@ -2608,7 +2689,7 @@ func _get_node_category(vsn: VisualShaderNode) -> Category:
 			return Category.CATEGORY_SCALAR
 		return Category.CATEGORY_VECTOR
 
-	if vsn is VisualShaderNodeStep or vsn is VisualShaderNodeSmoothStep or vsn is VisualShaderNodeMix or vsn is VisualShaderNodeMultiplyAdd:
+	if vsn is VisualShaderNodeStep or vsn is VisualShaderNodeSmoothStep or vsn is VisualShaderNodeMix or vsn is VisualShaderNodeMultiplyAdd or vsn is VisualShaderNodeRemap:
 		if vsn.op_type == 0:
 			return Category.CATEGORY_SCALAR
 		return Category.CATEGORY_VECTOR
