@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://b8tk33y8uqvex"]
 
-[ext_resource type="Script" path="res://src/UI/EffectGraph/EffectGraph.gd" id="1_nlh42"]
+[ext_resource type="Script" uid="uid://beyef8uinl61" path="res://src/UI/EffectGraph/EffectGraph.gd" id="1_nlh42"]
 
 [node name="EffectGraph" type="PanelContainer"]
 anchors_preset = 15
