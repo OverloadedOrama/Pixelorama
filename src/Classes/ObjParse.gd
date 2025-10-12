@@ -107,6 +107,7 @@ static func _create_mtl(obj: String, textures: Dictionary) -> Dictionary:
 				if DEBUG:
 					prints("Adding new material", parts[1])
 				current_mat = StandardMaterial3D.new()
+				current_mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
 				mats[parts[1]] = current_mat
 			"Ka":
 				# Ambient color

@@ -31,6 +31,7 @@ var file_path := "":
 	set = _set_file_path
 var applying_gizmos: int = Gizmos.NONE
 var node3d_type: VisualInstance3D
+var static_body: StaticBody3D
 
 var dir_light_texture := preload("res://assets/graphics/gizmos/directional_light.svg")
 var spot_light_texture := preload("res://assets/graphics/gizmos/spot_light.svg")
@@ -41,7 +42,7 @@ var omni_light_texture := preload("res://assets/graphics/gizmos/omni_light.svg")
 
 func _ready() -> void:
 	camera = get_viewport().get_camera_3d()
-	var static_body := StaticBody3D.new()
+	static_body = StaticBody3D.new()
 	var collision_shape := CollisionShape3D.new()
 	box_shape = BoxShape3D.new()
 	box_shape.size = scale
@@ -234,6 +235,13 @@ func _set_type(value: Type) -> void:
 			if not file_path.is_empty():
 				mesh = ObjParse.load_obj(file_path)
 			node3d_type.mesh = mesh
+	if _is_mesh():
+		remove_child(static_body)
+		static_body.queue_free()
+		node3d_type.create_trimesh_collision()
+		static_body = node3d_type.get_child(0)
+		node3d_type.remove_child(static_body)
+		add_child(static_body)
 	add_child(node3d_type)
 
 

@@ -347,6 +347,7 @@ func draw_end(pos: Vector2i) -> void:
 	_polylines = _create_polylines(_indicator)
 
 
+
 func cancel_tool() -> void:
 	super()
 	for data in _undo_data:
@@ -357,6 +358,100 @@ func cancel_tool() -> void:
 			data.get_width(), data.get_height(), data.has_mipmaps(), data.get_format(), image_data
 		)
 	Global.canvas.sprite_changed_this_frame = true
+
+
+func cursor_move(pos: Vector2i) -> void:
+	super.cursor_move(pos)
+	if not Global.current_project.get_current_cel() is Cel3D:
+		return
+	# Inspired from
+	# https://github.com/BastiaanOlij/drawable-textures-demo/blob/master/main.gd
+	var cel := Global.current_project.get_current_cel() as Cel3D
+	# Hover logic
+	var camera := cel.camera
+	var ray_from := camera.project_ray_origin(pos)
+	var ray_to := ray_from + camera.project_ray_normal(pos) * 20
+	var space_state := camera.get_world_3d().direct_space_state
+	var intersect := space_state.intersect_ray(PhysicsRayQueryParameters3D.create(ray_from, ray_to))
+	if not intersect.is_empty():
+		# Setup our mesh data
+		var faces : PackedVector3Array
+		var uvs : PackedVector2Array
+		var object := intersect["collider"].get_parent() as Cel3DObject
+		if not object._is_mesh():
+			return
+		var mesh := object.node3d_type as MeshInstance3D
+		var object_xform := mesh.global_transform
+		var surface : Array = mesh.mesh.surface_get_arrays(0)
+		var vertices : PackedVector3Array = surface[Mesh.ARRAY_VERTEX]
+		var tex_uvs : PackedVector2Array
+		if surface[Mesh.ARRAY_TEX_UV] == null:
+			for v in vertices:
+				tex_uvs.append(Vector2(v.x, v.z))  # XZ projection fallback
+		else:
+			tex_uvs = surface[Mesh.ARRAY_TEX_UV]
+		#var index_count := vertices.size()
+		if surface[Mesh.ARRAY_INDEX] != null:
+			var indices: PackedInt32Array = surface[Mesh.ARRAY_INDEX]
+			var index_count := indices.size()
+			uvs.resize(index_count)
+			faces.resize(index_count)
+			for index in range(index_count):
+				var vertex_idx := indices[index]
+				uvs[index] = tex_uvs[vertex_idx]
+				faces[index] = object_xform * vertices[vertex_idx]
+		else:
+			var index_count := vertices.size()
+			uvs.resize(index_count)
+			faces.resize(index_count)
+			for index in range(index_count):
+				uvs[index] = tex_uvs[index]
+				faces[index] = object_xform * vertices[index]
+
+		var index: int = intersect.face_index * 3
+		var f: Vector3 = intersect.position
+		var p1 := faces[index]
+		var p2 := faces[index + 1]
+		var p3 := faces[index + 2]
+
+		# calculate vectors from point f to vertices p1, p2 and p3:
+		var f1 := p1 - f
+		var f2 := p2 - f
+		var f3 := p3 - f
+
+		# calculate the areas and factors (order of parameters doesn't matter):
+		var a: float = (p1-p2).cross(p1-p3).length() # main triangle area a
+		var a1: float = f2.cross(f3).length() / a # p1's triangle area / a
+		var a2: float = f3.cross(f1).length() / a # p2's triangle area / a
+		var a3: float = f1.cross(f2).length() / a # p3's triangle area / a
+
+		# find the uv corresponding to point f (uv1/uv2/uv3 are associated to p1/p2/p3):
+		var uv: Vector2 = uvs[index] * a1 + uvs[index + 1] * a2 + uvs[index + 2] * a3
+		var mat: StandardMaterial3D
+		var image: ImageExtended
+		if mesh.mesh.surface_get_material(0) == null:
+			mat = StandardMaterial3D.new()
+			mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
+			mesh.mesh.surface_set_material(0, mat)
+			image = ImageExtended.create_custom(
+				64, 64, false, Global.current_project.get_image_format(), false
+			)
+			mat.albedo_texture = ImageTexture.create_from_image(image)
+		else:
+			mat = mesh.mesh.surface_get_material(0)
+			if not is_instance_valid(mat.albedo_texture):
+				image = ImageExtended.create_custom(
+					64, 64, false, Global.current_project.get_image_format(), false
+				)
+				mat.albedo_texture = ImageTexture.create_from_image(image)
+			var temp_image := mat.albedo_texture.get_image()
+			image = ImageExtended.new()
+			image.copy_from_custom(temp_image)
+		var draw_pos := uv * (Vector2(image.get_size()))
+		image.set_pixelv_custom(draw_pos, tool_slot.color)
+		mat.albedo_texture.update(image)
+		Global.canvas.sprite_changed_this_frame = true
+
 
 
 func draw_tile(pos: Vector2i) -> void:

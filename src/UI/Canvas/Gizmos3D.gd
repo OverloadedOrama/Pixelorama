@@ -98,7 +98,8 @@ func remove_always_visible(object3d: Cel3DObject) -> void:
 
 
 func get_points(camera: Camera3D, object3d: Cel3DObject) -> void:
-	var debug_mesh := object3d.box_shape.get_debug_mesh()
+	var collision_shape: CollisionShape3D = object3d.static_body.get_child(0)
+	var debug_mesh := collision_shape.shape.get_debug_mesh()
 	var arrays := debug_mesh.surface_get_arrays(0)
 	var points := PackedVector2Array()
 	for vertex in arrays[ArrayMesh.ARRAY_VERTEX]:
