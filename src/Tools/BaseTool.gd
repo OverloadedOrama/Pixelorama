@@ -19,6 +19,7 @@ var _spacing_mode := false  ## Enables spacing (continuous gaps between two stro
 var _spacing := Vector2i.ZERO  ## Spacing between two strokes
 var _stroke_dimensions := Vector2i.ONE  ## 2D vector containing _brush_size from Draw.gd
 var _spacing_offset := Vector2i.ZERO  ## The initial error between position and position.snapped()
+var _mat_3d: BaseMaterial3D
 @onready var color_rect := $ColorRect as ColorRect
 
 
@@ -252,6 +253,12 @@ func _get_selected_draw_cels() -> Array[BaseCel]:
 
 
 func _get_selected_draw_images() -> Array[ImageExtended]:
+	if is_instance_valid(_mat_3d):
+		if is_instance_valid(_mat_3d.albedo_texture):
+			var temp_image := _mat_3d.albedo_texture.get_image()
+			var image := ImageExtended.new()
+			image.copy_from_custom(temp_image)
+			return [image]
 	var images: Array[ImageExtended] = []
 	var project := Global.current_project
 	for cel_index in project.selected_cels:
