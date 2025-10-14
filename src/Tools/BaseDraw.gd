@@ -38,7 +38,6 @@ var _stroke_project: Project
 var _stroke_images: Array[ImageExtended] = []
 var _is_mask_size_zero := true
 var _circle_tool_shortcut: Array[Vector2i]
-var _prev_face_index := -1
 
 
 func _ready() -> void:
@@ -431,7 +430,7 @@ func get_3d_object(canvas_pos: Vector2) -> Array:
 
 	# find the uv corresponding to point f (uv1/uv2/uv3 are associated to p1/p2/p3):
 	var uv: Vector2 = uvs[index] * a1 + uvs[index + 1] * a2 + uvs[index + 2] * a3
-	return [object, uv, intersect.face_index]
+	return [object, uv]
 
 
 
@@ -518,6 +517,18 @@ func draw_fill_gap(start: Vector2i, end: Vector2i) -> void:
 	var coords_to_draw := {}
 	var pixel_coords := Geometry2D.bresenham_line(start, end)
 	pixel_coords.pop_front()
+	if Global.current_project.get_current_cel() is Cel3D:
+		for i in pixel_coords.size():
+			var pos := pixel_coords[i]
+			var object_data := get_3d_object(pos)
+			if object_data.is_empty():
+				continue
+			var mesh := object_data[0].node3d_type as MeshInstance3D
+			var mat := mesh.mesh.surface_get_material(0) as BaseMaterial3D
+			var uv := object_data[1] as Vector2
+			var image := mat.albedo_texture.get_image()
+			var draw_pos := uv * Vector2(image.get_size())
+			pixel_coords[i] = Vector2i(draw_pos)
 	for current_pixel_coord in pixel_coords:
 		if _spacing_mode:
 			current_pixel_coord = get_spacing_position(current_pixel_coord)
