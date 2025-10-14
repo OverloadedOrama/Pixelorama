@@ -38,7 +38,6 @@ var _stroke_project: Project
 var _stroke_images: Array[ImageExtended] = []
 var _is_mask_size_zero := true
 var _circle_tool_shortcut: Array[Vector2i]
-var _prev_face_index := -1
 
 
 func _ready() -> void:
@@ -383,9 +382,9 @@ func get_3d_object(canvas_pos: Vector2) -> Array:
 	var object := intersect["collider"].get_parent() as Cel3DObject
 	if not object._is_mesh():
 		return []
+	var mesh := object.node3d_type as MeshInstance3D
 	var faces: PackedVector3Array
 	var uvs: PackedVector2Array
-	var mesh := object.node3d_type as MeshInstance3D
 	var object_xform := mesh.global_transform
 	var surface: Array = mesh.mesh.surface_get_arrays(0)
 	var vertices: PackedVector3Array = surface[Mesh.ARRAY_VERTEX]
@@ -429,9 +428,30 @@ func get_3d_object(canvas_pos: Vector2) -> Array:
 	var a2: float = f3.cross(f1).length() / a # p2's triangle area / a
 	var a3: float = f1.cross(f2).length() / a # p3's triangle area / a
 
+	var uv1 := uvs[index]
+	var uv2 := uvs[index + 1]
+	var uv3 := uvs[index + 2]
+
 	# find the uv corresponding to point f (uv1/uv2/uv3 are associated to p1/p2/p3):
-	var uv: Vector2 = uvs[index] * a1 + uvs[index + 1] * a2 + uvs[index + 2] * a3
-	return [object, uv, intersect.face_index]
+	var uv: Vector2 = uv1 * a1 + uv2 * a2 + uv3 * a3
+
+	var uv_to_world_scale := 0.005
+	var edge1_world := p2 - p1
+	var edge2_world := p3 - p1
+	var edge1_uv := uv2 - uv1
+	var edge2_uv := uv3 - uv1
+
+	var area_world := edge1_world.cross(edge2_world).length()
+	var area_uv := edge1_uv.cross(edge2_uv)
+	if area_uv != 0.0:
+		uv_to_world_scale = sqrt(area_world / area_uv)
+		var mat := mesh.mesh.surface_get_material(0) as BaseMaterial3D
+		var image := mat.albedo_texture
+		# Convert brush size to UV, then to world
+		var texel_uv := 1.0 / image.get_size().x
+		#var brush_uv = brush_px * texel_uv
+		uv_to_world_scale = texel_uv * uv_to_world_scale * 0.5
+	return [object, uv, intersect.position, uv_to_world_scale]
 
 
 
@@ -523,10 +543,58 @@ func draw_fill_gap(start: Vector2i, end: Vector2i) -> void:
 			current_pixel_coord = get_spacing_position(current_pixel_coord)
 		for coord in _draw_tool(current_pixel_coord):
 			coords_to_draw[coord] = 0
+
 	for c in coords_to_draw.keys():
 		_set_pixel_no_cache(c)
 	if project.has_selection:
 		project.selection_map.lock_selection_rect(project, false)
+
+
+func draw_fill_3d_gap(start: Vector2i, end: Vector2i) -> void:
+	_prepare_tool()
+	# This needs to be a dictionary to ensure duplicate coordinates are not being added
+	var coords_to_draw := {}
+	var start_object_data := get_3d_object(start)
+	if start_object_data.is_empty():
+		return
+	var start_uv := start_object_data[1] as Vector2
+	if not is_instance_valid(_mat_3d):
+		var mesh := start_object_data[0].node3d_type as MeshInstance3D
+		_mat_3d = mesh.mesh.surface_get_material(0)
+	var image := _mat_3d.albedo_texture.get_image()
+	var image_size := Vector2(image.get_size())
+	var start_draw_pos := start_uv * image_size
+	var pixel_coords: PackedVector2Array = []
+
+	var end_object_data := get_3d_object(end)
+	if end_object_data.is_empty():
+		return
+	var end_uv := end_object_data[1] as Vector2
+	var uv_to_world_scale := end_object_data[3] as float
+	var end_draw_pos := end_uv * image_size
+
+	var dist := start_draw_pos.distance_to(end_draw_pos)
+	var steps := int(dist / uv_to_world_scale)
+	for i in range(steps):
+		var t := float(i) / steps
+		var interp_pos := end_draw_pos.lerp(start_draw_pos, t)
+
+		var step_object_data := get_3d_object(interp_pos)
+		if step_object_data.is_empty():
+			continue
+		var step_uv := step_object_data[1] as Vector2
+		var step_draw_pos := step_uv * image_size
+		pixel_coords.append(step_draw_pos)
+	pixel_coords.append(end_draw_pos)
+
+	#pixel_coords.pop_front()
+	for current_pixel_coord in pixel_coords:
+		if _spacing_mode:
+			current_pixel_coord = get_spacing_position(current_pixel_coord)
+		for coord in _draw_tool(current_pixel_coord):
+			coords_to_draw[coord] = 0
+	for c in coords_to_draw.keys():
+		_set_pixel_no_cache(c)
 
 
 ## Calls [method Geometry2D.bresenham_line] and takes [param thickness] into account.
@@ -739,7 +807,7 @@ func _set_pixel_no_cache(pos: Vector2i, ignore_mirroring := false) -> void:
 		else:
 			for image in images:
 				_drawer.set_pixel(image, pos, tool_slot.color, ignore_mirroring)
-	if is_instance_valid(_mat_3d):
+	if is_instance_valid(_mat_3d) and images.size() > 0:
 		_mat_3d.albedo_texture.update(images[0])
 
 
