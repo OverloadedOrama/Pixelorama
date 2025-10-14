@@ -2,7 +2,6 @@ extends BaseDrawTool
 
 var _prev_mode := false
 var _last_position := Vector2i(Vector2.INF)
-var _last_3d_position: Vector3
 var _changed := false
 var _overwrite := false
 var _fill_inside := false
@@ -118,7 +117,6 @@ func draw_start(pos: Vector2i) -> void:
 
 	_draw_line = Input.is_action_pressed("draw_create_line")
 	_mat_3d = null
-	var draw_pos := pos
 	if Global.current_project.get_current_cel() is Cel3D:
 		var object_data := get_3d_object(pos)
 		if object_data.is_empty():
@@ -126,7 +124,7 @@ func draw_start(pos: Vector2i) -> void:
 			return
 		var mesh := object_data[0].node3d_type as MeshInstance3D
 		var uv := object_data[1] as Vector2
-		_last_3d_position = object_data[2]
+		_prev_face_index = object_data[2]
 		var image: ImageExtended
 		if mesh.mesh.surface_get_material(0) == null:
 			_mat_3d = StandardMaterial3D.new()
@@ -147,7 +145,8 @@ func draw_start(pos: Vector2i) -> void:
 			var temp_image := _mat_3d.albedo_texture.get_image()
 			image = ImageExtended.new()
 			image.copy_from_custom(temp_image)
-		draw_pos = uv * (Vector2(image.get_size()))
+		var draw_pos := uv * (Vector2(image.get_size()))
+		pos = draw_pos
 	if _draw_line:
 		_spacing_mode = false  # spacing mode is disabled during line mode
 		if Global.mirror_view:
@@ -158,9 +157,9 @@ func draw_start(pos: Vector2i) -> void:
 		update_line_polylines(_line_start, _line_end)
 	else:
 		if _fill_inside:
-			_draw_points.append(draw_pos)
-			_fill_inside_rect = Rect2i(draw_pos, Vector2i.ZERO)
-		draw_tool(draw_pos)
+			_draw_points.append(pos)
+			_fill_inside_rect = Rect2i(pos, Vector2i.ZERO)
+		draw_tool(pos)
 		_last_position = pos
 		Global.canvas.sprite_changed_this_frame = true
 	cursor_text = ""
@@ -175,19 +174,17 @@ func draw_move(pos_i: Vector2i) -> void:
 			_pick_color(pos)
 		return
 
-	var is_3d := Global.current_project.get_current_cel() is Cel3D
-	if is_3d:
+	if Global.current_project.get_current_cel() is Cel3D:
 		var object_data := get_3d_object(pos)
 		if object_data.is_empty():
 			return
-	#var draw_pos := pos
-	#if Global.current_project.get_current_cel() is Cel3D:
-		#var object_data := get_3d_object(pos)
-		#if object_data.is_empty():
-			#return
-		#var uv := object_data[1] as Vector2
-		#var image := _mat_3d.albedo_texture.get_image()
-		#draw_pos = uv * (Vector2(image.get_size()))
+		var uv := object_data[1] as Vector2
+		var image := _mat_3d.albedo_texture.get_image()
+		var draw_pos := uv * (Vector2(image.get_size()))
+		pos = draw_pos
+		if _prev_face_index != object_data[2]:
+			_last_position = pos
+		_prev_face_index = object_data[2]
 
 	if _draw_line:
 		_spacing_mode = false  # spacing mode is disabled during line mode
@@ -199,16 +196,17 @@ func draw_move(pos_i: Vector2i) -> void:
 		cursor_text = d.text
 		update_line_polylines(_line_start, _line_end)
 	else:
-		if is_3d:
-			draw_fill_3d_gap(_last_position, pos)
-		else:
-			draw_fill_gap(_last_position, pos)
+		draw_fill_gap(_last_position, pos)
 		_last_position = pos
 		cursor_text = ""
 		Global.canvas.sprite_changed_this_frame = true
 		if _fill_inside:
 			_draw_points.append(pos)
 			_fill_inside_rect = _fill_inside_rect.expand(pos)
+
+	#if is_instance_valid(_mat_3d):
+		#_mat_3d.albedo_texture.update(_stroke_images[0])
+		#_stroke_images.clear()
 
 
 func draw_end(pos: Vector2i) -> void:
