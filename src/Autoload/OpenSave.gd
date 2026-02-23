@@ -103,6 +103,8 @@ func handle_loading_file(file: String, force_import_dialog_on_images := false) -
 		var new_path := Global.FONTS_DIR_PATH.path_join(file.get_file())
 		DirAccess.copy_absolute(file, new_path)
 		Global.loaded_fonts.append(font_file)
+	elif file_ext == "tif" or file_ext == "tiff":
+		open_tiff_file(file)
 	elif file_ext == "gif":
 		if not open_gif_file(file):
 			handle_loading_video(file)
@@ -1073,6 +1075,36 @@ func open_font_file(path: String) -> FontFile:
 	else:
 		font_file.load_dynamic_font(path)
 	return font_file
+
+
+func open_tiff_file(path: String) -> void:
+	var tiff_data := TIFFLoader.load_tiff(path)
+	if tiff_data.is_empty():
+		return
+	var new_project := Project.new([], path.get_file().get_basename())
+	var frame := Frame.new()
+	new_project.frames.append(frame)
+	var size := Vector2i.ZERO
+	for i in tiff_data.size():
+		var layer_data := tiff_data[i]
+		var image := layer_data.image
+		image.convert(Image.FORMAT_RGBA8)
+		size = image.get_size()
+		if size == Vector2i.ZERO:
+			return
+		var layer := PixelLayer.new(new_project, layer_data.page_name)
+		layer.index = i
+		new_project.layers.append(layer)
+		var cel := layer.new_cel_from_image(image)
+		frame.cels.append(cel)
+	new_project.order_layers()
+	print(size)
+	new_project.size = size
+	new_project.save_path = path.get_basename() + ".pxo"
+	new_project.file_name = new_project.name
+	Global.projects.append(new_project)
+	Global.tabs.current_tab = Global.tabs.get_tab_count() - 1
+	Global.canvas.camera_zoom()
 
 
 func open_gif_file(path: String) -> bool:
