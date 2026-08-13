@@ -34,6 +34,7 @@ func _get_input_port_name(port: int):
 			return "pivot"
 		3:
 			return "time"
+	return ""
 
 func _get_input_port_type(port: int):
 	match port:
@@ -45,7 +46,7 @@ func _get_input_port_type(port: int):
 			return VisualShaderNode.PORT_TYPE_VECTOR_3D
 		3:
 			return VisualShaderNode.PORT_TYPE_SCALAR
-
+	return PORT_TYPE_SCALAR
 
 func _get_output_port_count() -> int:
 	return 1
@@ -62,9 +63,9 @@ func _get_global_code(mode):
 
 func _get_code(input_vars, output_vars, mode, type):
 	var uv = "UV"
-
+	
 	if input_vars[0]:
 		uv = input_vars[0]
-
+	
 	return output_vars[0] + " = vec3(_rotateUVAnimatedFunc(%s.xy, %s.xy, 0.0, %s, %s), 0);" % [
 	uv, input_vars[2], input_vars[1], input_vars[3]]
