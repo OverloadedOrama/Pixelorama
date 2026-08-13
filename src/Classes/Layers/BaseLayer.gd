@@ -295,8 +295,8 @@ func display_effects(cel: BaseCel, animate_params := true, image_override: Image
 		for uniform in effect.shader.get_shader_uniform_list():
 			var uniform_name: String = uniform.name
 			if uniform_name == "PXO_time":
-				params["PXO_time"] = frame.position_in_seconds(project)
-			elif effect_params == "PXO_frame_index":
+				effect_params["PXO_time"] = frame.position_in_seconds(project)
+			elif uniform_name == "PXO_frame_index":
 				effect_params["PXO_frame_index"] = frame_index
 			elif uniform_name == "PXO_frame_index":
 				effect_params["PXO_layer_index"] = index

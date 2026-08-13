@@ -87,6 +87,7 @@ func _get_input_port_name(port):
 					return "Bottom layer"
 				2:
 					return "Opacity"
+	return ""
 
 
 func _get_input_port_type(port):
@@ -112,6 +113,7 @@ func _get_input_port_type(port):
 					return VisualShaderNode.PORT_TYPE_VECTOR_3D
 				2:
 					return VisualShaderNode.PORT_TYPE_SCALAR
+	return PORT_TYPE_SCALAR
 
 func _get_output_port_count():
 	return 1
@@ -410,6 +412,7 @@ func _get_global_code(mode):
 				}
 			"""
 		#endregion
+	return ""
 
 
 func _get_code(input_vars, output_vars, mode, type):
@@ -475,3 +478,4 @@ func _get_code(input_vars, output_vars, mode, type):
 			return "%s.rgb = blend_soft_light(%s.rgb, %s.rgb, %s);" % [output_vars[0], top_color, bottom_color, opacity]
 		23:
 			return "%s.rgb = blend_vivid_light(%s.rgb, %s.rgb, %s);" % [output_vars[0], top_color, bottom_color, opacity]
+	return ""
