@@ -1,19 +1,19 @@
 # The MIT License
 # Copyright © 2022 Inigo Quilez
-# Permission is hereby granted, free of charge, to any person obtaining a copy 
-# of this software and associated documentation files (the "Software"), 
-# to deal in the Software without restriction, including without limitation 
-# the rights to use, copy, modify, merge, publish, distribute, sublicense, 
-# and/or sell copies of the Software, and to permit persons to whom the 
-# Software is furnished to do so, subject to the following conditions: 
-# The above copyright notice and this permission notice shall be included 
-# in all copies or substantial portions of the Software. 
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, 
-# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-# IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, 
-# DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
-# TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"),
+# to deal in the Software without restriction, including without limitation
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,
+# and/or sell copies of the Software, and to permit persons to whom the
+# Software is furnished to do so, subject to the following conditions:
+# The above copyright notice and this permission notice shall be included
+# in all copies or substantial portions of the Software.
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+# DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+# TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
 # OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 @tool
@@ -50,6 +50,7 @@ func _get_input_port_name(port):
 			return "Proportions"
 		3:
 			return "Size"
+	return ""
 
 func _get_input_port_type(port):
 	match port:
@@ -61,6 +62,7 @@ func _get_input_port_type(port):
 			return VisualShaderNode.PORT_TYPE_VECTOR_2D
 		3:
 			return VisualShaderNode.PORT_TYPE_SCALAR
+	return PORT_TYPE_SCALAR
 
 func _get_output_port_count():
 	return 1
@@ -83,7 +85,7 @@ func _get_global_code(mode):
 			p = (p.x>p.y) ? p.yx : p.xy;
 			// offset
 			p += k;
-			
+
 			// solve quartic (for details see https://www.shadertoy.com/view/ftcyW8)
 			float x2 = p.x*p.x/16.0;
 			float y2 = p.y*p.y/16.0;
@@ -103,10 +105,10 @@ func _get_global_code(mode):
 			}
 			float w = sqrt(u+x2);
 			float x = p.x/4.0-w+sqrt(2.0*x2-u+(p.y-x2*p.x*2.0)/w/4.0);
-			
+
 			// clamp arm
 			x = max(x,k);
-			
+
 			// compute distance to closest point
 			float d = length( p-vec2(x,1.0/x) ) / s;
 
@@ -117,8 +119,8 @@ func _get_global_code(mode):
 
 func _get_code(input_vars, output_vars, mode, type):
 	var uv = "UV"
-	
+
 	if input_vars[0]:
 		uv = input_vars[0]
-	
+
 	return "%s = sdPreciseHyperbolicCross((%s.xy - %s.xy)*(2.0-%s.xy), %s);" % [output_vars[0], uv, input_vars[1], input_vars[2], input_vars[3]]

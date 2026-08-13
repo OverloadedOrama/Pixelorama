@@ -53,6 +53,7 @@ func _get_input_port_name(port: int):
 			return "z"
 		9:
 			return "time"
+	return ""
 
 func _get_input_port_type(port: int):
 	match port:
@@ -76,6 +77,7 @@ func _get_input_port_type(port: int):
 			return VisualShaderNode.PORT_TYPE_SCALAR
 		9:
 			return VisualShaderNode.PORT_TYPE_SCALAR
+	return PORT_TYPE_SCALAR
 
 func _get_output_port_count() -> int:
 	return 1
@@ -92,10 +94,10 @@ func _get_global_code(mode):
 
 func _get_code(input_vars, output_vars, mode, type):
 	var uv = "UV"
-
+	
 	if input_vars[0]:
 		uv = input_vars[0]
-
+	
 	return "%s = _simplexNoise4DFBM(%s.xy, int(%s), %s.xy, %s, %s, %s, %s, %s.xy, %s, %s);" % [
 	output_vars[0], uv, input_vars[1], input_vars[2], input_vars[3],
 	input_vars[4], input_vars[5], input_vars[6], input_vars[7], input_vars[9], input_vars[8]]

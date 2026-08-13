@@ -26,6 +26,7 @@ func _get_input_port_name(port):
 			return "Sphere Surface Point"
 		1:
 			return "Sphere Center"
+	return ""
 
 func _get_input_port_type(port):
 	match port:
@@ -33,6 +34,7 @@ func _get_input_port_type(port):
 			return VisualShaderNode.PORT_TYPE_VECTOR_3D
 		1:
 			return VisualShaderNode.PORT_TYPE_VECTOR_3D
+	return PORT_TYPE_SCALAR
 
 func _get_output_port_count():
 	return 1
