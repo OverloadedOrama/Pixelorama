@@ -283,7 +283,7 @@ func display_effects(cel: BaseCel, image_override: Image = null) -> Image:
 			var uniform_name: String = uniform.name
 			if uniform_name == "PXO_time":
 				params["PXO_time"] = frame.position_in_seconds(project)
-			elif interpol_params == "PXO_frame_index":
+			elif uniform_name == "PXO_frame_index":
 				interpol_params["PXO_frame_index"] = frame_index
 			elif uniform_name == "PXO_frame_index":
 				interpol_params["PXO_layer_index"] = index

@@ -62,6 +62,7 @@ func _get_input_port_name(port):
 			return "Ending frame"
 		5:
 			return "Animation speed"
+	return ""
 
 func _get_input_port_type(port):
 	match port:
@@ -77,6 +78,7 @@ func _get_input_port_type(port):
 			return VisualShaderNode.PORT_TYPE_SCALAR_INT
 		5:
 			return VisualShaderNode.PORT_TYPE_SCALAR
+	return PORT_TYPE_SCALAR
 
 func _get_output_port_count():
 	return 1
