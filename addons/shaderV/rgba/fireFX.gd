@@ -62,6 +62,7 @@ func _get_input_port_name(port: int):
 			return "col3pos"
 		12:
 			return "time"
+	return ""
 
 func _get_input_port_type(port: int):
 	match port:
@@ -91,6 +92,7 @@ func _get_input_port_type(port: int):
 			return VisualShaderNode.PORT_TYPE_SCALAR
 		12:
 			return VisualShaderNode.PORT_TYPE_SCALAR
+	return PORT_TYPE_SCALAR
 
 func _get_output_port_count() -> int:
 	return 2
@@ -101,6 +103,7 @@ func _get_output_port_name(port: int):
 			return "col"
 		1:
 			return "alpha"
+	return ""
 
 func _get_output_port_type(port: int):
 	match port:
@@ -108,6 +111,7 @@ func _get_output_port_type(port: int):
 			return VisualShaderNode.PORT_TYPE_VECTOR_3D
 		1:
 			return VisualShaderNode.PORT_TYPE_SCALAR
+	return PORT_TYPE_SCALAR
 
 func _get_global_code(mode):
 	var path = self.get_script().get_path().get_base_dir()
@@ -115,14 +119,14 @@ func _get_global_code(mode):
 
 func _get_code(input_vars, output_vars, mode, type):
 	var uv = "UV"
-
+	
 	if input_vars[0]:
 		uv = input_vars[0]
-
+	
 	return """vec4 %s%s = _fireFXFunc(%s.xy, %s.xy, %s, %s, vec4(%s, %s), vec4(%s, %s), vec4(%s, %s), %s, %s, %s);
 %s = %s%s.rgb;
 %s = %s%s.a;""" % [
 output_vars[0], output_vars[1], uv, input_vars[1], input_vars[2], input_vars[12], input_vars[3], input_vars[4],
-				input_vars[5], input_vars[6], input_vars[7], input_vars[8], input_vars[9], input_vars[10], input_vars[11],
+				input_vars[5], input_vars[6], input_vars[7], input_vars[8], input_vars[9], input_vars[10], input_vars[11], 
 output_vars[0], output_vars[0], output_vars[1],
 output_vars[1], output_vars[0], output_vars[1]]

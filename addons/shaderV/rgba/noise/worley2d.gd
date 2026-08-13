@@ -35,6 +35,7 @@ func _get_input_port_name(port: int):
 			return "scale"
 		3:
 			return "jitter"
+	return ""
 
 func _get_input_port_type(port: int):
 	match port:
@@ -46,6 +47,7 @@ func _get_input_port_type(port: int):
 			return VisualShaderNode.PORT_TYPE_SCALAR
 		3:
 			return VisualShaderNode.PORT_TYPE_SCALAR
+	return PORT_TYPE_SCALAR
 
 func _get_output_port_count() -> int:
 	return 2
@@ -56,6 +58,7 @@ func _get_output_port_name(port: int):
 			return "F1"
 		1:
 			return "F2"
+	return ""
 
 func _get_output_port_type(port: int):
 	match port:
@@ -63,6 +66,7 @@ func _get_output_port_type(port: int):
 			return VisualShaderNode.PORT_TYPE_SCALAR
 		1:
 			return VisualShaderNode.PORT_TYPE_SCALAR
+	return PORT_TYPE_SCALAR
 
 func _get_global_code(mode):
 	var path = self.get_script().get_path().get_base_dir()
@@ -70,10 +74,10 @@ func _get_global_code(mode):
 
 func _get_code(input_vars, output_vars, mode, type):
 	var uv = "UV"
-
+	
 	if input_vars[0]:
 		uv = input_vars[0]
-
+	
 	return """vec2 %s%s = _cellular2dNoiseFunc((%s.xy+%s.xy)*%s, min(max(%s, 0.0), 1.0));
 %s = %s%s.x;
 %s = %s%s.y;""" % [
