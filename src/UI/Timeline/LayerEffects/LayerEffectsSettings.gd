@@ -6,7 +6,7 @@ const DELETE_TEXTURE := preload("res://assets/graphics/misc/close.svg")
 var effects: Array[LayerEffect] = [
 	LayerEffect.new("Offset & Scale", load("res://src/Shaders/Effects/OffsetPixels.gdshader")),
 	LayerEffect.new(
-		"Flat to Isometric", load("res://src/Shaders/Effects/FlatToIsometric.gdshader")
+		"Flat to Isometric", load("res://src/Shaders/Effects/FlatToIsometric.gdshaderinc")
 	),
 	LayerEffect.new(
 		"Convolution Matrix", load("res://src/Shaders/Effects/ConvolutionMatrix.gdshader"), "Color"
@@ -21,14 +21,14 @@ var effects: Array[LayerEffect] = [
 	LayerEffect.new(
 		"Drop Shadow", load("res://src/Shaders/Effects/DropShadow.gdshader"), "Procedural"
 	),
-	LayerEffect.new("Invert Colors", load("res://src/Shaders/Effects/Invert.gdshader"), "Color"),
+	LayerEffect.new("Invert Colors", load("res://src/Shaders/Effects/Invert.gdshaderinc"), "Color"),
 	LayerEffect.new("Desaturation", load("res://src/Shaders/Effects/Desaturate.gdshader"), "Color"),
 	LayerEffect.new(
 		"Adjust Hue/Saturation/Value", load("res://src/Shaders/Effects/HSV.gdshader"), "Color"
 	),
 	LayerEffect.new(
 		"Adjust Brightness/Contrast",
-		load("res://src/Shaders/Effects/BrightnessContrast.gdshader"),
+		load("res://src/Shaders/Effects/BrightnessContrast.gdshaderinc"),
 		"Color"
 	),
 	LayerEffect.new(
