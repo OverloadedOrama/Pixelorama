@@ -143,11 +143,7 @@ static func create_ui_for_shader_uniforms(
 				params[u_name] = slider.value
 			var hbox := HBoxContainer.new()
 			hbox.add_child(label)
-			var vbox := VBoxContainer.new()
-			vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-			hbox.add_child(vbox)
-			vbox.add_child(slider)
-			vbox.add_child(HSeparator.new())
+			hbox.add_child(slider)
 			parent_node.add_child(hbox)
 		elif u_type == "vec4":
 			if "source_color" in u_hint:
@@ -428,7 +424,7 @@ render_mode blend_disabled;
 #include "%s"
 
 uniform sampler2D source_texture0 : hint_blit_source0, filter_nearest;
-uniform sampler2D selection : filter_nearest, repeat_disable;
+uniform sampler2D selection : filter_nearest;
 %s
 
 void blit() {
