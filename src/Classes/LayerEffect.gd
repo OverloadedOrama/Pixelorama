@@ -31,7 +31,7 @@ func _init(
 
 
 func duplicate() -> LayerEffect:
-	return LayerEffect.new(name, shader_or_include, category, params.duplicate())
+	return LayerEffect.new(name, shader, category, params.duplicate())
 
 
 func serialize() -> Dictionary:
@@ -63,7 +63,7 @@ func deserialize(dict: Dictionary) -> void:
 
 
 func is_param_valid(param_name: StringName) -> bool:
-	if shader == null:
+	if not shader:
 		return false
 	var uniforms := shader.get_shader_uniform_list()
 	for uniform in uniforms:

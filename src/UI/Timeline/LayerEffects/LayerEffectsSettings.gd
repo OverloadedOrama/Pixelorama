@@ -4,40 +4,27 @@ const LAYER_EFFECT_BUTTON = preload("res://src/UI/Timeline/LayerEffects/LayerEff
 const DELETE_TEXTURE := preload("res://assets/graphics/misc/close.svg")
 
 var effects: Array[LayerEffect] = [
+	LayerEffect.new("Offset & Scale", load("res://src/Shaders/Effects/OffsetPixels.gdshaderinc")),
 	LayerEffect.new(
-		"Offset & Scale", load("res://src/Shaders/Effects/OffsetPixels.gdshaderinc"), "Transform"
+		"Flat to Isometric", load("res://src/Shaders/Effects/FlatToIsometric.gdshaderinc")
 	),
 	LayerEffect.new(
-		"Corner Pin", load("res://src/Shaders/Effects/CornerPin.gdshaderinc"), "Transform"
+		"Convolution Matrix", load("res://src/Shaders/Effects/ConvolutionMatrix.gdshader"), "Color"
 	),
 	LayerEffect.new(
-		"Flat to Isometric",
-		load("res://src/Shaders/Effects/FlatToIsometric.gdshaderinc"),
-		"Transform"
+		"Gaussian Blur", load("res://src/Shaders/Effects/GaussianBlur.gdshader"), "Blur"
+	),
+	LayerEffect.new("Gradient", load("res://src/Shaders/Effects/Gradient.gdshader"), "Procedural"),
+	LayerEffect.new(
+		"Outline", load("res://src/Shaders/Effects/OutlineInline.gdshader"), "Procedural"
 	),
 	LayerEffect.new(
-		"Convolution Matrix",
-		load("res://src/Shaders/Effects/ConvolutionMatrix.gdshaderinc"),
-		"Color"
-	),
-	LayerEffect.new(
-		"Gaussian Blur", load("res://src/Shaders/Effects/GaussianBlur.gdshaderinc"), "Blur"
-	),
-	LayerEffect.new(
-		"Gradient", load("res://src/Shaders/Effects/Gradient.gdshaderinc"), "Procedural"
-	),
-	LayerEffect.new(
-		"Outline", load("res://src/Shaders/Effects/OutlineInline.gdshaderinc"), "Procedural"
-	),
-	LayerEffect.new(
-		"Drop Shadow", load("res://src/Shaders/Effects/DropShadow.gdshaderinc"), "Procedural"
+		"Drop Shadow", load("res://src/Shaders/Effects/DropShadow.gdshader"), "Procedural"
 	),
 	LayerEffect.new("Invert Colors", load("res://src/Shaders/Effects/Invert.gdshaderinc"), "Color"),
+	LayerEffect.new("Desaturation", load("res://src/Shaders/Effects/Desaturate.gdshader"), "Color"),
 	LayerEffect.new(
-		"Desaturation", load("res://src/Shaders/Effects/Desaturate.gdshaderinc"), "Color"
-	),
-	LayerEffect.new(
-		"Adjust Hue/Saturation/Value", load("res://src/Shaders/Effects/HSV.gdshaderinc"), "Color"
+		"Adjust Hue/Saturation/Value", load("res://src/Shaders/Effects/HSV.gdshader"), "Color"
 	),
 	LayerEffect.new(
 		"Adjust Brightness/Contrast",
@@ -45,13 +32,13 @@ var effects: Array[LayerEffect] = [
 		"Color"
 	),
 	LayerEffect.new(
-		"Color Curves", load("res://src/Shaders/Effects/ColorCurves.gdshaderinc"), "Color"
+		"Color Curves", load("res://src/Shaders/Effects/ColorCurves.gdshader"), "Color"
 	),
-	LayerEffect.new("Palettize", load("res://src/Shaders/Effects/Palettize.gdshaderinc"), "Color"),
-	LayerEffect.new("Pixelize", load("res://src/Shaders/Effects/Pixelize.gdshaderinc"), "Blur"),
-	LayerEffect.new("Posterize", load("res://src/Shaders/Effects/Posterize.gdshaderinc"), "Color"),
+	LayerEffect.new("Palettize", load("res://src/Shaders/Effects/Palettize.gdshader"), "Color"),
+	LayerEffect.new("Pixelize", load("res://src/Shaders/Effects/Pixelize.gdshader"), "Blur"),
+	LayerEffect.new("Posterize", load("res://src/Shaders/Effects/Posterize.gdshader"), "Color"),
 	LayerEffect.new(
-		"Gradient Map", load("res://src/Shaders/Effects/GradientMap.gdshaderinc"), "Color"
+		"Gradient Map", load("res://src/Shaders/Effects/GradientMap.gdshader"), "Color"
 	),
 	LayerEffect.new("Index Map", load("res://src/Shaders/Effects/IndexMap.gdshader"), "Color"),
 ]
