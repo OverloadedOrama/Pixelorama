@@ -16,12 +16,8 @@
 // @uniform float position : hint_range(-0.5, 0.5, 0.01) = 0.0;
 // @uniform float size : hint_range(0.01, 2.0, 0.01) = 1.0;
 // @uniform float angle : hint_range(0.0, 360.0, 0.01) = 0.0;
-// @uniform vec2 pivot = vec2(0.5);
 // @uniform vec2 center = vec2(0.5);
 // @uniform vec2 radius = vec2(1.0);
-// @uniform bool use_color_masking = false;
-// @uniform vec4 color_mask : source_color = vec4(0.0, 0.0, 0.0, 0.0);
-// @uniform float tolerance : hint_range(0.0, 1.0) = 0.0;
 
 
 float modify_uv(
@@ -30,33 +26,23 @@ float modify_uv(
 	float position,
 	float size,
 	float angle,
-	vec2 pivot,
 	vec2 center,
 	vec2 radius,
 ) {
 	float modified_uv;
 	if (shape == 0) { // Linear
-		vec2 uv_offsetted = uv - pivot;
+		vec2 uv_offsetted = uv - 0.5;
 		float angle_cos = cos(radians(angle));
 		float angle_sin = sin(radians(angle));
 		modified_uv = uv_offsetted.x * angle_cos - uv_offsetted.y * angle_sin;
 		modified_uv /= abs(angle_cos) + abs(angle_sin);
-		if (size == 0.0) {
-			size = 0.01;
-		}
 		modified_uv /= size;
-		float pos = position / size;
-		modified_uv -= pos - 0.5;
+		float pivot = position / size;
+		modified_uv -= pivot - 0.5;
 	}
 	else { // Radial
 		vec2 uv_offsetted = uv * 2.0 - 1.0;
 		uv_offsetted -= (center * 2.0) - vec2(1.0);
-		if (radius.x == 0.0) {
-			radius.x = 0.01;
-		}
-		if (radius.y == 0.0) {
-			radius.y = 0.01;
-		}
 		uv_offsetted /= radius;
 		modified_uv = length(uv_offsetted);
 	}
@@ -86,14 +72,6 @@ float dither(vec2 uv, float modified_uv, ivec2 image_size, sampler2D dither_text
 	return col_sample;
 }
 
-bool similar_colors(vec4 c1, vec4 c2, float tol) {
-	return (
-		abs(c1.r - c2.r) <= tol
-		&& abs(c1.g - c2.g) <= tol
-		&& abs(c1.b - c2.b) <= tol
-		&& abs(c1.a - c2.a) <= tol
-	);
-}
 
 vec4 apply_effect(
 	sampler2D source_texture,
@@ -109,16 +87,14 @@ vec4 apply_effect(
 	float position,
 	float size,
 	float angle,
-	vec2 pivot,
 	vec2 center,
 	vec2 radius,
-	bool use_color_masking,
-	vec4 color_mask,
-	float tolerance
 ) {
+	vec2 pixel_size = 1.0 / vec2(textureSize(source_texture, 0));
 	vec4 original_color = texture(source_texture, uv);
 	vec4 selection_color = texture(selection, uv);
-	float modified_uv = modify_uv(uv, shape, position, size, angle, pivot, center, radius);
+	vec2 tex_size = 1.0 / pixel_size;
+	float modified_uv = modify_uv(uv, shape, position, size, angle, center, radius);
 	if (repeat == 1)
 		modified_uv = fract(modified_uv);
 	else if (repeat == 2)
@@ -154,12 +130,6 @@ vec4 apply_effect(
 		output = texture(gradient_texture, vec2(modified_uv));
 	if (repeat == 3)
 		output.a = min(step(modified_uv, 1.0) * step(0.0, modified_uv), output.a);
-	if (use_color_masking) {
-		if (!similar_colors(original_color, color_mask, tolerance)) {
-			output = original_color;
-		}
-	}
 	output = mix(original_color, output, output.a);
-
 	return mix(original_color, output, selection_color.a);
 }
