@@ -51,7 +51,6 @@ shader_parameter/width = 0.05
 shader_parameter/hollow_shapes = true
 
 [node name="Canvas" type="Node2D" unique_id=248802489]
-material = SubResource("ShaderMaterial_6b0ox")
 script = ExtResource("1")
 
 [node name="CurrentlyVisibleFrame" type="SubViewport" parent="." unique_id=1575010261]
