@@ -1,0 +1,192 @@
+shader_type texture_blit;
+render_mode blend_disabled;
+
+const float HCV_EPSILON = 1e-10;
+const float HSL_EPSILON = 1e-10;
+
+uniform sampler2D source_texture0 : hint_blit_source0, filter_nearest;
+uniform sampler2D top_layer : filter_nearest;
+
+uniform int blend_mode = 0;
+uniform float opacity = 1.0;
+// Conversion functions from
+// https://gist.github.com/unitycoder/aaf94ddfe040ec2da93b58d3c65ab9d9
+// licensed under MIT
+
+// Converts from pure Hue to linear RGB
+vec3 hue_to_rgb(float hue)
+{
+    float R = abs(hue * 6.0 - 3.0) - 1.0;
+    float G = 2.0 - abs(hue * 6.0 - 2.0);
+    float B = 2.0 - abs(hue * 6.0 - 4.0);
+    return clamp(vec3(R, G, B), 0.0, 1.0);
+}
+
+// Converts from HSL to linear RGB
+vec3 hsl_to_rgb(vec3 hsl)
+{
+    vec3 rgb = hue_to_rgb(hsl.x);
+    float C = (1.0 - abs(2.0 * hsl.z - 1.0)) * hsl.y;
+    return (rgb - 0.5) * C + hsl.z;
+}
+
+
+// Converts a value from linear RGB to HCV (Hue, Chroma, Value)
+vec3 rgb_to_hcv(vec3 rgb)
+{
+    // Based on work by Sam Hocevar and Emil Persson
+    vec4 P = (rgb.g < rgb.b) ? vec4(rgb.bg, -1.0, 2.0/3.0) : vec4(rgb.gb, 0.0, -1.0/3.0);
+    vec4 Q = (rgb.r < P.x) ? vec4(P.xyw, rgb.r) : vec4(rgb.r, P.yzx);
+    float C = Q.x - min(Q.w, Q.y);
+    float H = abs((Q.w - Q.y) / (6.0 * C + HCV_EPSILON) + Q.z);
+    return vec3(H, C, Q.x);
+}
+
+// Converts from linear rgb to HSL
+vec3 rgb_to_hsl(vec3 rgb)
+{
+    vec3 HCV = rgb_to_hcv(rgb);
+    float L = HCV.z - HCV.y * 0.5;
+    float S = HCV.y / (1.0 - abs(L * 2.0 - 1.0) + HSL_EPSILON);
+    return vec3(HCV.x, S, L);
+}
+
+
+vec4 blend(int blend_type, vec4 current_color, vec4 prev_color) {
+	current_color.a *= opacity;  // Combine the layer opacity
+	if (current_color.a <= 0.001) {
+		// NOTE: Unless the layer itself is transparent, we need transparent colors as well in
+		// Intersect and Match colors blending.
+		if ((blend_type != 21 && blend_type != 22) || opacity <= 0.001){
+			return prev_color;
+		}
+	}
+
+	vec4 result;
+	bool should_blend_alpha = true;
+	switch(blend_type) {
+		case 1: // Erase
+			result = prev_color;
+			result.a -= current_color.a;  // clamping will be done at the end so not doing it here.
+			current_color.a = 0.0;
+			should_blend_alpha = false;
+			break;
+		case 2: // Darken
+			result.rgb = min(prev_color.rgb, current_color.rgb);
+			break;
+		case 3: // Multiply
+			result.rgb = prev_color.rgb * current_color.rgb;
+			break;
+		case 4: // Color burn
+			result.rgb = 1.0 - (1.0 - prev_color.rgb) / current_color.rgb;
+			break;
+		case 5: // Linear burn
+			result.rgb = prev_color.rgb + current_color.rgb - 1.0;
+			break;
+		case 6: // Lighten
+			result.rgb = max(prev_color.rgb, current_color.rgb);
+			break;
+		case 7: // Screen
+			result.rgb = 1.0 - (1.0 - prev_color.rgb) * (1.0 - current_color.rgb);
+			break;
+		case 8: // Color dodge
+			result.rgb = prev_color.rgb / (1.0 - current_color.rgb);
+			break;
+		case 9: // Add (linear dodge)
+			result.rgb = prev_color.rgb + current_color.rgb;
+			break;
+		case 10: // Overlay
+			result.rgb = mix(2.0 * prev_color.rgb * current_color.rgb, 1.0 - 2.0 * (1.0 - current_color.rgb) * (1.0 - prev_color.rgb), round(prev_color.rgb));
+			break;
+		case 11: // Soft light
+			result.rgb = mix(2.0 * prev_color.rgb * current_color.rgb + prev_color.rgb * prev_color.rgb * (1.0 - 2.0 * current_color.rgb), sqrt(prev_color.rgb) * (2.0 * current_color.rgb - 1.0) + (2.0 * prev_color.rgb) * (1.0 - current_color.rgb), round(prev_color.rgb));
+			break;
+		case 12: // Hard light
+			result.rgb = mix(2.0 * prev_color.rgb * current_color.rgb, 1.0 - 2.0 * (1.0 - current_color.rgb) * (1.0 - prev_color.rgb), round(current_color.rgb));
+			break;
+		case 13: // Difference
+			result.rgb = abs(prev_color.rgb - current_color.rgb);
+			break;
+		case 14: // Exclusion
+			result.rgb = prev_color.rgb + current_color.rgb - 2.0 * prev_color.rgb * current_color.rgb;
+			break;
+		case 15: // Subtract
+			result.rgb = prev_color.rgb - current_color.rgb;
+			break;
+		case 16: // Divide
+			result.rgb = prev_color.rgb / current_color.rgb;
+			break;
+		case 17: // Hue
+			vec3 current_hsl = rgb_to_hsl(current_color.rgb);
+			vec3 prev_hsl = rgb_to_hsl(prev_color.rgb);
+			result.rgb = hsl_to_rgb(vec3(current_hsl.r, prev_hsl.g, prev_hsl.b));
+			break;
+		case 18: // Saturation
+			vec3 current_hsl = rgb_to_hsl(current_color.rgb);
+			vec3 prev_hsl = rgb_to_hsl(prev_color.rgb);
+			result.rgb = hsl_to_rgb(vec3(prev_hsl.r, current_hsl.g, prev_hsl.b));
+			break;
+		case 19: // Color
+			vec3 current_hsl = rgb_to_hsl(current_color.rgb);
+			vec3 prev_hsl = rgb_to_hsl(prev_color.rgb);
+			result.rgb = hsl_to_rgb(vec3(current_hsl.r, current_hsl.g, prev_hsl.b));
+			break;
+		case 20: // Luminosity
+			vec3 current_hsl = rgb_to_hsl(current_color.rgb);
+			vec3 prev_hsl = rgb_to_hsl(prev_color.rgb);
+			result.rgb = hsl_to_rgb(vec3(prev_hsl.r, prev_hsl.g, current_hsl.b));
+			break;
+		case 21: // Intersection
+			result.rgb = current_color.rgb;
+			// Perform an Alpha focused relaxed intersection (In those pixels where current_color
+			// has alpha, but prev_color doesn't and vice versa, make them transparent)
+			if (current_color.a * prev_color.a <= 0.001){
+				// NOTE: Setting both prev_color.a and current_color.a to zero gives the net result
+				// of the pixel being transparent.
+				current_color.a = 0.0;
+				prev_color.a = 0.0;
+			}
+			break;
+		case 22: // Match colors
+			result = current_color;
+			bool similar_colors = (
+				abs(current_color.r - prev_color.r) <= 0.001
+				&& abs(current_color.g - prev_color.g) <= 0.001
+				&& abs(current_color.b - prev_color.b) <= 0.001
+				&& abs(current_color.a - prev_color.a) <= 0.001
+			);
+			// Wherever colors are different, use transparent color.
+			if (!similar_colors){
+				// NOTE: Setting both prev_color and current_color to zero gives the net result
+				// of the pixel being transparent.
+				prev_color.a = 0.0;
+				current_color = vec4(0.0);
+			}
+			should_blend_alpha = false;
+			break;
+		default: // Normal (case 0)
+			result.rgb = current_color.rgb;
+			break;
+	}
+	result.rgb = mix(prev_color.rgb, result.rgb, current_color.a);
+	if (should_blend_alpha){
+		result.a = prev_color.a * (1.0 - current_color.a) + current_color.a;
+	}
+	result = clamp(result, 0.0, 1.0);
+	// Show blended result proportional to how much previous color had alpha there.
+	return mix(current_color, result, prev_color.a);
+}
+
+
+// Zeroes the alpha values of textures when UV < 0 and UV > 1
+float border_trim(vec4 color, vec2 uv) {
+	return min(step(uv.x, 1.0) * step(0.0, uv.x) * step(uv.y, 1.0) * step(0.0, uv.y), color.a);
+}
+
+
+void blit() {
+	vec4 layer_color = texture(top_layer, vec2(UV));
+	vec4 prev_layer_color = texture(source_texture0, vec2(UV));
+	vec4 result_color = blend(blend_mode, layer_color, prev_layer_color);
+	COLOR0 = result_color;
+}

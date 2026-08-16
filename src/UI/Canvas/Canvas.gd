@@ -11,6 +11,8 @@ var update_all_layers := false
 var mandatory_update_layers := PackedInt32Array()
 var project_changed := false
 var move_preview_location := Vector2i.ZERO
+
+var blended_layers_texture := ImageTexture.new()
 var layer_texture_array := Texture2DArray.new()
 var layer_metadata_image := Image.new()
 var layer_metadata_texture := ImageTexture.new()
@@ -34,8 +36,8 @@ var layer_metadata_texture := ImageTexture.new()
 
 
 func _ready() -> void:
-	material.set_shader_parameter("layers", layer_texture_array)
-	material.set_shader_parameter("metadata", layer_metadata_texture)
+	#material.set_shader_parameter("layers", layer_texture_array)
+	#material.set_shader_parameter("metadata", layer_metadata_texture)
 	Global.project_created.connect(camera_zoom)
 	Global.project_about_to_switch.connect(_on_project_about_to_switch)
 	Global.project_switched.connect(_on_project_switched)
@@ -54,13 +56,7 @@ func _draw() -> void:
 	if Global.mirror_view:
 		position_tmp.x = position_tmp.x + Global.current_project.size.x
 		scale_tmp.x = -1
-	# If we just use the first cel and it happens to be a GroupCel
-	# nothing will get drawn
-	var cel_to_draw := Global.current_project.find_first_drawable_cel()
 	draw_set_transform(position_tmp, rotation, scale_tmp)
-	# Placeholder so we can have a material here
-	if is_instance_valid(cel_to_draw):
-		draw_texture(cel_to_draw.image_texture, Vector2.ZERO)
 	draw_layers(project_changed)
 	project_changed = false
 	if Global.onion_skinning:
@@ -166,6 +162,21 @@ func update_selected_cels_textures(project := Global.current_project) -> void:
 
 func draw_layers(force_recreate := false) -> void:
 	var project := Global.current_project
+	var blended_layers_image := project.new_empty_image()
+	for i in project.ordered_layers:
+		var layer := project.layers[i]
+		var cel := project.frames[project.current_frame].cels[i]
+		var cel_image := Image.new()
+		if Global.display_layer_effects:
+			cel_image.copy_from(layer.display_effects(cel))
+		else:
+			cel_image.copy_from(cel.get_image())
+		var params := {"top_layer": ImageTexture.create_from_image(cel_image), "opacity": cel.get_final_opacity(layer), "blend_mode": layer.blend_mode}
+		var sie := ShaderImageEffect.new()
+		sie.generate_image(blended_layers_image, preload("uid://bo1nbffqhk3jd"), params, blended_layers_image.get_size())
+	blended_layers_texture.set_image(blended_layers_image)
+	draw_texture(blended_layers_texture, Vector2.ZERO)
+	return
 	var recreate_texture_array := (
 		layer_texture_array.get_layers() != project.layers.size()
 		or layer_texture_array.get_width() != project.size.x
