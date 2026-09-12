@@ -698,6 +698,14 @@ func find_first_drawable_cel(frame := frames[current_frame]) -> BaseCel:
 	return result
 
 
+func crop_image_to_project_size(image: Image, offset: Vector2i) -> Image:
+	if not image:
+		return null
+	var canvas_image := Image.create_empty(size.x, size.y, image.has_mipmaps(), image.get_format())
+	canvas_image.blit_rect(image, Rect2i(Vector2i.ZERO, image.get_size()), offset)
+	return canvas_image
+
+
 ## Returns an [Array] of type [PixelCel] containing all of the pixel cels of the project.
 func get_all_pixel_cels() -> Array[PixelCel]:
 	var cels: Array[PixelCel]
@@ -741,6 +749,7 @@ func serialize_cel_undo_data(cels: Array[BaseCel], data: Dictionary) -> void:
 			continue
 		var image := (cel as PixelCel).get_image()
 		image.add_data_to_dictionary(data)
+		data[cel] = {"offset": cel.offset}
 		if cel is CelTileMap:
 			data[cel] = (cel as CelTileMap).serialize_undo_data()
 
@@ -752,11 +761,11 @@ func serialize_cel_undo_data(cels: Array[BaseCel], data: Dictionary) -> void:
 func deserialize_cel_undo_data(redo_data: Dictionary, undo_data: Dictionary) -> void:
 	Global.undo_redo_compress_images(redo_data, undo_data, self)
 	for cel in redo_data:
-		if cel is CelTileMap:
-			(cel as CelTileMap).deserialize_undo_data(redo_data[cel], undo_redo, false)
+		if cel is PixelCel:
+			(cel as PixelCel).deserialize_undo_data(redo_data[cel], undo_redo, false)
 	for cel in undo_data:
-		if cel is CelTileMap:
-			(cel as CelTileMap).deserialize_undo_data(undo_data[cel], undo_redo, true)
+		if cel is PixelCel:
+			(cel as PixelCel).deserialize_undo_data(undo_data[cel], undo_redo, true)
 
 
 ## Returns all [BaseCel]s in [param cels], and for every [CelTileMap],

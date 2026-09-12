@@ -66,8 +66,6 @@ var tile_offset_axis := TileSet.TILE_OFFSET_AXIS_HORIZONTAL:
 		re_order_tilemap()
 var vertical_cell_min := 0  ## The minimum vertical cell.
 var vertical_cell_max := 0  ## The maximum vertical cell.
-var offset := Vector2i.ZERO  ## The offset of the tilemap in pixel coordinates.
-var prev_offset := offset  ## Used for undo/redo purposes.
 ## The key is the index of the tile in the tileset,
 ## and the value is the coords of the tilemap tile that changed first, along with
 ## its image that is being changed when manual mode is enabled.
@@ -191,7 +189,7 @@ func set_index(
 
 ## Changes the [member offset] of the tilemap. Automatically resizes the cells and redraws the grid.
 func change_offset(new_offset: Vector2i) -> void:
-	offset = new_offset
+	super(new_offset)
 	_resize_cells(get_image().get_size(), false)
 	Global.grid_updated.emit()
 
@@ -715,20 +713,17 @@ func serialize_undo_data_source_image(
 
 ## Reads data from a [param dict] [Dictionary], and uses them to add methods to [param undo_redo].
 func deserialize_undo_data(dict: Dictionary, undo_redo: UndoRedo, undo: bool) -> void:
+	super(dict, undo_redo, undo)
 	var cell_data = dict.cell_data
 	if undo:
 		if dict.has("tile_size"):
 			undo_redo.add_undo_property(self, "tile_size", dict.tile_size)
-		if dict.has("offset"):
-			undo_redo.add_undo_method(change_offset.bind(dict.offset))
 		undo_redo.add_undo_method(_deserialize_cell_data.bind(cell_data, dict.resize))
 		if dict.has("tileset"):
 			undo_redo.add_undo_method(tileset.deserialize_undo_data.bind(dict.tileset, self))
 	else:
 		if dict.has("tile_size"):
 			undo_redo.add_do_property(self, "tile_size", dict.tile_size)
-		if dict.has("offset"):
-			undo_redo.add_do_method(change_offset.bind(dict.offset))
 		undo_redo.add_do_method(_deserialize_cell_data.bind(cell_data, dict.resize))
 		if dict.has("tileset"):
 			undo_redo.add_do_method(tileset.deserialize_undo_data.bind(dict.tileset, self))
@@ -1262,7 +1257,6 @@ func serialize() -> Dictionary:
 		var cell := cells[cell_coords]
 		cell_data[cell_coords] = cell.serialize()
 	dict["cell_data"] = cell_data
-	dict["offset"] = offset
 	return dict
 
 
@@ -1273,10 +1267,6 @@ func deserialize(dict: Dictionary) -> void:
 		var cell_data_serialized: Dictionary = cell_data[cell_coords_str]
 		var cell_coords := str_to_var("Vector2i" + cell_coords_str) as Vector2i
 		get_cell_at(cell_coords).deserialize(cell_data_serialized)
-	var new_offset_str = dict.get("offset", "(0, 0)")
-	var new_offset := str_to_var("Vector2i" + new_offset_str) as Vector2i
-	if new_offset != offset:
-		change_offset(new_offset)
 
 
 func get_class_name() -> String:

@@ -215,7 +215,8 @@ func handle_loading_image(file: String, image: Image, force_import_dialog := fal
 ## For loading the output of AImgIO as a project
 func handle_loading_aimg(path: String, frames: Array) -> void:
 	var project := Project.new([], path.uri_decode().get_file(), frames[0].content.get_size())
-	project.layers.append(PixelLayer.new(project))
+	var layer := PixelLayer.new(project)
+	project.layers.append(layer)
 	Global.projects.append(project)
 
 	# Determine FPS as 1, unless all frames agree.
@@ -237,9 +238,7 @@ func handle_loading_aimg(path: String, frames: Array) -> void:
 			frame.set_duration_in_seconds(aimg_frame.duration, project.fps)
 		var content := aimg_frame.content
 		content.convert(project.get_image_format())
-		var image_extended := ImageExtended.new()
-		image_extended.copy_from_custom(content)
-		frame.cels.append(PixelCel.new(image_extended, 1))
+		frame.cels.append(layer.new_cel_from_image(content))
 		project.frames.append(frame)
 
 	set_new_imported_tab(project, path)

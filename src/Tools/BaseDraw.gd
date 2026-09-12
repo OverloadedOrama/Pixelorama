@@ -760,16 +760,16 @@ func _set_pixel_no_cache(pos: Vector2i, ignore_mirroring := false) -> void:
 		return
 	if !_stroke_project.can_pixel_get_drawn(pos):
 		return
-
-	var images := _stroke_images
 	if _is_mask_size_zero:
-		for image in images:
-			_drawer.set_pixel(image, pos, tool_slot.color, ignore_mirroring)
+		for cel: PixelCel in _get_selected_draw_cels(false):
+			var local_pos := cel.ensure_canvas_point_in_bounds(pos)
+			var image := cel.get_image()
+			_drawer.set_pixel(image, local_pos, tool_slot.color, ignore_mirroring)
 	else:
 		var i := pos.x + pos.y * _stroke_project.size.x
 		if _mask.size() >= i + 1:
 			var alpha_dynamic: float = Tools.get_alpha_dynamic()
-			var alpha: float = images[0].get_pixelv(pos).a
+			var alpha: float = _get_selected_draw_cels(false)[0].get_image().get_pixelv(pos).a
 			if _mask[i] < alpha_dynamic:
 				# Overwrite colors to avoid additive blending between strokes of
 				# brushes that are larger than 1px
@@ -779,14 +779,18 @@ func _set_pixel_no_cache(pos: Vector2i, ignore_mirroring := false) -> void:
 				if overwrite != null and _mask[i] > alpha:
 					_drawer.color_op.overwrite = true
 				_mask[i] = alpha_dynamic
-				for image in images:
-					_drawer.set_pixel(image, pos, tool_slot.color, ignore_mirroring)
+				for cel: PixelCel in _get_selected_draw_cels(false):
+					var local_pos := cel.ensure_canvas_point_in_bounds(pos)
+					var image := cel.get_image()
+					_drawer.set_pixel(image, local_pos, tool_slot.color, ignore_mirroring)
 				if overwrite != null:
 					_drawer.color_op.overwrite = overwrite
 		else:
-			for image in images:
-				_drawer.set_pixel(image, pos, tool_slot.color, ignore_mirroring)
-	update_materials(images)
+			for cel: PixelCel in _get_selected_draw_cels(false):
+				var local_pos := cel.ensure_canvas_point_in_bounds(pos)
+				var image := cel.get_image()
+				_drawer.set_pixel(image, local_pos, tool_slot.color, ignore_mirroring)
+	update_materials(_stroke_images)
 
 
 func _draw_brush_image(brush_image: Image, src_rect: Rect2i, dst: Vector2i) -> void:
@@ -934,7 +938,7 @@ func _get_undo_data() -> Dictionary:
 			cels.append(project.frames[cel_index[0]].cels[cel_index[1]])
 	else:
 		for frame in project.frames:
-			var cel: BaseCel = frame.cels[project.current_layer]
+			var cel := frame.cels[project.current_layer]
 			if not cel is PixelCel:
 				continue
 			cels.append(cel)

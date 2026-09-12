@@ -151,6 +151,7 @@ static func open_aseprite_file(path: String) -> void:
 					var cel := layer.new_empty_cel()
 					var x_pos := ase_file.get_16()
 					var y_pos := ase_file.get_16()
+					cel.offset = Vector2(x_pos, y_pos)
 					cel.opacity = ase_file.get_8() / 255.0
 					var cel_type := ase_file.get_16()
 					cel.z_index = unsigned16_to_signed(ase_file.get_16())
@@ -158,7 +159,6 @@ static func open_aseprite_file(path: String) -> void:
 					if cel_type == 0 or cel_type == 2:  # Raw uncompressed and compressed image
 						var width := ase_file.get_16()
 						var height := ase_file.get_16()
-						var image_rect := Rect2i(Vector2i.ZERO, Vector2i(width, height))
 						var color_bytes := ase_file.get_buffer(chunk_size - IMAGE_CEL_CHUNK_SIZE)
 						if cel_type == 2:  # Compressed image
 							color_bytes = color_bytes.decompress(
@@ -169,9 +169,10 @@ static func open_aseprite_file(path: String) -> void:
 								width, height, false, image_format, color_bytes
 							)
 							ase_cel_image.convert(new_project.get_image_format())
-							cel.get_image().blit_rect(
-								ase_cel_image, image_rect, Vector2i(x_pos, y_pos)
-							)
+							cel.get_image().copy_from(ase_cel_image)
+							#cel.get_image().blit_rect(
+								#ase_cel_image, image_rect, Vector2i(x_pos, y_pos)
+							#)
 						else:  # Indexed mode
 							for k in color_bytes.size():
 								color_bytes[k] += 1
@@ -180,9 +181,7 @@ static func open_aseprite_file(path: String) -> void:
 							var ase_cel_image := Image.create_from_data(
 								width, height, false, Image.FORMAT_R8, color_bytes
 							)
-							cel.get_image().indices_image.blit_rect(
-								ase_cel_image, image_rect, Vector2i(x_pos, y_pos)
-							)
+							cel.get_image().indices_image.copy_from(ase_cel_image)
 							cel.get_image().convert_indexed_to_rgb()
 					elif cel_type == 1:  # Linked cel
 						var frame_position_to_link_with := ase_file.get_16()
@@ -217,7 +216,6 @@ static func open_aseprite_file(path: String) -> void:
 						var tile_data := tile_data_compressed.decompress(
 							tile_data_size, FileAccess.COMPRESSION_DEFLATE
 						)
-						tilemap_cel.offset = Vector2(x_pos, y_pos)
 						for y in height:
 							for x in width:
 								var cell_pos := x + (y * width)

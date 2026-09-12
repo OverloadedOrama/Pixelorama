@@ -28,6 +28,52 @@ func set_indexed_mode(indexed: bool) -> void:
 		image.convert_rgb_to_indexed()
 
 
+## Grow the image so a canvas-space point is inside it,
+## shifting the cel's [member offset] if needed. Returns the coordinate in the cel's local space.
+func ensure_canvas_point_in_bounds(canvas_pos: Vector2i) -> Vector2i:
+	if image.is_invisible():
+		change_offset(canvas_pos)
+	var local := canvas_pos - offset
+	var new_offset := offset
+	var new_size := image.get_size()
+	if local.x < 0:
+		new_size.x += -local.x
+		new_offset.x += local.x
+		local.x = 0
+	elif local.x >= new_size.x:
+		new_size.x = local.x + 1
+		local.x = new_size.x - 1
+	if local.y < 0:
+		new_size.y += -local.y
+		new_offset.y += local.y
+		local.y = 0
+	elif local.y >= new_size.y:
+		new_size.y = local.y + 1
+		local.y = new_size.y - 1
+	if new_size != Vector2i(image.get_size()):
+		resize_image(new_size, offset - new_offset)
+		change_offset(new_offset)
+	return local
+
+
+func resize_image(new_size: Vector2i, content_offset: Vector2i) -> void:
+	var new_image := ImageExtended.create_custom(
+		new_size.x, new_size.y, false, image.get_format(), image.is_indexed
+	)
+	new_image.blit_rect(image, Rect2i(Vector2i.ZERO, image.get_size()), content_offset)
+	image.copy_from(new_image)
+
+
+## Reads data from a [param dict] [Dictionary], and uses them to add methods to [param undo_redo].
+func deserialize_undo_data(dict: Dictionary, undo_redo: UndoRedo, undo: bool) -> void:
+	if undo:
+		if dict.has("offset"):
+			undo_redo.add_undo_method(change_offset.bind(dict.offset))
+	else:
+		if dict.has("offset"):
+			undo_redo.add_do_method(change_offset.bind(dict.offset))
+
+
 func get_content() -> Variant:
 	return image
 
@@ -66,15 +112,6 @@ func copy_content() -> Variant:
 
 func get_image() -> ImageExtended:
 	return image
-
-
-func duplicate_cel() -> PixelCel:
-	var new_cel := PixelCel.new()
-	new_cel.opacity = opacity
-	new_cel.z_index = z_index
-	new_cel.user_data = user_data
-	new_cel.ui_color = ui_color
-	return new_cel
 
 
 func update_texture(undo := false) -> void:
