@@ -49,23 +49,28 @@ func _ready() -> void:
 
 
 func _draw() -> void:
+	var project := Global.current_project
 	var position_tmp := position
 	var scale_tmp := scale
 	if Global.mirror_view:
-		position_tmp.x = position_tmp.x + Global.current_project.size.x
+		position_tmp.x = position_tmp.x + project.size.x
 		scale_tmp.x = -1
 	# If we just use the first cel and it happens to be a GroupCel
 	# nothing will get drawn
-	var cel_to_draw := Global.current_project.find_first_drawable_cel()
+	var cel_to_draw := project.find_first_drawable_cel()
 	draw_set_transform(position_tmp, rotation, scale_tmp)
 	# Placeholder so we can have a material here
 	if is_instance_valid(cel_to_draw):
-		draw_texture(cel_to_draw.image_texture, Vector2.ZERO)
+		var image_to_draw := project.new_empty_image()
+		#var image_to_draw := project.crop_image_to_project_size(cel_to_draw.get_image(), cel_to_draw.offset)
+		draw_texture(ImageTexture.create_from_image(image_to_draw), Vector2.ZERO)
+		#draw_texture(ImageTexture.create_from_image(cel_to_draw.get_canvas_image(project.size)), Vector2.ZERO)
+		#draw_texture(cel_to_draw.image_texture, Vector2.ZERO)
 	draw_layers(project_changed)
 	project_changed = false
 	if Global.onion_skinning:
 		refresh_onion()
-	currently_visible_frame.size = Global.current_project.size
+	currently_visible_frame.size = project.size
 	current_frame_drawer.queue_redraw()
 	tile_mode.queue_redraw()
 	draw_set_transform(position, rotation, scale)
@@ -148,6 +153,7 @@ func update_texture(
 				cel_image = layer.display_effects(current_cel)
 			else:
 				cel_image = current_cel.get_image()
+			cel_image.copy_from(project.crop_image_to_project_size(cel_image, current_cel.offset))
 		if (
 			cel_image.get_size()
 			== Vector2i(layer_texture_array.get_width(), layer_texture_array.get_height())
@@ -191,7 +197,7 @@ func draw_layers(force_recreate := false) -> void:
 			textures[ordered_index] = cel_image
 			# Store the origin
 			if [project.current_frame, i] in project.selected_cels:
-				var origin := Vector2(move_preview_location).abs() / Vector2(cel_image.get_size())
+				var origin := Vector2.ZERO
 				layer_metadata_image.set_pixel(
 					ordered_index, 2, Color(origin.x, origin.y, 0.0, 0.0)
 				)
@@ -233,14 +239,14 @@ func draw_layers(force_recreate := false) -> void:
 					# True when the layer has parents. In that case, update its top-most parent.
 					_update_texture_array_layer(project, parent_layer, Image.new(), true)
 				# Update the origin
-				var origin := Vector2(move_preview_location).abs() / Vector2(cel_image.get_size())
+				var origin := Vector2.ZERO
 				layer_metadata_image.set_pixel(
 					ordered_index, 2, Color(origin.x, origin.y, 0.0, 0.0)
 				)
 			layer_metadata_texture.update(layer_metadata_image)
 
-	material.set_shader_parameter("origin_x_positive", move_preview_location.x > 0)
-	material.set_shader_parameter("origin_y_positive", move_preview_location.y > 0)
+	#material.set_shader_parameter("origin_x_positive", move_preview_location.x > 0)
+	#material.set_shader_parameter("origin_y_positive", move_preview_location.y > 0)
 	mandatory_update_layers = []
 	update_all_layers = false
 
@@ -264,6 +270,7 @@ func _update_texture_array_layer(
 			cel_image.copy_from(layer.display_effects(cel))
 		else:
 			cel_image.copy_from(cel.get_image())
+		cel_image.copy_from(project.crop_image_to_project_size(cel_image, cel.offset))
 	if layer.is_blended_by_ancestor():
 		include = false
 	if update_layer:

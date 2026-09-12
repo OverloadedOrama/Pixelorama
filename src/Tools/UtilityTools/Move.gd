@@ -27,18 +27,16 @@ func draw_start(pos: Vector2i) -> void:
 	_offset = pos
 	_undo_data = _get_undo_data()
 	if Tools.is_placing_tiles():
-		# Clear selection if it it present (i tried moving the selection proview only but the)
-		# code for it gets too complex so i chose to clear it instead
+		# Clear selection if it it present.
 		if project.has_selection:
 			Global.canvas.selection.clear_selection(true)
 			project.selection_map_changed()
-		for cel in _get_selected_draw_cels():
-			if cel is not CelTileMap:
-				continue
-			(cel as CelTileMap).prev_offset = (cel as CelTileMap).offset
 	else:
 		if project.has_selection:
 			selection_node.transformation_handles.begin_transform()
+	if not project.has_selection:
+		for cel in _get_selected_draw_cels():
+			cel.prev_offset = cel.offset
 	Global.canvas.sprite_changed_this_frame = true
 	Global.canvas.measurements.update_measurement(Global.MeasurementMode.MOVE)
 
@@ -50,17 +48,12 @@ func draw_move(pos: Vector2i) -> void:
 		return
 	pos = _snap_position(pos)
 
-	if Tools.is_placing_tiles():
-		for cel in _get_selected_draw_cels():
-			if cel is not CelTileMap:
-				continue
-			(cel as CelTileMap).change_offset(cel.offset + pos - _offset)
-		Global.canvas.move_preview_location = pos - _start_pos
+	if project.has_selection and not Tools.is_placing_tiles():
+		selection_node.transformation_handles.move_transform(pos - _offset)
 	else:
-		if project.has_selection:
-			selection_node.transformation_handles.move_transform(pos - _offset)
-		else:
-			Global.canvas.move_preview_location = pos - _start_pos
+		for cel in _get_selected_draw_cels():
+			cel.change_offset(cel.offset + pos - _offset)
+		Global.canvas.move_preview_location = pos - _start_pos
 	_offset = pos
 	Global.canvas.sprite_changed_this_frame = true
 	Global.canvas.measurements.update_measurement(Global.MeasurementMode.MOVE)
@@ -72,14 +65,7 @@ func draw_end(pos: Vector2i) -> void:
 		super.draw_end(pos)
 		return
 	if _start_pos != Vector2i(Vector2.INF):
-		pos = _snap_position(pos)
-		if not (project.has_selection and not Tools.is_placing_tiles()):
-			var pixel_diff := pos - _start_pos
-			for cel in _get_affected_cels():
-				var image := cel.get_image()
-				_move_image(image, pixel_diff)
-				_move_image(image.indices_image, pixel_diff)
-			_commit_undo("Draw")
+		_commit_undo("Draw")
 
 	_reset_tool()
 	super.draw_end(pos)
@@ -103,8 +89,8 @@ func _get_affected_cels() -> Array[BaseCel]:
 	var project := Global.current_project
 	for cel_index in project.selected_cels:
 		var frame := project.frames[cel_index[0]]
-		var cel: BaseCel = frame.cels[cel_index[1]]
-		var layer: BaseLayer = project.layers[cel_index[1]]
+		var cel := frame.cels[cel_index[1]]
+		var layer := project.layers[cel_index[1]]
 		if not _can_layer_be_moved(layer):
 			continue
 		if cel is PixelCel:
@@ -180,13 +166,12 @@ func _commit_undo(action: String) -> void:
 	Global.current_project.undo_redo.add_undo_property(
 		Global.canvas, "mandatory_update_layers", layers_to_update
 	)
-	if Tools.is_placing_tiles():
-		for cel in _get_selected_draw_cels():
-			if cel is not CelTileMap:
-				continue
-			project.undo_redo.add_do_method(cel.change_offset.bind(cel.offset))
+	for cel in _get_selected_draw_cels():
+		project.undo_redo.add_do_method(cel.change_offset.bind(cel.offset))
+		if cel is CelTileMap:
 			project.undo_redo.add_do_method(cel.re_order_tilemap)
-			project.undo_redo.add_undo_method(cel.change_offset.bind(cel.prev_offset))
+		project.undo_redo.add_undo_method(cel.change_offset.bind(cel.prev_offset))
+		if cel is CelTileMap:
 			project.undo_redo.add_undo_method(cel.re_order_tilemap)
 	project.undo_redo.add_do_method(Global.undo_or_redo.bind(false, frame, layer))
 	project.undo_redo.add_undo_method(Global.undo_or_redo.bind(true, frame, layer))

@@ -438,13 +438,8 @@ func _get_selected_draw_images() -> Array[ImageExtended]:
 				image.copy_from_custom(temp_image)
 				images.append(image)
 		return images
-	var project := Global.current_project
-	for cel_index in project.selected_cels:
-		var cel: BaseCel = project.frames[cel_index[0]].cels[cel_index[1]]
-		if not cel is PixelCel:
-			continue
-		if project.layers[cel_index[1]].can_layer_get_drawn():
-			images.append(cel.get_image())
+	for cel in _get_selected_draw_cels(false):
+		images.append(cel.get_image())
 	return images
 
 
