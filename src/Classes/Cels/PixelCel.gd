@@ -64,6 +64,18 @@ func resize_image(new_size: Vector2i, content_offset: Vector2i) -> void:
 	image.copy_from(new_image)
 
 
+func blit_image_to_cel(source_image: Image) -> void:
+	var used_rect := source_image.get_used_rect()
+	var image_to_blit := source_image.get_region(used_rect)
+	var width := maxi(image_to_blit.get_width(), image.get_width())
+	var height := maxi(image_to_blit.get_height(), image.get_height())
+	if width > image.get_width() or height > image.get_height():
+		image.crop(width, height)
+	image.fill_rect(used_rect, Color(0, 0, 0, 0))
+	image.blit_rect(image_to_blit, Rect2i(Vector2i.ZERO, image_to_blit.get_size()), Vector2.ZERO)
+	change_offset(used_rect.position)
+
+
 ## Reads data from a [param dict] [Dictionary], and uses them to add methods to [param undo_redo].
 func deserialize_undo_data(dict: Dictionary, undo_redo: UndoRedo, undo: bool) -> void:
 	if undo:

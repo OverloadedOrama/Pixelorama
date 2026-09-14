@@ -368,10 +368,11 @@ func _flood_fill(pos: Vector2i) -> void:
 
 	var cels := _get_selected_draw_cels(false)
 	for cel: PixelCel in cels:
-		var image: ImageExtended = cel.image
+		var image := project.crop_image_to_project_size(cel.get_image(), cel.offset)
+		#var image := ImageExtended.create_from_image(cropped)
 		if Tools.check_alpha_lock(image, pos):
 			continue
-		var color: Color = image.get_pixelv(pos)
+		var color := image.get_pixelv(pos)
 		if _fill_merged_area:
 			color = _sample_masks.get(cel.get_frame(project), cel.image).get_pixelv(pos)
 		if _fill_with == FillWith.COLOR or _pattern == null:
@@ -388,11 +389,11 @@ func _flood_fill(pos: Vector2i) -> void:
 					)
 					var rect := selection_map_copy.get_used_rect()
 					image.blit_rect_mask(filler, selection_map_copy, rect, rect.position)
-					image.convert_rgb_to_indexed()
+					#image.convert_rgb_to_indexed()
 					continue
 				else:
 					image.fill(tool_slot.color)
-					image.convert_rgb_to_indexed()
+					#image.convert_rgb_to_indexed()
 					continue
 		else:
 			# end early if we are filling with an empty pattern
@@ -401,18 +402,19 @@ func _flood_fill(pos: Vector2i) -> void:
 				if project.has_selection:
 					project.selection_map.lock_selection_rect(project, false)
 				return
-		var source_image: Image = image
+		var source_image := image
 		if _fill_merged_area:
 			source_image = _sample_masks.get(cel.get_frame(project), cel.image)
 		var flood_fill_object := FloodFillObject.new()
 		flood_fill_object.tolerance = _tolerance
 		flood_fill_object.selection_matters = true
 		flood_fill_object.flood_fill(pos, source_image, image, project, _color_segments)
+		cel.blit_image_to_cel(image)
 	if project.has_selection:
 		project.selection_map.lock_selection_rect(project, false)
 
 
-func _color_segments(image: ImageExtended, segments: Array[FloodFillObject.Segment]) -> void:
+func _color_segments(image: Image, segments: Array[FloodFillObject.Segment]) -> void:
 	if _fill_with == FillWith.COLOR or _pattern == null:
 		# This is needed to ensure that the color used to fill is not wrong, due to float
 		# rounding issues.
@@ -426,7 +428,7 @@ func _color_segments(image: ImageExtended, segments: Array[FloodFillObject.Segme
 				Vector2i(p.left_position, p.y), Vector2i(p.right_position - p.left_position + 1, 1)
 			)
 			image.fill_rect(rect, color)
-		image.convert_rgb_to_indexed()
+		#image.convert_rgb_to_indexed()
 	else:
 		# shortcircuit tests for patternfills
 		var pattern_size := _pattern.image.get_size()
