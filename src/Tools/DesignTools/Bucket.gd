@@ -235,9 +235,12 @@ func fill_in_color(pos: Vector2i) -> void:
 					else:
 						tilemap_cel.set_index(cell, paint_index)
 		return
-	var color := project.get_current_cel().get_image().get_pixelv(pos)
-	var images := _get_selected_draw_images()
-	for image in images:
+	var current_cel := project.get_current_cel()
+	var current_image := project.crop_image_to_project_size(current_cel.get_image(), current_cel.offset)
+	var color := current_image.get_pixelv(pos)
+	var cels := _get_selected_draw_cels(false)
+	for cel: PixelCel in cels:
+		var image := project.crop_image_to_project_size(cel.get_image(), cel.offset)
 		if Tools.check_alpha_lock(image, pos):
 			continue
 		var pattern_image: Image
@@ -283,6 +286,7 @@ func fill_in_color(pos: Vector2i) -> void:
 			)
 		var gen := ShaderImageEffect.new()
 		gen.generate_image(image, COLOR_REPLACE_SHADER, params, project.size)
+		cel.blit_image_to_cel(image)
 
 
 func fill_in_area(pos: Vector2i) -> void:
@@ -296,7 +300,7 @@ func fill_in_area(pos: Vector2i) -> void:
 
 func fill_in_selection() -> void:
 	var project := Global.current_project
-	var images := _get_selected_draw_images()
+	var cels := _get_selected_draw_cels(false)
 	if _fill_with == FillWith.COLOR or _pattern == null:
 		if project.has_selection:
 			var filler := project.new_empty_image()
@@ -305,13 +309,17 @@ func fill_in_selection() -> void:
 				project, project.size
 			)
 			var rect := selection_map_copy.get_used_rect()
-			for image in images:
+			for cel: PixelCel in cels:
+				var image := project.crop_image_to_project_size(cel.get_image(), cel.offset)
 				image.blit_rect_mask(filler, selection_map_copy, rect, rect.position)
-				image.convert_rgb_to_indexed()
+				cel.blit_image_to_cel(image)
+				#image.convert_rgb_to_indexed()
 		else:
-			for image in images:
+			for cel: PixelCel in cels:
+				var image := project.crop_image_to_project_size(cel.get_image(), cel.offset)
 				image.fill(tool_slot.color)
-				image.convert_rgb_to_indexed()
+				cel.blit_image_to_cel(image)
+				#image.convert_rgb_to_indexed()
 	else:
 		# End early if we are filling with an empty pattern
 		var pattern_image: Image = _pattern.image
@@ -344,9 +352,11 @@ func fill_in_selection() -> void:
 			params["pattern_uv_offset"] = (
 				Vector2.ONE / Vector2(pattern_size) * Vector2(_offset_x, _offset_y)
 			)
-		for image in images:
+		for cel: PixelCel in cels:
+			var image := project.crop_image_to_project_size(cel.get_image(), cel.offset)
 			var gen := ShaderImageEffect.new()
 			gen.generate_image(image, PATTERN_FILL_SHADER, params, project.size)
+			cel.blit_image_to_cel(image)
 
 
 func _flood_fill(pos: Vector2i) -> void:
@@ -389,10 +399,12 @@ func _flood_fill(pos: Vector2i) -> void:
 					)
 					var rect := selection_map_copy.get_used_rect()
 					image.blit_rect_mask(filler, selection_map_copy, rect, rect.position)
+					cel.blit_image_to_cel(image)
 					#image.convert_rgb_to_indexed()
 					continue
 				else:
 					image.fill(tool_slot.color)
+					cel.blit_image_to_cel(image)
 					#image.convert_rgb_to_indexed()
 					continue
 		else:
@@ -440,11 +452,11 @@ func _color_segments(image: Image, segments: Array[FloodFillObject.Segment]) -> 
 				_set_pixel_pattern(image, px, p.y, pattern_size)
 
 
-func _set_pixel_pattern(image: ImageExtended, x: int, y: int, pattern_size: Vector2i) -> void:
+func _set_pixel_pattern(image: Image, x: int, y: int, pattern_size: Vector2i) -> void:
 	var px := (x + _offset_x) % pattern_size.x
 	var py := (y + _offset_y) % pattern_size.y
 	var pc := _pattern.image.get_pixel(px, py)
-	image.set_pixel_custom(x, y, pc)
+	image.set_pixel(x, y, pc)
 
 
 func commit_undo() -> void:

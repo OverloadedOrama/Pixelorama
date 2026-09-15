@@ -90,6 +90,7 @@ func blend_layers(
 				textures.append(cel_image)
 			else:
 				var cel_image := layer.display_effects(cel)
+				cel_image.copy_from(project.crop_image_to_project_size(cel_image, cel.offset))
 				textures.append(cel_image)
 			if (
 				layer.is_blended_by_ancestor()
@@ -142,7 +143,7 @@ func blend_layers_headless(
 ) -> void:
 	var opacity := cel.get_final_opacity(layer)
 	var cel_image := Image.new()
-	cel_image.copy_from(cel.get_image())
+	cel_image.copy_from(project.crop_image_to_project_size(cel.get_image(), cel.offset))
 	if opacity < 1.0:  # If we have cel or layer transparency
 		for xx in cel_image.get_size().x:
 			for yy in cel_image.get_size().y:

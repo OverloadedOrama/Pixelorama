@@ -67,10 +67,11 @@ func resize_image(new_size: Vector2i, content_offset: Vector2i) -> void:
 func blit_image_to_cel(source_image: Image) -> void:
 	var used_rect := source_image.get_used_rect()
 	var image_to_blit := source_image.get_region(used_rect)
+	ensure_canvas_point_in_bounds(used_rect.end - Vector2i.ONE)
 	ensure_canvas_point_in_bounds(used_rect.position)
-	ensure_canvas_point_in_bounds(used_rect.end)
 	#image.fill_rect(used_rect, Color(0, 0, 0, 0))
-	image.blit_rect(image_to_blit, Rect2i(Vector2i.ZERO, image_to_blit.get_size()), -offset)
+	var dst := used_rect.position - offset
+	image.blit_rect(image_to_blit, Rect2i(Vector2i.ZERO, image_to_blit.get_size()), dst)
 
 
 ## Reads data from a [param dict] [Dictionary], and uses them to add methods to [param undo_redo].
