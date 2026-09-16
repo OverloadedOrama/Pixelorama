@@ -30,8 +30,8 @@ func set_indexed_mode(indexed: bool) -> void:
 
 ## Grow the image so a canvas-space point is inside it,
 ## shifting the cel's [member offset] if needed. Returns the coordinate in the cel's local space.
-func ensure_canvas_point_in_bounds(canvas_pos: Vector2i) -> Vector2i:
-	if image.is_invisible():
+func ensure_canvas_point_in_bounds(canvas_pos: Vector2i, change_offset_when_invisible := true) -> Vector2i:
+	if image.is_invisible() and change_offset_when_invisible:
 		change_offset(canvas_pos)
 	var local := canvas_pos - offset
 	var new_offset := offset
@@ -67,8 +67,8 @@ func resize_image(new_size: Vector2i, content_offset: Vector2i) -> void:
 func blit_image_to_cel(source_image: Image) -> void:
 	var used_rect := source_image.get_used_rect()
 	var image_to_blit := source_image.get_region(used_rect)
-	ensure_canvas_point_in_bounds(used_rect.end - Vector2i.ONE)
-	ensure_canvas_point_in_bounds(used_rect.position)
+	ensure_canvas_point_in_bounds(used_rect.end - Vector2i.ONE, false)
+	ensure_canvas_point_in_bounds(used_rect.position, false)
 	#image.fill_rect(used_rect, Color(0, 0, 0, 0))
 	var dst := used_rect.position - offset
 	image.blit_rect(image_to_blit, Rect2i(Vector2i.ZERO, image_to_blit.get_size()), dst)
