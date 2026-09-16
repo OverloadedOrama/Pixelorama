@@ -155,7 +155,7 @@ func _restore_image_data() -> void:
 		if image.get_size() != image_size:
 			image.crop(image_size.x, image_size.y)
 		image.set_data(
-			image.get_width(), image.get_height(), image.has_mipmaps(), image.get_format(), image_data
+			image_size.x, image_size.y, image.has_mipmaps(), image.get_format(), image_data
 		)
 
 
