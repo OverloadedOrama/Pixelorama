@@ -33,7 +33,7 @@ var _line_polylines := []
 
 # Memorize some stuff when doing brush strokes
 var _stroke_project: Project
-var _stroke_images: Array[ImageExtended] = []
+var _stroke_images: Dictionary[Image, Variant]
 var _is_mask_size_zero := true
 var _drawn_tiles: Dictionary[Vector2i, bool]
 var _circle_tool_shortcut: Array[Vector2i]
@@ -358,7 +358,7 @@ func draw_tool(pos: Vector2i) -> void:
 func draw_end(pos: Vector2i) -> void:
 	super.draw_end(pos)
 	_stroke_project = null
-	_stroke_images = []
+	_stroke_images = {}
 	drawing_on_3d_node = null
 	materials_3d = {}
 	_circle_tool_shortcut = []
@@ -551,12 +551,11 @@ func draw_on_3d_object(pos: Vector2, layer: Layer3D, clear_mat := true) -> Vecto
 	return uv * Vector2(image.get_size())
 
 
-func update_materials(images: Array[ImageExtended]) -> void:
-	if not materials_3d.is_empty():
-		for i in materials_3d.size():
-			var mat := materials_3d.keys()[i] as BaseMaterial3D
-			if i < images.size():
-				mat.albedo_texture.update(images[i])
+func update_materials(images: Dictionary[Image, Variant]) -> void:
+	for image in images:
+		var mat = images[image]
+		if mat is BaseMaterial3D:
+			mat.albedo_texture.update(image)
 
 
 ## Calls [method Geometry2D.bresenham_line] and takes [param thickness] into account.
@@ -760,16 +759,23 @@ func _set_pixel_no_cache(pos: Vector2i, ignore_mirroring := false) -> void:
 		return
 	if !_stroke_project.can_pixel_get_drawn(pos):
 		return
+	var images := _stroke_images
 	if _is_mask_size_zero:
-		for cel: PixelCel in _get_selected_draw_cels(false):
-			var local_pos := cel.ensure_canvas_point_in_bounds(pos)
-			var image := cel.get_image()
+		for image in images:
+			var variant = images[image]
+			var local_pos := pos
+			if variant is PixelCel:
+				var cel := variant as PixelCel
+				local_pos = cel.ensure_canvas_point_in_bounds(pos)
 			_drawer.set_pixel(image, local_pos, tool_slot.color, ignore_mirroring)
 	else:
 		var i := pos.x + pos.y * _stroke_project.size.x
+		var first_image := images.keys()[0] as Image
 		if _mask.size() >= i + 1:
 			var alpha_dynamic: float = Tools.get_alpha_dynamic()
-			var alpha: float = _get_selected_draw_cels(false)[0].get_image().get_pixelv(pos).a
+			var alpha := 1.0
+			if pos.x < first_image.get_width() and pos.y < first_image.get_height():
+				alpha = first_image.get_pixelv(pos).a
 			if _mask[i] < alpha_dynamic:
 				# Overwrite colors to avoid additive blending between strokes of
 				# brushes that are larger than 1px
@@ -779,16 +785,22 @@ func _set_pixel_no_cache(pos: Vector2i, ignore_mirroring := false) -> void:
 				if overwrite != null and _mask[i] > alpha:
 					_drawer.color_op.overwrite = true
 				_mask[i] = alpha_dynamic
-				for cel: PixelCel in _get_selected_draw_cels(false):
-					var local_pos := cel.ensure_canvas_point_in_bounds(pos)
-					var image := cel.get_image()
+				for image in images:
+					var variant = images[image]
+					var local_pos := pos
+					if variant is PixelCel:
+						var cel := variant as PixelCel
+						local_pos = cel.ensure_canvas_point_in_bounds(pos)
 					_drawer.set_pixel(image, local_pos, tool_slot.color, ignore_mirroring)
 				if overwrite != null:
 					_drawer.color_op.overwrite = overwrite
 		else:
-			for cel: PixelCel in _get_selected_draw_cels(false):
-				var local_pos := cel.ensure_canvas_point_in_bounds(pos)
-				var image := cel.get_image()
+			for image in images:
+				var variant = images[image]
+				var local_pos := pos
+				if variant is PixelCel:
+					var cel := variant as PixelCel
+					local_pos = cel.ensure_canvas_point_in_bounds(pos)
 				_drawer.set_pixel(image, local_pos, tool_slot.color, ignore_mirroring)
 	update_materials(_stroke_images)
 

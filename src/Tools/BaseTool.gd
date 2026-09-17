@@ -428,18 +428,18 @@ func _get_selected_draw_cels(include_all_layers := true) -> Array[BaseCel]:
 	return cels
 
 
-func _get_selected_draw_images() -> Array[ImageExtended]:
-	var images: Array[ImageExtended] = []
+func _get_selected_draw_images() -> Dictionary[Image, Variant]:
+	var images: Dictionary[Image, Variant]
 	if not materials_3d.is_empty():
 		for mat in materials_3d:
 			if is_instance_valid(mat.albedo_texture):
 				var temp_image := mat.albedo_texture.get_image()
 				var image := ImageExtended.new()
 				image.copy_from_custom(temp_image)
-				images.append(image)
+				images[image] = mat
 		return images
 	for cel in _get_selected_draw_cels(false):
-		images.append(cel.get_image())
+		images[cel.get_image()] = cel
 	return images
 
 

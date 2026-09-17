@@ -373,7 +373,7 @@ func _draw_shape() -> void:
 	commit_undo("Draw Shape")
 
 
-func _draw_pixel(point: Vector2i, images: Array[ImageExtended]) -> void:
+func _draw_pixel(point: Vector2i, images: Dictionary[Image, Variant]) -> void:
 	if Tools.is_placing_tiles():
 		draw_tile(point)
 	else:
