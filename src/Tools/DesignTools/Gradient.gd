@@ -147,16 +147,17 @@ func cancel_tool() -> void:
 
 
 func _restore_image_data() -> void:
-	for image in _undo_data:
-		if image is not Image:
-			continue
-		var image_data = _undo_data[image]["data"]
-		var image_size := Vector2i(_undo_data[image]["width"], _undo_data[image]["height"])
-		if image.get_size() != image_size:
-			image.crop(image_size.x, image_size.y)
-		image.set_data(
-			image_size.x, image_size.y, image.has_mipmaps(), image.get_format(), image_data
-		)
+	for data in _undo_data:
+		if data is Image:
+			var image_data = _undo_data[data]["data"]
+			var image_size := Vector2i(_undo_data[data]["width"], _undo_data[data]["height"])
+			if data.get_size() != image_size:
+				data.crop(image_size.x, image_size.y)
+			data.set_data(
+				image_size.x, image_size.y, data.has_mipmaps(), data.get_format(), image_data
+			)
+		elif data is BaseCel:
+			data.offset = _undo_data[data]["offset"]
 
 
 func _reset_tool() -> void:
@@ -170,7 +171,7 @@ func apply_gradient(pos: Vector2) -> void:
 	var angle := rad_to_deg(-pos.angle_to_point(_click_pos))
 	var pivot := _click_pos / Vector2(project.size)
 	var radius := pos - _click_pos
-	if Input.is_action_pressed("shape_perfect"):
+	if Input.is_action_pressed(&"shape_perfect"):
 		angle = snappedf(angle, 22.5)
 		var square_size := maxi(absi(radius.x), absi(radius.y))
 		radius = Vector2i(square_size, square_size)
