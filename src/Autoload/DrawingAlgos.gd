@@ -90,7 +90,8 @@ func blend_layers(
 				textures.append(cel_image)
 			else:
 				var cel_image := layer.display_effects(cel)
-				cel_image.copy_from(project.crop_image_to_project_size(cel_image, cel.offset))
+				if layer.use_cel_image_for_effects:
+					cel_image.copy_from(project.crop_image_to_project_size(cel_image, cel.offset))
 				textures.append(cel_image)
 			if (
 				layer.is_blended_by_ancestor()

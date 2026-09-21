@@ -71,6 +71,7 @@ var ui_color := Color(0, 0, 0, 0):
 	set(value):
 		ui_color = value
 		ui_color_changed.emit()
+var use_cel_image_for_effects := false
 
 var text_server := TextServerManager.get_primary_interface()
 
@@ -269,7 +270,10 @@ func display_effects(cel: BaseCel, image_override: Image = null) -> Image:
 		var cel_image := cel.get_image()
 		if cel_image is ImageExtended:
 			image.is_indexed = cel_image.is_indexed
-		image.copy_from_custom(cel_image)
+		if use_cel_image_for_effects:
+			image.copy_from_custom(cel_image)
+		else:
+			image.copy_from_custom(project.crop_image_to_project_size(cel_image, cel.offset))
 	if not effects_enabled:
 		return image
 	var image_size := image.get_size()

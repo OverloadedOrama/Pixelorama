@@ -128,6 +128,15 @@ func camera_zoom(project := Global.current_project) -> void:
 	Global.transparent_checker.update_rect()
 
 
+static func get_canvas_cel_image(cel: BaseCel, layer: BaseLayer, image: Image) -> void:
+	if Global.display_layer_effects:
+		image.copy_from(layer.display_effects(cel))
+		if layer.use_cel_image_for_effects:
+			image.copy_from(layer.project.crop_image_to_project_size(image, cel.offset))
+	else:
+		image.copy_from(layer.project.crop_image_to_project_size(cel.get_image(), cel.offset))
+
+
 func update_texture(
 	layer_i: int, frame_i := -1, project := Global.current_project, undo := false
 ) -> void:
@@ -143,17 +152,13 @@ func update_texture(
 			# Don't update if the cel is on a different frame (can happen with undo/redo)
 			return
 		var layer := project.layers[layer_i].get_blender_ancestor()
-		var cel_image: Image
+		var cel_image := Image.new()
 		if layer.is_blender():
 			cel_image = layer.blend_children(
 				project.frames[project.current_frame], Vector2i.ZERO, Global.display_layer_effects
 			)
 		else:
-			if Global.display_layer_effects:
-				cel_image = layer.display_effects(current_cel)
-			else:
-				cel_image = current_cel.get_image()
-			cel_image.copy_from(project.crop_image_to_project_size(cel_image, current_cel.offset))
+			get_canvas_cel_image(current_cel, layer, cel_image)
 		if (
 			cel_image.get_size()
 			== Vector2i(layer_texture_array.get_width(), layer_texture_array.get_height())
@@ -266,11 +271,7 @@ func _update_texture_array_layer(
 			)
 		)
 	else:
-		if Global.display_layer_effects:
-			cel_image.copy_from(layer.display_effects(cel))
-		else:
-			cel_image.copy_from(cel.get_image())
-		cel_image.copy_from(project.crop_image_to_project_size(cel_image, cel.offset))
+		get_canvas_cel_image(cel, layer, cel_image)
 	if layer.is_blended_by_ancestor():
 		include = false
 	if update_layer:
