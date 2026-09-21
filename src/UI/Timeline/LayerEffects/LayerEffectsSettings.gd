@@ -213,26 +213,27 @@ func move_effect(layer: BaseLayer, from_index: int, to_index: int) -> void:
 
 
 func _delete_effect(effect: LayerEffect) -> void:
-	var layer := Global.current_project.layers[Global.current_project.current_layer]
+	var layer := effect.layer
+	var project := layer.project
 	var index := layer.effects.find(effect)
-	Global.current_project.undo_redo.create_action("Delete layer effect")
-	Global.current_project.undo_redo.add_do_method(func(): layer.effects.erase(effect))
-	Global.current_project.undo_redo.add_do_method(layer.emit_effects_added_removed)
+	project.undo_redo.create_action("Delete layer effect")
+	project.undo_redo.add_do_method(func(): layer.effects.erase(effect))
+	project.undo_redo.add_do_method(layer.emit_effects_added_removed)
 	# we may be a different layer during redo
-	Global.current_project.undo_redo.add_do_property(
+	project.undo_redo.add_do_property(
 		Global.canvas, "mandatory_update_layers", [layer.index]
 	)
-	Global.current_project.undo_redo.add_do_method(Global.canvas.queue_redraw)
-	Global.current_project.undo_redo.add_do_method(Global.undo_or_redo.bind(false))
-	Global.current_project.undo_redo.add_undo_method(func(): layer.effects.insert(index, effect))
-	Global.current_project.undo_redo.add_undo_method(layer.emit_effects_added_removed)
+	project.undo_redo.add_do_method(Global.canvas.queue_redraw)
+	project.undo_redo.add_do_method(Global.undo_or_redo.bind(false))
+	project.undo_redo.add_undo_method(func(): layer.effects.insert(index, effect))
+	project.undo_redo.add_undo_method(layer.emit_effects_added_removed)
 	# we may be a different layer during undo
-	Global.current_project.undo_redo.add_undo_property(
+	project.undo_redo.add_undo_property(
 		Global.canvas, "mandatory_update_layers", [layer.index]
 	)
-	Global.current_project.undo_redo.add_undo_method(Global.canvas.queue_redraw)
-	Global.current_project.undo_redo.add_undo_method(Global.undo_or_redo.bind(true))
-	Global.current_project.undo_redo.commit_action()
+	project.undo_redo.add_undo_method(Global.canvas.queue_redraw)
+	project.undo_redo.add_undo_method(Global.undo_or_redo.bind(true))
+	project.undo_redo.commit_action()
 	effect_container.get_child(index).queue_free()
 
 

@@ -752,25 +752,18 @@ func _set_pixel_no_cache(pos: Vector2i, ignore_mirroring := false) -> void:
 	if randi() % 100 >= _brush_density:
 		return
 	pos = _stroke_project.tiles.get_canon_position(pos)
-	if Global.current_project.has_selection:
-		pos = Global.current_project.selection_map.get_canon_position(pos)
+	if _stroke_project.has_selection:
+		pos = _stroke_project.selection_map.get_canon_position(pos)
 	if Tools.is_placing_tiles():
 		draw_tile(pos)
 		return
 	if !_stroke_project.can_pixel_get_drawn(pos):
 		return
-	var images := _stroke_images
 	if _is_mask_size_zero:
-		for image in images:
-			var variant = images[image]
-			var local_pos := pos
-			if variant is PixelCel:
-				var cel := variant as PixelCel
-				local_pos = cel.ensure_canvas_point_in_bounds(pos)
-			_drawer.set_pixel(image, local_pos, tool_slot.color, ignore_mirroring)
+		_drawer_set_pixel(pos, _stroke_images, ignore_mirroring)
 	else:
 		var i := pos.x + pos.y * _stroke_project.size.x
-		var first_image := images.keys()[0] as Image
+		var first_image := _stroke_images.keys()[0] as Image
 		if _mask.size() >= i + 1:
 			var alpha_dynamic: float = Tools.get_alpha_dynamic()
 			var alpha := 1.0
@@ -785,24 +778,34 @@ func _set_pixel_no_cache(pos: Vector2i, ignore_mirroring := false) -> void:
 				if overwrite != null and _mask[i] > alpha:
 					_drawer.color_op.overwrite = true
 				_mask[i] = alpha_dynamic
-				for image in images:
-					var variant = images[image]
-					var local_pos := pos
-					if variant is PixelCel:
-						var cel := variant as PixelCel
-						local_pos = cel.ensure_canvas_point_in_bounds(pos)
-					_drawer.set_pixel(image, local_pos, tool_slot.color, ignore_mirroring)
+				_drawer_set_pixel(pos, _stroke_images, ignore_mirroring)
 				if overwrite != null:
 					_drawer.color_op.overwrite = overwrite
 		else:
-			for image in images:
-				var variant = images[image]
-				var local_pos := pos
-				if variant is PixelCel:
-					var cel := variant as PixelCel
-					local_pos = cel.ensure_canvas_point_in_bounds(pos)
-				_drawer.set_pixel(image, local_pos, tool_slot.color, ignore_mirroring)
+			_drawer_set_pixel(pos, _stroke_images, ignore_mirroring)
 	update_materials(_stroke_images)
+
+
+func _drawer_set_pixel(pos: Vector2i, images: Dictionary[Image, Variant], ignore_mirroring := false) -> void:
+	for image in images:
+		var variant = images[image]
+		var local_pos := pos
+		var mirrored_positions := Tools.get_mirrored_positions(pos, _stroke_project)
+		if variant is PixelCel:
+			var cel := variant as PixelCel
+			local_pos = cel.ensure_canvas_point_in_bounds(pos)
+			if not ignore_mirroring:
+				for i in mirrored_positions.size():
+					var mirror_pos := mirrored_positions[i]
+					if _stroke_project.can_pixel_get_drawn(mirror_pos):
+						mirrored_positions[i] = cel.ensure_canvas_point_in_bounds(mirror_pos)
+		_drawer.set_pixel(image, local_pos, tool_slot.color)
+
+		if not ignore_mirroring:
+			for i in mirrored_positions.size():
+				var mirror_pos := mirrored_positions[i]
+				if _stroke_project.can_pixel_get_drawn(mirror_pos):
+					_drawer.set_pixel(image, mirror_pos, tool_slot.color)
 
 
 func _draw_brush_image(brush_image: Image, src_rect: Rect2i, dst: Vector2i) -> void:
