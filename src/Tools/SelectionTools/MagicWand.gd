@@ -4,7 +4,7 @@ var _tolerance := 0.003
 
 
 func apply_selection(pos: Vector2i) -> void:
-	super.apply_selection(pos)
+	super(pos)
 	var project := Global.current_project
 	if pos.x < 0 or pos.y < 0 or pos.x >= project.size.x or pos.y >= project.size.y:
 		return
@@ -15,8 +15,9 @@ func apply_selection(pos: Vector2i) -> void:
 	if _intersect:
 		project.selection_map.clear()
 
+	var cel := project.get_current_cel()
 	var cel_image := Image.new()
-	cel_image.copy_from(_get_draw_image())
+	cel_image.copy_from(project.crop_image_to_project_size(cel.get_image(), cel.offset))
 	_flood_fill(pos, cel_image, project, previous_selection_map)
 	# Handle mirroring
 	for mirror_pos in Tools.get_mirrored_positions(pos):
