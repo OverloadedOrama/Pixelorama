@@ -1015,7 +1015,7 @@ func change_layer_automatically(pos: Vector2i) -> void:
 		if project.layers[layer_index].is_visible_in_hierarchy():
 			var cel := curr_frame.cels[layer_index]
 			image = cel.get_image()
-			var cel_rect := Rect2i(cel.offset, image.get_size())
+			var cel_rect := cel.get_cel_rect()
 			if not cel_rect.has_point(pos):
 				continue
 			var local_pos := Vector2i(pos) - cel.offset

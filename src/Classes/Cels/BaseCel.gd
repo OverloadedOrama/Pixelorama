@@ -46,6 +46,15 @@ func get_frame(project: Project) -> Frame:
 	return null
 
 
+func get_cel_rect() -> Rect2i:
+	return Rect2i(offset, get_image().get_size())
+
+
+## Changes the [member offset] of the cel.
+func change_offset(new_offset: Vector2i) -> void:
+	offset = new_offset
+
+
 # Methods to Override:
 
 
@@ -135,11 +144,6 @@ func deserialize(dict: Dictionary) -> void:
 		new_offset = str_to_var("Vector2i" + new_offset_str) as Vector2i
 	if new_offset != offset:
 		change_offset(new_offset)
-
-
-## Changes the [member offset] of the cel.
-func change_offset(new_offset: Vector2i) -> void:
-	offset = new_offset
 
 
 func size_changed(_new_size: Vector2i) -> void:

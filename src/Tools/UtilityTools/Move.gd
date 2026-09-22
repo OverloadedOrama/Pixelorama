@@ -11,15 +11,15 @@ var _undo_data := {}
 func _input(event: InputEvent) -> void:
 	if _start_pos == Vector2i(Vector2.INF):
 		return
-	if event.is_action_pressed("transform_snap_grid"):
+	if event.is_action_pressed(&"transform_snap_grid"):
 		_snap_to_grid = true
 		_offset = _offset.snapped(Global.grids[0].grid_size)
-	elif event.is_action_released("transform_snap_grid"):
+	elif event.is_action_released(&"transform_snap_grid"):
 		_snap_to_grid = false
 
 
 func draw_start(pos: Vector2i) -> void:
-	super.draw_start(pos)
+	super(pos)
 	var project := Global.current_project
 	if not _can_layer_be_moved(project.layers[project.current_layer]):
 		return
@@ -42,7 +42,7 @@ func draw_start(pos: Vector2i) -> void:
 
 
 func draw_move(pos: Vector2i) -> void:
-	super.draw_move(pos)
+	super(pos)
 	var project := Global.current_project
 	if not _can_layer_be_moved(project.layers[project.current_layer]):
 		return
@@ -68,7 +68,7 @@ func draw_end(pos: Vector2i) -> void:
 		_commit_undo("Draw")
 
 	_reset_tool()
-	super.draw_end(pos)
+	super(pos)
 
 
 func cancel_tool() -> void:

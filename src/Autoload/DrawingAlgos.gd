@@ -129,14 +129,14 @@ func set_layer_metadata_image(
 		image.set_pixel(index, 1, Color())
 	# Store the clipping mask boolean
 	if layer.clipping_mask:
-		image.set_pixel(index, 3, Color.RED)
+		image.set_pixel(index, 2, Color.RED)
 	else:
-		image.set_pixel(index, 3, Color.BLACK)
+		image.set_pixel(index, 2, Color.BLACK)
 	if layer.is_blended_by_ancestor():
 		# Store a small red value as a way to indicate that this layer should be skipped
 		# Used for layers such as child layers of a group, so that the group layer itself can
 		# successfully be used as a clipping mask with the layer below it.
-		image.set_pixel(index, 3, Color(0.2, 0.0, 0.0, 0.0))
+		image.set_pixel(index, 2, Color(0.2, 0.0, 0.0, 0.0))
 
 
 func blend_layers_headless(

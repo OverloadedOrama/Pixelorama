@@ -85,12 +85,7 @@ func _draw_layers() -> void:
 		var cel := current_cels[i]
 		var layer := project.layers[i]
 		var cel_image := Image.new()
-		if layer.is_blender():
-			cel_image = layer.blend_children(
-				current_frame, Vector2i.ZERO, Global.display_layer_effects
-			)
-		else:
-			Canvas.get_canvas_cel_image(cel, layer, cel_image)
+		Canvas.get_canvas_cel_image(cel, layer, cel_image)
 		textures.append(cel_image)
 		DrawingAlgos.set_layer_metadata_image(layer, cel, metadata_image, i)
 	var texture_array := Texture2DArray.new()
