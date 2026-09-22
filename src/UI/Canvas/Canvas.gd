@@ -55,14 +55,10 @@ func _draw() -> void:
 	if Global.mirror_view:
 		position_tmp.x = position_tmp.x + project.size.x
 		scale_tmp.x = -1
-	# If we just use the first cel and it happens to be a GroupCel
-	# nothing will get drawn
-	var cel_to_draw := project.find_first_drawable_cel()
 	draw_set_transform(position_tmp, rotation, scale_tmp)
 	# Placeholder so we can have a material here
-	if is_instance_valid(cel_to_draw):
-		var image_to_draw := project.new_empty_image()
-		draw_texture(ImageTexture.create_from_image(image_to_draw), Vector2.ZERO)
+	var image_to_draw := project.empty_image_texture
+	draw_texture(image_to_draw, Vector2.ZERO)
 	draw_layers(project_changed)
 	project_changed = false
 	if Global.onion_skinning:

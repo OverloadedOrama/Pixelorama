@@ -64,6 +64,8 @@ var selected_cels := [[0, 0]]  ## Array of Arrays of 2 integers (frame & layer)
 ## See [method order_layers].
 var ordered_layers: Array[int] = [0]
 var next_keyframe_id := 0
+## Used as a placeholder to allow canvas drawing.
+var empty_image_texture: ImageTexture
 
 var animation_tags: Array[AnimationTag] = []:
 	set(value):
@@ -160,7 +162,7 @@ func _init(_frames: Array[Frame] = [], _name := tr("untitled"), _size := Vector2
 		Vector2(19999, 19999) + x_minus_y_symmetry_point * 2.0
 	)
 	Global.canvas.add_child(diagonal_x_minus_y_symmetry_axis)
-
+	empty_image_texture = ImageTexture.create_from_image(new_empty_image())
 	if OS.get_name() == "Web":
 		export_profile.directory_path = "user://"
 	else:
@@ -635,6 +637,7 @@ func _size_changed(value: Vector2i) -> void:
 	tiles.tile_size = value
 	size = value
 	Global.canvas.crop_rect.reset()
+	empty_image_texture.set_image(new_empty_image())
 	resized.emit()
 
 

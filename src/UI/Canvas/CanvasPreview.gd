@@ -40,12 +40,9 @@ func _draw() -> void:
 				frame_index = project.current_frame
 			var frame := project.frames[frame_index]
 			animation_timer.wait_time = frame.get_duration_in_seconds(project.fps)
-			# If we just use the first cel and it happens to be a GroupCel
-			# nothing will get drawn
-			var cel_to_draw := Global.current_project.find_first_drawable_cel(frame)
-			# Placeholder so we can have a material here
-			if is_instance_valid(cel_to_draw):
-				draw_texture(cel_to_draw.image_texture, Vector2.ZERO)
+			# Placeholder so we can have a material here.
+			var image_to_draw := project.empty_image_texture
+			draw_texture(image_to_draw, Vector2.ZERO)
 			if material == animation_material:
 				# Only use a unique material if the animation of the canvas preview is playing
 				# Otherwise showing a different frame than the main canvas is impossible
