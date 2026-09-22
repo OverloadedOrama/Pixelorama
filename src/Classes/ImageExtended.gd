@@ -196,6 +196,10 @@ func color_distance(c1: Color, c2: Color) -> float:
 	return v2.distance_to(v1)
 
 
+func pos_inside_image(pos: Vector2i) -> bool:
+	return pos.x >= 0 and pos.y >= 0 and pos.x <= get_width() - 1 and pos.y <= get_height() - 1
+
+
 ## Adds image data to a [param dict] [Dictionary]. Used for undo/redo.
 func add_data_to_dictionary(dict: Dictionary, other_image: ImageExtended = null) -> void:
 	# The order matters! Setting self's data first would make undo/redo appear to work incorrectly.
