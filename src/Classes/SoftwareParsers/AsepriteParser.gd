@@ -170,9 +170,6 @@ static func open_aseprite_file(path: String) -> void:
 							)
 							ase_cel_image.convert(new_project.get_image_format())
 							cel.get_image().copy_from(ase_cel_image)
-							#cel.get_image().blit_rect(
-								#ase_cel_image, image_rect, Vector2i(x_pos, y_pos)
-							#)
 						else:  # Indexed mode
 							for k in color_bytes.size():
 								color_bytes[k] += 1
