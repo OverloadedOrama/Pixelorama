@@ -786,7 +786,9 @@ func _set_pixel_no_cache(pos: Vector2i, ignore_mirroring := false) -> void:
 	update_materials(_stroke_images)
 
 
-func _drawer_set_pixel(pos: Vector2i, images: Dictionary[Image, Variant], ignore_mirroring := false) -> void:
+func _drawer_set_pixel(
+	pos: Vector2i, images: Dictionary[Image, Variant], ignore_mirroring := false
+) -> void:
 	for image in images:
 		var variant = images[image]
 		var local_pos := pos

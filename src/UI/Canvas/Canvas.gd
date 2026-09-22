@@ -62,10 +62,7 @@ func _draw() -> void:
 	# Placeholder so we can have a material here
 	if is_instance_valid(cel_to_draw):
 		var image_to_draw := project.new_empty_image()
-		#var image_to_draw := project.crop_image_to_project_size(cel_to_draw.get_image(), cel_to_draw.offset)
 		draw_texture(ImageTexture.create_from_image(image_to_draw), Vector2.ZERO)
-		#draw_texture(ImageTexture.create_from_image(cel_to_draw.get_canvas_image(project.size)), Vector2.ZERO)
-		#draw_texture(cel_to_draw.image_texture, Vector2.ZERO)
 	draw_layers(project_changed)
 	project_changed = false
 	if Global.onion_skinning:

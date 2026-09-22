@@ -148,7 +148,9 @@ func _confirmed() -> void:
 						i += 1
 						continue
 					if _project.layers[i].can_layer_get_drawn():
-						var cel_image := project.crop_image_to_project_size(cel.get_image(), cel.offset)
+						var cel_image := project.crop_image_to_project_size(
+							cel.get_image(), cel.offset
+						)
 						commit_action(cel_image, _project)
 						cel.blit_image_to_cel(cel_image)
 					i += 1

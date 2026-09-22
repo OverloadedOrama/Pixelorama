@@ -331,7 +331,7 @@ func _draw_shape() -> void:
 			if dst_rect.size == Vector2i.ZERO:
 				continue
 			var src_rect := Rect2i(dst_rect.position - dst, dst_rect.size)
-			var brush_image: Image = remove_unselected_parts_of_brush(box_img, dst)
+			var brush_image := remove_unselected_parts_of_brush(box_img, dst)
 			dst = dst_rect.position
 			_draw_brush_image(brush_image, src_rect, dst)
 
@@ -378,8 +378,7 @@ func _draw_pixel(point: Vector2i, images: Dictionary[Image, Variant]) -> void:
 		draw_tile(point)
 	else:
 		if Global.current_project.can_pixel_get_drawn(point):
-			for image in images:
-				_drawer.set_pixel(image, point, tool_slot.color)
+			_drawer_set_pixel(point, images)
 
 
 func _clear() -> void:

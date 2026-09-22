@@ -236,7 +236,9 @@ func fill_in_color(pos: Vector2i) -> void:
 						tilemap_cel.set_index(cell, paint_index)
 		return
 	var current_cel := project.get_current_cel()
-	var current_image := project.crop_image_to_project_size(current_cel.get_image(), current_cel.offset)
+	var current_image := project.crop_image_to_project_size(
+		current_cel.get_image(), current_cel.offset
+	)
 	var color := current_image.get_pixelv(pos)
 	var cels := _get_selected_draw_cels(false)
 	for cel: PixelCel in cels:

@@ -30,7 +30,9 @@ func set_indexed_mode(indexed: bool) -> void:
 
 ## Grow the image so a canvas-space point is inside it,
 ## shifting the cel's [member offset] if needed. Returns the coordinate in the cel's local space.
-func ensure_canvas_point_in_bounds(canvas_pos: Vector2i, change_offset_when_invisible := true) -> Vector2i:
+func ensure_canvas_point_in_bounds(
+	canvas_pos: Vector2i, change_offset_when_invisible := true
+) -> Vector2i:
 	if image.is_invisible() and change_offset_when_invisible:
 		change_offset(canvas_pos)
 	var local := canvas_pos - offset
