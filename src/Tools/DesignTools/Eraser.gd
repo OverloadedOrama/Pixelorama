@@ -108,7 +108,11 @@ func _draw_brush_image(image: Image, src_rect: Rect2i, dst: Vector2i, _overwrite
 
 		var images := _get_selected_draw_images()
 		for draw_image in images:
-			draw_image.blit_rect_mask(_clear_image, image, src_rect, dst)
+			var final_dst := dst
+			var variant = images[draw_image]
+			if variant is PixelCel:
+				final_dst -= variant.offset
+			draw_image.blit_rect_mask(_clear_image, image, src_rect, final_dst)
 			draw_image.convert_rgb_to_indexed()
 	else:
 		for xx in image.get_size().x:

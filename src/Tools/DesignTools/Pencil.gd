@@ -204,5 +204,3 @@ func _draw_brush_image(
 ) -> void:
 	_changed = true
 	super(brush_image, src_rect, dst, overwrite)
-	var images := _get_selected_draw_images()
-	update_materials(images)

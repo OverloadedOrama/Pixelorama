@@ -815,18 +815,29 @@ func _draw_brush_image(
 ) -> void:
 	var images := _get_selected_draw_images()
 	for draw_image in images:
+		var final_dst := dst
+		var variant = images[draw_image]
+		if variant is PixelCel:
+			@warning_ignore("integer_division")
+			var brush_size := brush_image.get_size()
+			var start_point := dst
+			var end_point := dst + brush_size - Vector2i.ONE
+			variant.ensure_canvas_point_in_bounds(end_point)
+			variant.ensure_canvas_point_in_bounds(start_point, false)
+			final_dst -= variant.offset
 		if Tools.alpha_locked:
-			var mask := draw_image.get_region(Rect2i(dst, brush_image.get_size()))
+			var mask := draw_image.get_region(Rect2i(final_dst, brush_image.get_size()))
 			if overwrite:
-				draw_image.blit_rect_mask(brush_image, mask, src_rect, dst)
+				draw_image.blit_rect_mask(brush_image, mask, src_rect, final_dst)
 			else:
-				draw_image.blend_rect_mask(brush_image, mask, src_rect, dst)
+				draw_image.blend_rect_mask(brush_image, mask, src_rect, final_dst)
 		else:
 			if overwrite:
-				draw_image.blit_rect(brush_image, src_rect, dst)
+				draw_image.blit_rect(brush_image, src_rect, final_dst)
 			else:
-				draw_image.blend_rect(brush_image, src_rect, dst)
+				draw_image.blend_rect(brush_image, src_rect, final_dst)
 		draw_image.convert_rgb_to_indexed()
+	update_materials(images)
 
 
 func _create_blended_brush_image(image: Image) -> Image:
