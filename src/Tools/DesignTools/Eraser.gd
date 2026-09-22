@@ -99,7 +99,7 @@ func draw_end(pos: Vector2i) -> void:
 	update_random_image()
 
 
-func _draw_brush_image(image: Image, src_rect: Rect2i, dst: Vector2i) -> void:
+func _draw_brush_image(image: Image, src_rect: Rect2i, dst: Vector2i, _overwrite := true) -> void:
 	_changed = true
 	if _strength == 1:
 		var brush_size := image.get_size()

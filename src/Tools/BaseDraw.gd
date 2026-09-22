@@ -810,14 +810,22 @@ func _drawer_set_pixel(
 					_drawer.set_pixel(image, mirror_pos, tool_slot.color)
 
 
-func _draw_brush_image(brush_image: Image, src_rect: Rect2i, dst: Vector2i) -> void:
+func _draw_brush_image(
+	brush_image: Image, src_rect: Rect2i, dst: Vector2i, overwrite := true
+) -> void:
 	var images := _get_selected_draw_images()
 	for draw_image in images:
 		if Tools.alpha_locked:
 			var mask := draw_image.get_region(Rect2i(dst, brush_image.get_size()))
-			draw_image.blit_rect_mask(brush_image, mask, src_rect, dst)
+			if overwrite:
+				draw_image.blit_rect_mask(brush_image, mask, src_rect, dst)
+			else:
+				draw_image.blend_rect_mask(brush_image, mask, src_rect, dst)
 		else:
-			draw_image.blit_rect(brush_image, src_rect, dst)
+			if overwrite:
+				draw_image.blit_rect(brush_image, src_rect, dst)
+			else:
+				draw_image.blend_rect(brush_image, src_rect, dst)
 		draw_image.convert_rgb_to_indexed()
 
 
