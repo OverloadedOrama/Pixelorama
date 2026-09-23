@@ -818,7 +818,6 @@ func _draw_brush_image(
 		var final_dst := dst
 		var variant = images[draw_image]
 		if variant is PixelCel:
-			@warning_ignore("integer_division")
 			var brush_size := brush_image.get_size()
 			var start_point := dst
 			var end_point := dst + brush_size - Vector2i.ONE

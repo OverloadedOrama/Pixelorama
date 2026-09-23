@@ -151,12 +151,17 @@ func transform_content_confirm(
 		else:
 			transformation_handles.bake_transform_to_image(src, bounds)
 
+		var start_point := transformation_origin
+		var end_point := transformation_origin + bounds.size - Vector2.ONE
+		cel.ensure_canvas_point_in_bounds(end_point)
+		cel.ensure_canvas_point_in_bounds(start_point, false)
 		if Tools.is_placing_tiles():
 			if cel.get_tile_shape() != TileSet.TILE_SHAPE_SQUARE:
 				continue
-			cel_image.blit_rect(src, bounds, transformation_origin)
+			cel_image.blit_rect(src, bounds, transformation_origin - Vector2(cel.offset))
 		else:
-			cel_image.blit_rect_mask(src, src, bounds, transformation_origin)
+			cel_image.blit_rect_mask(src, src, bounds, transformation_origin - Vector2(cel.offset))
+		cel.shrink_to_content()
 		cel_image.convert_rgb_to_indexed()
 	commit_undo("Move Selection", undo_data)
 
