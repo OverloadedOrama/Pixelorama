@@ -899,11 +899,8 @@ func generate_hexagonal_flat_top(image: Image) -> void:
 
 
 # Image effects
-func center(indices: Array) -> void:
-	var project := Global.current_project
+func center_frames(indices: Array, project := Global.current_project) -> void:
 	Global.transform_content_confirmed.emit(project)
-	var redo_data := {}
-	var undo_data := {}
 	project.undo_redo.create_action("Center Frames")
 	for frame in indices:
 		# Find used rect of the current frame (across all of the layers)
@@ -911,7 +908,7 @@ func center(indices: Array) -> void:
 		for cel in project.frames[frame].cels:
 			if not cel is PixelCel:
 				continue
-			var cel_rect := cel.get_image().get_used_rect()
+			var cel_rect := cel.get_cel_rect()
 			if cel_rect.has_area():
 				used_rect = used_rect.merge(cel_rect) if used_rect.has_area() else cel_rect
 		if not used_rect.has_area():
@@ -919,23 +916,29 @@ func center(indices: Array) -> void:
 
 		# Now apply centering
 		var offset: Vector2i = (0.5 * (project.size - used_rect.size)).floor()
+		var delta := offset - used_rect.position
 		for cel in project.frames[frame].cels:
 			if not cel is PixelCel:
 				continue
-			var cel_image := (cel as PixelCel).get_image()
-			var tmp_centered := project.new_empty_image()
-			tmp_centered.blend_rect(cel_image, used_rect, offset)
-			var centered := ImageExtended.new()
-			centered.copy_from_custom(tmp_centered, cel_image.is_indexed)
-			if cel is CelTileMap:
-				var tilemap_cel := cel as CelTileMap
-				var tilemap_offset := (offset - used_rect.position) % tilemap_cel.get_tile_size()
-				tilemap_cel.serialize_undo_data_source_image(
-					centered, redo_data, undo_data, tilemap_offset
-				)
-			centered.add_data_to_dictionary(redo_data, cel_image)
-			cel_image.add_data_to_dictionary(undo_data)
-	project.deserialize_cel_undo_data(redo_data, undo_data)
+			project.undo_redo.add_do_property(cel, "offset", cel.offset + delta)
+			project.undo_redo.add_undo_property(cel, "offset", cel.offset)
+	project.undo_redo.add_undo_method(Global.undo_or_redo.bind(true))
+	project.undo_redo.add_do_method(Global.undo_or_redo.bind(false))
+	project.undo_redo.commit_action()
+
+
+func center_cels(indices: Array, project := Global.current_project) -> void:
+	project.undo_redo.create_action("Center Cels")
+	for cel_index in indices:
+		var frame_index: int = cel_index[0]
+		var layer_index: int = cel_index[1]
+		var cel := project.frames[frame_index].cels[layer_index]
+		if not cel is PixelCel:
+			continue
+		var used_rect := cel.get_cel_rect()
+		var offset: Vector2i = (0.5 * (project.size - used_rect.size)).floor()
+		project.undo_redo.add_do_property(cel, "offset", offset)
+		project.undo_redo.add_undo_property(cel, "offset", cel.offset)
 	project.undo_redo.add_undo_method(Global.undo_or_redo.bind(true))
 	project.undo_redo.add_do_method(Global.undo_or_redo.bind(false))
 	project.undo_redo.commit_action()
