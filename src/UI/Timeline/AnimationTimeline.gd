@@ -1269,7 +1269,12 @@ func flatten_layers(
 				indices.remove_at(i)
 	if indices.size() == 0:
 		return
-	var new_layer := PixelLayer.new(project)
+	var bottom_layer := project.layers[indices[0]]
+	var new_layer: PixelLayer
+	if bottom_layer is LayerTileMap:
+		new_layer = LayerTileMap.new(project, bottom_layer.tileset)
+	else:
+		new_layer = PixelLayer.new(project)
 	new_layer.name = flattened_name
 	new_layer.index = indices[0]
 	var prev_layers := []
@@ -1278,6 +1283,7 @@ func flatten_layers(
 	prev_cels.resize(indices.size())
 	for i in indices.size():
 		prev_cels[i] = []
+	project.undo_redo.create_action("Flatten layers")
 	for frame_index in project.frames.size():
 		var frame := project.frames[frame_index]
 		var textures: Array[Image] = []
@@ -1309,14 +1315,16 @@ func flatten_layers(
 		new_image.convert_rgb_to_indexed()
 		var new_cel := new_layer.new_cel_from_image(new_image)
 		new_cel.shrink_to_content()
+		if new_cel is CelTileMap:
+			# WIP, needs support for undo.
+			new_cel.update_tilemap()
 		new_cels.append(new_cel)
-	var bottom_layer := project.layers[indices[0]]
+
 	while bottom_layer.parent != null:
 		if not indices.has(bottom_layer.parent.index):
 			new_layer.parent = bottom_layer.parent
 			break
 		bottom_layer = bottom_layer.parent
-	project.undo_redo.create_action("Flatten layers")
 	project.undo_redo.add_do_method(project.remove_layers.bind(indices))
 	project.undo_redo.add_do_method(
 		project.add_layers.bind([new_layer], [new_layer.index], [new_cels])
