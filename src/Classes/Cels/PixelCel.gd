@@ -58,6 +58,18 @@ func ensure_canvas_point_in_bounds(
 	return local
 
 
+func shrink_to_content() -> void:
+	var used := image.get_used_rect()
+	if used.size == image.get_size():
+		return
+	if used.size == Vector2i.ZERO:
+		resize_image(Vector2i.ONE, Vector2i.ZERO)
+		return
+	var new_offset := offset + used.position
+	resize_image(used.size, -used.position)
+	change_offset(new_offset)
+
+
 func resize_image(new_size: Vector2i, content_offset: Vector2i) -> void:
 	var new_image := ImageExtended.create_custom(
 		new_size.x, new_size.y, false, image.get_format(), image.is_indexed

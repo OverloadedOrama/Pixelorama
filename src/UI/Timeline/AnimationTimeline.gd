@@ -1373,6 +1373,7 @@ func flatten_layers(indices: PackedInt32Array, only_visible := false) -> void:
 		gen.generate_image(new_image, DrawingAlgos.blend_layers_shader, params, project.size)
 		new_image.convert_rgb_to_indexed()
 		var new_cel := new_layer.new_cel_from_image(new_image)
+		new_cel.shrink_to_content()
 		new_cels.append(new_cel)
 	var bottom_layer := project.layers[indices[0]]
 	while bottom_layer.parent != null:

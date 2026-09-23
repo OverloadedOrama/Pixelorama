@@ -91,7 +91,10 @@ func draw_end(pos: Vector2i) -> void:
 		draw_tool(_line_start)
 		draw_fill_gap(_line_start, _line_end)
 		_draw_line = false
-
+	for image in _stroke_images:
+		var variant = _stroke_images[image]
+		if variant is PixelCel:
+			variant.shrink_to_content()
 	super.draw_end(pos)
 	commit_undo()
 	SteamManager.set_achievement("ACH_ERASE_PIXEL")

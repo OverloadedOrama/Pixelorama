@@ -757,7 +757,7 @@ func _set_pixel_no_cache(pos: Vector2i, ignore_mirroring := false) -> void:
 	if Tools.is_placing_tiles():
 		draw_tile(pos)
 		return
-	if !_stroke_project.can_pixel_get_drawn(pos):
+	if not _stroke_project.can_pixel_get_drawn(pos):
 		return
 	if _is_mask_size_zero:
 		_drawer_set_pixel(pos, _stroke_images, ignore_mirroring)
@@ -765,7 +765,7 @@ func _set_pixel_no_cache(pos: Vector2i, ignore_mirroring := false) -> void:
 		var i := pos.x + pos.y * _stroke_project.size.x
 		var first_image := _stroke_images.keys()[0] as Image
 		if _mask.size() >= i + 1:
-			var alpha_dynamic: float = Tools.get_alpha_dynamic()
+			var alpha_dynamic := Tools.get_alpha_dynamic()
 			var alpha := 1.0
 			if pos.x < first_image.get_width() and pos.y < first_image.get_height():
 				alpha = first_image.get_pixelv(pos).a
