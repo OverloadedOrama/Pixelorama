@@ -1150,7 +1150,6 @@ func open_gif_file(path: String) -> bool:
 	new_project.layers.append(layer)
 	for gif_frame in imported_frames:
 		var frame_image := gif_frame.image
-		frame_image.crop(new_project.size.x, new_project.size.y)
 		var cel := layer.new_cel_from_image(frame_image)
 		var delay := gif_frame.delay
 		if delay <= 0.0:
@@ -1255,14 +1254,14 @@ func open_ora_file(path: String) -> void:
 				# Create cel
 				var cel := layer.new_empty_cel()
 				if cel is PixelCel:
+					var image_x := int(parser.get_named_attribute_value("x"))
+					var image_y := int(parser.get_named_attribute_value("y"))
+					cel.offset = Vector2i(image_x, image_y)
 					var image_path := parser.get_named_attribute_value_safe("src")
 					var image_data := zip_reader.read_file(image_path)
 					var image := Image.new()
 					image.load_png_from_buffer(image_data)
-					var image_rect := Rect2i(Vector2i.ZERO, image.get_size())
-					var image_x := int(parser.get_named_attribute_value("x"))
-					var image_y := int(parser.get_named_attribute_value("y"))
-					cel.get_image().blit_rect(image, image_rect, Vector2i(image_x, image_y))
+					cel.get_image().copy_from_custom(image)
 				new_project.frames[0].cels.insert(0, cel)
 		elif parser.get_node_type() == XMLParser.NODE_ELEMENT_END:
 			var node_name := parser.get_node_name()
