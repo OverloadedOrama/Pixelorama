@@ -111,7 +111,7 @@ static func open_aseprite_file(path: String) -> void:
 			var chunk_type := ase_file.get_16()
 			if chunk_type != 0x2020:
 				previous_chunk_type = chunk_type
-			prints("Found Chunk:", chunk_type, "(", ChunkTypes.find_key(chunk_type), ")")
+			print_verbose("Found Chunk: ", chunk_type, " (", ChunkTypes.find_key(chunk_type), ")")
 			match chunk_type:
 				ChunkTypes.LAYER:
 					var layer_flags := ase_file.get_16()
@@ -178,6 +178,7 @@ static func open_aseprite_file(path: String) -> void:
 							var ase_cel_image := Image.create_from_data(
 								width, height, false, Image.FORMAT_R8, color_bytes
 							)
+							cel.get_image().crop(width, height)
 							cel.get_image().indices_image.copy_from(ase_cel_image)
 							cel.get_image().convert_indexed_to_rgb()
 					elif cel_type == 1:  # Linked cel

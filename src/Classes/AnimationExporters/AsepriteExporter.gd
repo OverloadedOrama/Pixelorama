@@ -226,14 +226,8 @@ static func _write_cel_chunk(
 	data.big_endian = false
 	data.put_u16(ase_layer_index)  # Store layer index (it is different from Pixelorama convention)
 	# Calculate and store offset
-	var position := Vector2i.ZERO
-	if cel is CelTileMap:
-		# NOTE: Aseprite gets offset from the top-right corner of the cropped tilemap
-		var used_rect := cel.get_image().get_used_rect()
-		var ase_offset = cel.get_pixel_coords(cel.get_cell_position(used_rect.position))
-		position = Vector2i(ase_offset)
-	data.put_16(position.x)
-	data.put_16(position.y)
+	data.put_16(cel.offset.x)
+	data.put_16(cel.offset.y)
 	# Store opacity
 	data.put_u8(clampi(int(cel.opacity * 255.0), 0, 255))
 	# Store cel type
