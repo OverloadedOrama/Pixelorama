@@ -1000,38 +1000,25 @@ func resize_image(
 
 
 ## Sets the size of the project to be the same as the size of the active selection.
-func crop_to_selection() -> void:
-	if not Global.current_project.has_selection:
+func crop_to_selection(project := Global.current_project) -> void:
+	if not project.has_selection:
 		return
-	Global.transform_content_confirmed.emit(Global.current_project)
-	var redo_data := {}
-	var undo_data := {}
-	var rect := Global.current_project.selection_map.get_selection_rect(Global.current_project)
-	# Loop through all the cels to crop them
-	for cel in Global.current_project.get_all_pixel_cels():
-		var cel_image := cel.get_image()
-		var tmp_cropped := cel_image.get_region(rect)
-		var cropped := ImageExtended.new()
-		cropped.copy_from_custom(tmp_cropped, cel_image.is_indexed)
-		if cel is CelTileMap:
-			var tilemap_cel := cel as CelTileMap
-			var offset := rect.position
-			tilemap_cel.serialize_undo_data_source_image(cropped, redo_data, undo_data, -offset)
-		cropped.add_data_to_dictionary(redo_data, cel_image)
-		cel_image.add_data_to_dictionary(undo_data)
-
-	general_do_and_undo_scale(rect.size.x, rect.size.y, redo_data, undo_data)
+	Global.transform_content_confirmed.emit(project)
+	var rect := project.selection_map.get_selection_rect(project)
+	resize_canvas(rect.size.x, rect.size.y, -rect.position.x, -rect.position.y)
 
 
 ## Automatically makes the project smaller by looping through all of the cels and
 ## trimming out the pixels that are transparent in all cels.
-func crop_to_content() -> void:
-	Global.transform_content_confirmed.emit(Global.current_project)
+func crop_to_content(project := Global.current_project) -> void:
+	Global.transform_content_confirmed.emit(project)
 	var used_rect := Rect2i()
-	for cel in Global.current_project.get_all_pixel_cels():
+	for cel in project.get_all_pixel_cels():
 		if not cel is PixelCel:
 			continue
-		var cel_used_rect := cel.get_image().get_used_rect()
+		if cel.get_image().is_invisible():
+			continue
+		var cel_used_rect := cel.get_cel_rect()
 		if cel_used_rect == Rect2i(0, 0, 0, 0):  # If the cel has no content
 			continue
 
@@ -1044,44 +1031,16 @@ func crop_to_content() -> void:
 	if used_rect == Rect2i(0, 0, 0, 0):
 		return
 
-	var width := used_rect.size.x
-	var height := used_rect.size.y
-	var redo_data := {}
-	var undo_data := {}
-	# Loop through all the cels to trim them
-	for cel in Global.current_project.get_all_pixel_cels():
-		var cel_image := cel.get_image()
-		var tmp_cropped := cel_image.get_region(used_rect)
-		var cropped := ImageExtended.new()
-		cropped.copy_from_custom(tmp_cropped, cel_image.is_indexed)
-		if cel is CelTileMap:
-			var tilemap_cel := cel as CelTileMap
-			var offset := used_rect.position
-			tilemap_cel.serialize_undo_data_source_image(cropped, redo_data, undo_data, -offset)
-		cropped.add_data_to_dictionary(redo_data, cel_image)
-		cel_image.add_data_to_dictionary(undo_data)
-
-	general_do_and_undo_scale(width, height, redo_data, undo_data)
+	resize_canvas(used_rect.size.x, used_rect.size.y, -used_rect.position.x, -used_rect.position.y)
 
 
 func resize_canvas(width: int, height: int, offset_x: int, offset_y: int) -> void:
 	var redo_data := {}
 	var undo_data := {}
 	for cel in Global.current_project.get_all_pixel_cels():
-		var cel_image := cel.get_image()
-		var resized := ImageExtended.create_custom(
-			width, height, cel_image.has_mipmaps(), cel_image.get_format(), cel_image.is_indexed
-		)
-		resized.blend_rect(
-			cel_image, Rect2i(Vector2i.ZERO, cel_image.get_size()), Vector2i(offset_x, offset_y)
-		)
-		resized.convert_rgb_to_indexed()
-		if cel is CelTileMap:
-			var tilemap_cel := cel as CelTileMap
-			var offset := Vector2i(offset_x, offset_y)
-			tilemap_cel.serialize_undo_data_source_image(resized, redo_data, undo_data, offset)
-		resized.add_data_to_dictionary(redo_data, cel_image)
-		cel_image.add_data_to_dictionary(undo_data)
+		var offset := Vector2i(offset_x, offset_y)
+		redo_data[cel] = {"offset": offset + cel.offset}
+		undo_data[cel] = {"offset": cel.offset}
 
 	general_do_and_undo_scale(width, height, redo_data, undo_data)
 
