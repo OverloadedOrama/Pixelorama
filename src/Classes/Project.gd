@@ -459,9 +459,14 @@ func deserialize(dict: Dictionary, zip_reader: ZIPReader = null, file: FileAcces
 			var cel_i := 0
 			for cel in frame.cels:
 				var layer := layers[cel_i]
+				var image_size := size
+				if cel.has("image_size"):
+					image_size = str_to_var(cel["image_size"])
 				match layer.get_layer_type():
 					Global.LayerTypes.PIXEL:
-						var image := _load_image_from_pxo(frame_i, cel_i, zip_reader, file)
+						var image := _load_image_from_pxo(
+							frame_i, cel_i, image_size, zip_reader, file
+						)
 						cels.append(PixelCel.new(image))
 					Global.LayerTypes.GROUP:
 						cels.append(GroupCel.new())
@@ -471,7 +476,9 @@ func deserialize(dict: Dictionary, zip_reader: ZIPReader = null, file: FileAcces
 							file.get_buffer(size.x * size.y * 4)
 						cels.append(layer.new_empty_cel())
 					Global.LayerTypes.TILEMAP:
-						var image := _load_image_from_pxo(frame_i, cel_i, zip_reader, file)
+						var image := _load_image_from_pxo(
+							frame_i, cel_i, image_size, zip_reader, file
+						)
 						var tileset_index = dict.layers[cel_i].tileset_index
 						var tileset := tilesets[tileset_index]
 						var new_cel := CelTileMap.new(tileset, image)
@@ -597,14 +604,16 @@ func _deserialize_metadata(object: Object, dict: Dictionary) -> void:
 ## If the pxo file is saved with Pixelorama version 1.0 and on,
 ## the [param zip_reader] is used to load the image. Otherwise, [param file] is used.
 func _load_image_from_pxo(
-	frame_i: int, cel_i: int, zip_reader: ZIPReader, file: FileAccess
+	frame_i: int, cel_i: int, image_size: Vector2i, zip_reader: ZIPReader, file: FileAccess
 ) -> ImageExtended:
 	var image: Image
 	var indices_data := PackedByteArray()
 	if is_instance_valid(zip_reader):  # For pxo files saved in 1.0+
 		var path := "image_data/frames/%s/layer_%s" % [frame_i + 1, cel_i + 1]
 		var image_data := zip_reader.read_file(path)
-		image = Image.create_from_data(size.x, size.y, false, get_image_format(), image_data)
+		image = Image.create_from_data(
+			image_size.x, image_size.y, false, get_image_format(), image_data
+		)
 		var indices_path := "image_data/frames/%s/indices_layer_%s" % [frame_i + 1, cel_i + 1]
 		if zip_reader.file_exists(indices_path):
 			indices_data = zip_reader.read_file(indices_path)

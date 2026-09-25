@@ -89,6 +89,12 @@ func blit_image_to_cel(source_image: Image) -> void:
 	image.convert_rgb_to_indexed()
 
 
+func serialize() -> Dictionary:
+	var dict := super()
+	dict["image_size"] = var_to_str(image.get_size())
+	return dict
+
+
 ## Reads data from a [param dict] [Dictionary], and uses them to add methods to [param undo_redo].
 func deserialize_undo_data(dict: Dictionary, undo_redo: UndoRedo, undo: bool) -> void:
 	if undo:
