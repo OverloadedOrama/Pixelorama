@@ -945,21 +945,31 @@ func center_cels(indices: Array, project := Global.current_project) -> void:
 
 
 func scale_project(width: int, height: int, interpolation: int) -> void:
+	var project := Global.current_project
+	var ratio_x := float(width) / float(project.size.x)
+	var ratio_y := float(height) / float(project.size.y)
 	var redo_data := {}
 	var undo_data := {}
 	var tilesets: Array[TileSetCustom] = []
-	for cel in Global.current_project.get_all_pixel_cels():
+	for cel in project.get_all_pixel_cels():
 		if not cel is PixelCel:
 			continue
 		var cel_image := (cel as PixelCel).get_image()
-		var sprite := resize_image(cel_image, width, height, interpolation) as ImageExtended
+		var new_width := cel_image.get_width() * ratio_x
+		var new_height := cel_image.get_height() * ratio_y
+		var sprite := resize_image(cel_image, new_width, new_height, interpolation) as ImageExtended
+		var new_offset := Vector2(cel.offset) * Vector2(ratio_x, ratio_y)
+
 		if cel is CelTileMap:
 			var tilemap_cel := cel as CelTileMap
 			var skip_tileset_undo := not tilesets.has(tilemap_cel.tileset)
 			tilemap_cel.serialize_undo_data_source_image(
-				sprite, redo_data, undo_data, Vector2i.ZERO, skip_tileset_undo, interpolation
+				sprite, redo_data, undo_data, new_offset, skip_tileset_undo, interpolation
 			)
 			tilesets.append(tilemap_cel.tileset)
+		else:
+			redo_data[cel] = {"offset": new_offset}
+			undo_data[cel] = {"offset": cel.offset}
 		sprite.add_data_to_dictionary(redo_data, cel_image)
 		cel_image.add_data_to_dictionary(undo_data)
 
