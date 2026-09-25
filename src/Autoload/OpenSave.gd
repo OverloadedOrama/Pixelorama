@@ -901,9 +901,7 @@ func open_image_at_cel(image: Image, layer_index := 0, frame_index := 0) -> void
 	if cel is CelTileMap:
 		undo_data[cel] = (cel as CelTileMap).serialize_undo_data()
 	cel_image.add_data_to_dictionary(undo_data)
-	cel_image.fill(0)
-	cel_image.blit_rect(image, Rect2i(Vector2i.ZERO, image.get_size()), Vector2i.ZERO)
-	cel_image.convert_rgb_to_indexed()
+	cel_image.copy_from_custom(image)
 	var redo_data := {}
 	if cel is CelTileMap:
 		(cel as CelTileMap).update_tilemap()
@@ -937,11 +935,7 @@ func open_image_as_new_frame(
 		var layer := project.layers[i]
 		if i == layer_index and layer is PixelLayer:
 			image.convert(project.get_image_format())
-			var cel_image := Image.create(
-				project_width, project_height, false, project.get_image_format()
-			)
-			cel_image.blit_rect(image, Rect2i(Vector2i.ZERO, image.get_size()), Vector2i.ZERO)
-			frame.cels.append(layer.new_cel_from_image(cel_image))
+			frame.cels.append(layer.new_cel_from_image(image))
 		else:
 			frame.cels.append(project.layers[i].new_empty_cel())
 	if not undo:
@@ -973,11 +967,7 @@ func open_image_as_new_layer(image: Image, file_name: String, frame_index := 0) 
 	for i in project.frames.size():
 		if i == frame_index:
 			image.convert(project.get_image_format())
-			var cel_image := Image.create(
-				project_width, project_height, false, project.get_image_format()
-			)
-			cel_image.blit_rect(image, Rect2i(Vector2i.ZERO, image.get_size()), Vector2i.ZERO)
-			cels.append(layer.new_cel_from_image(cel_image))
+			cels.append(layer.new_cel_from_image(image))
 		else:
 			cels.append(layer.new_empty_cel())
 
