@@ -1,8 +1,8 @@
 class_name AnimatableObject
 extends RefCounted
 
-signal keyframe_set(property_name)
-signal keyframe_unset(property_name)
+signal keyframe_set(property_name: String)
+signal keyframe_unset(property_name: String)
 
 const TRANS_CONSTANT := -1
 
@@ -120,6 +120,21 @@ func has_keyframes(property_name: String) -> bool:
 	if animated_params.has(property_name):
 		return animated_params[property_name].keys().size() != 0
 	return false
+
+
+func add_keyframe_undo_redo(
+	param_name: String,
+	frame_index: int,
+	project: Project,
+	value: Variant = get_params(frame_index)[param_name]
+) -> void:
+	var undo_redo := project.undo_redo
+	undo_redo.create_action("Add keyframe")
+	undo_redo.add_do_method(add_keyframe.bind(param_name, frame_index, project, value))
+	undo_redo.add_undo_method(delete_keyframe.bind(param_name, frame_index))
+	undo_redo.add_do_method(Global.undo_or_redo.bind(false))
+	undo_redo.add_undo_method(Global.undo_or_redo.bind(true))
+	undo_redo.commit_action()
 
 
 func add_keyframe(

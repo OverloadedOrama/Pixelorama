@@ -121,10 +121,15 @@ func recreate_timeline() -> void:
 	layer_element_tree.clear()
 	for child in track_container.get_children():
 		child.queue_free()
+	for connection in get_incoming_connections():
+		if connection.callable == _keyframe_changed:
+			connection.signal.disconnect(_keyframe_changed)
 	var root := layer_element_tree.create_item()
 	var layer_item := add_section(
 		current_layer.name, KeyframeAnimationTrack.TrackTypes.LAYER_EFFECT, root
 	)
+	current_layer.keyframe_set.connect(_keyframe_changed)
+	current_layer.keyframe_unset.connect(_keyframe_changed)
 	#region Add tracks for layer's animatable properties.
 	for param_name in current_layer.animated_params:
 		add_property(
@@ -133,6 +138,8 @@ func recreate_timeline() -> void:
 	#endregion
 	#region Add tracks for animatable objects.
 	for effect in current_layer.effects:
+		effect.keyframe_set.connect(_keyframe_changed)
+		effect.keyframe_unset.connect(_keyframe_changed)
 		var effect_item := add_section(
 			effect.name, KeyframeAnimationTrack.TrackTypes.LAYER_EFFECT, layer_item
 		)
@@ -211,6 +218,10 @@ func add_property(
 				frame_index, param_track, animation_dictionary, property
 			)
 			param_track.add_child(key_button)
+
+
+func _keyframe_changed(_param_name: String) -> void:
+	recreate_timeline()
 
 
 func _hide_extra_ui() -> void:
@@ -448,21 +459,10 @@ func add_effect_keyframe(anim_obj: AnimatableObject, frame_index: int, param_nam
 	var project := Global.current_project
 	var next_keyframe_id := project.next_keyframe_id
 	selected_keyframes = [next_keyframe_id]
-	var undo_redo := project.undo_redo
-	undo_redo.create_action("Add keyframe")
-	undo_redo.add_do_method(anim_obj.add_keyframe.bind(param_name, frame_index, project))
-	undo_redo.add_undo_method(anim_obj.delete_keyframe.bind(param_name, frame_index))
-	undo_redo.add_undo_method(unselect_keyframe.bind(next_keyframe_id))
-	undo_redo.add_do_method(recreate_timeline)
-	undo_redo.add_undo_method(recreate_timeline)
-	undo_redo.add_do_method(Global.undo_or_redo.bind(false))
-	undo_redo.add_undo_method(Global.undo_or_redo.bind(true))
-	undo_redo.commit_action()
+	anim_obj.add_keyframe_undo_redo(param_name, frame_index, project)
 
 
 func _on_keyframe_deleted(keyframe_id := -1) -> void:
-	var undo_redo := Global.current_project.undo_redo
-	undo_redo.create_action("Delete keyframe")
 	var keyframe_buttons: Array[KeyframeButton]
 	if keyframe_id == -1 or keyframe_id in selected_keyframes:
 		keyframe_buttons = get_selected_keyframe_buttons()
@@ -472,6 +472,8 @@ func _on_keyframe_deleted(keyframe_id := -1) -> void:
 			if kfb.keyframe_id == keyframe_id:
 				keyframe_buttons = [kfb]
 				break
+	var undo_redo := Global.current_project.undo_redo
+	undo_redo.create_action("Delete keyframe")
 	for key_button in keyframe_buttons:
 		var track := key_button.get_parent() as KeyframeAnimationTrack
 		var dict := key_button.dict
@@ -483,9 +485,6 @@ func _on_keyframe_deleted(keyframe_id := -1) -> void:
 		undo_redo.add_undo_method(
 			anim_obj.set_keyframe_data.bind(param_name, frame_index, old_dict)
 		)
-		undo_redo.add_do_method(unselect_keyframe.bind(key_button.keyframe_id))
-	undo_redo.add_do_method(recreate_timeline)
-	undo_redo.add_undo_method(recreate_timeline)
 	undo_redo.add_do_method(Global.undo_or_redo.bind(false))
 	undo_redo.add_undo_method(Global.undo_or_redo.bind(true))
 	undo_redo.commit_action()

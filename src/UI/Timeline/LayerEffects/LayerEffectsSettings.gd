@@ -182,7 +182,8 @@ func _create_effect_ui(layer: BaseLayer, effect: LayerEffect) -> void:
 		effect.param_properties,
 		parameter_vbox,
 		_set_parameter.bind(effect),
-		_load_parameter_texture.bind(effect)
+		_load_parameter_texture.bind(effect),
+		_on_keyframe_pressed.bind(effect)
 	)
 	var collapsible_button := parameter_vbox.get_button()
 	collapsible_button.set_script(LAYER_EFFECT_BUTTON)
@@ -310,6 +311,11 @@ func _load_parameter_texture(path: String, param: String, effect: LayerEffect) -
 		return
 	var image_tex := ImageTexture.create_from_image(image)
 	_set_parameter(image_tex, param, effect)
+
+
+func _on_keyframe_pressed(param: String, effect: LayerEffect) -> void:
+	var project := Global.current_project
+	effect.add_keyframe_undo_redo(param, project.current_frame, project, effect.params[param])
 
 
 func _on_enabled_button_toggled(button_pressed: bool) -> void:

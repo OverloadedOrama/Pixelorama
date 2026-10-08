@@ -46,7 +46,8 @@ static func create_ui_for_shader_uniforms(
 	param_properties: Dictionary,
 	parent_node: Control,
 	value_changed: Callable,
-	file_selected: Callable
+	file_selected: Callable,
+	on_keyframe_pressed := Callable()
 ) -> void:
 	var code := shader.code.split("\n")
 	var shader_metadata := get_shader_metadata(code)
@@ -60,7 +61,6 @@ static func create_ui_for_shader_uniforms(
 	# A Dictionary used to group together nodes
 	# under the same group_uniform. Currently only used for CurveTextures.
 	var group_nodes: Dictionary[String, Control] = {}
-	var color_button_hbox: HBoxContainer = null  # Used for RGBA buttons, if they exist.
 	var current_group := ""
 	for uniform in uniforms:
 		# Example uniform:
@@ -121,6 +121,7 @@ static func create_ui_for_shader_uniforms(
 				else:
 					params[u_name] = editor_node.value
 			hbox.add_child(editor_node)
+			create_keyframe_button(u_name, hbox, on_keyframe_pressed)
 			parent_node.add_child(hbox)
 		elif u_type == "vec2" or u_type == "ivec2" or u_type == "uvec2":
 			var label := Label.new()
@@ -148,6 +149,7 @@ static func create_ui_for_shader_uniforms(
 			hbox.add_child(vbox)
 			vbox.add_child(slider)
 			vbox.add_child(HSeparator.new())
+			create_keyframe_button(u_name, hbox, on_keyframe_pressed)
 			parent_node.add_child(hbox)
 		elif u_type == "vec4":
 			if "source_color" in u_hint:
@@ -168,6 +170,7 @@ static func create_ui_for_shader_uniforms(
 				var hbox := HBoxContainer.new()
 				hbox.add_child(label)
 				hbox.add_child(color_button)
+				create_keyframe_button(u_name, hbox, on_keyframe_pressed)
 				parent_node.add_child(hbox)
 		elif u_type == "mat3":
 			var label := Label.new()
@@ -187,6 +190,7 @@ static func create_ui_for_shader_uniforms(
 			var hbox := HBoxContainer.new()
 			hbox.add_child(label)
 			hbox.add_child(sliders)
+			create_keyframe_button(u_name, hbox, on_keyframe_pressed)
 			parent_node.add_child(hbox)
 		elif u_type == "sampler2D":
 			if u_name == "selection":
@@ -351,27 +355,16 @@ static func create_ui_for_shader_uniforms(
 					params, u_name, hbox, value_changed, parent_node, file_selected
 				)
 		elif u_type == "bool":
-			var button: BaseButton
-			if u_name in ["red", "green", "blue", "alpha"]:
-				button = Button.new()
-				button.text = u_name[0].to_upper()
-				button.toggle_mode = true
-				if is_instance_valid(color_button_hbox):
-					color_button_hbox.add_child(button)
-				else:
-					color_button_hbox = HBoxContainer.new()
-					color_button_hbox.add_child(button)
-					parent_node.add_child(color_button_hbox)
-			else:
-				button = CheckBox.new()
-				var label := Label.new()
-				label.text = humanized_u_name
-				label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-				button.text = "On"
-				var hbox := HBoxContainer.new()
-				hbox.add_child(label)
-				hbox.add_child(button)
-				parent_node.add_child(hbox)
+			var button := CheckBox.new()
+			var label := Label.new()
+			label.text = humanized_u_name
+			label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			button.text = "On"
+			var hbox := HBoxContainer.new()
+			hbox.add_child(label)
+			hbox.add_child(button)
+			create_keyframe_button(u_name, hbox, on_keyframe_pressed)
+			parent_node.add_child(hbox)
 			if u_value == "true":
 				button.button_pressed = true
 			if params.has(u_name):
@@ -476,6 +469,18 @@ void fragment() {
 	var shader := Shader.new()
 	shader.code = shader_code
 	return shader
+
+
+static func create_keyframe_button(
+	param_name: String, parent: Node, on_keyframe_pressed: Callable
+) -> void:
+	if on_keyframe_pressed.is_valid():
+		var keyframe_button := TextureButton.new()
+		keyframe_button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		keyframe_button.texture_normal = preload("uid://yhha3l44svgs")
+		keyframe_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+		keyframe_button.pressed.connect(on_keyframe_pressed.bind(param_name))
+		parent.add_child(keyframe_button)
 
 
 static func _vec2str_to_vector2(vec2: String) -> Vector2:
