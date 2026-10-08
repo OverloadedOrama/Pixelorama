@@ -1,4 +1,5 @@
-extends AcceptDialog
+class_name LayerFXPanel
+extends PanelContainer
 
 const LAYER_EFFECT_BUTTON = preload("res://src/UI/Timeline/LayerEffects/LayerEffectButton.gd")
 const DELETE_TEXTURE := preload("res://assets/graphics/misc/close.svg")
@@ -66,7 +67,6 @@ var category_submenus: Dictionary[String, PopupMenu] = {}
 
 
 func _ready() -> void:
-	get_ok_button().size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var effect_list_popup := effect_list.get_popup()
 	for i in effects.size():
 		_add_effect_to_list(i)
@@ -74,6 +74,7 @@ func _ready() -> void:
 		DirAccess.make_dir_recursive_absolute(OpenSave.SHADERS_DIRECTORY)
 	for file_name in DirAccess.get_files_at(OpenSave.SHADERS_DIRECTORY):
 		_load_shader_file(OpenSave.SHADERS_DIRECTORY.path_join(file_name))
+	Global.cel_switched.connect(_on_cel_switched)
 	OpenSave.shader_copied.connect(_load_shader_file)
 	effect_list_popup.index_pressed.connect(_on_effect_list_pressed.bind(effect_list_popup))
 
@@ -83,19 +84,14 @@ func _notification(what: int) -> void:
 		drag_highlight.hide()
 
 
-func _on_about_to_popup() -> void:
+func _on_cel_switched() -> void:
+	for child in effect_container.get_children():
+		child.queue_free()
 	var layer := Global.current_project.layers[Global.current_project.current_layer]
 	enabled_button.button_pressed = layer.effects_enabled
 	for effect in layer.effects:
 		if is_instance_valid(effect.shader):
 			_create_effect_ui(layer, effect)
-
-
-func _on_visibility_changed() -> void:
-	if not visible:
-		Global.dialog_open(false)
-		for child in effect_container.get_children():
-			child.queue_free()
 
 
 func _add_effect_to_list(i: int) -> void:
@@ -191,6 +187,7 @@ func _create_effect_ui(layer: BaseLayer, effect: LayerEffect) -> void:
 	var collapsible_button := parameter_vbox.get_button()
 	collapsible_button.set_script(LAYER_EFFECT_BUTTON)
 	collapsible_button.layer = layer
+	collapsible_button.parent_panel = self
 	collapsible_button.add_child(hbox)
 	hbox.anchor_left = 0.05
 	hbox.anchor_top = 0

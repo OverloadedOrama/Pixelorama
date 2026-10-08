@@ -14,7 +14,6 @@ enum LoopType { NO, CYCLE, PINGPONG }
 
 const FRAME_BUTTON_TSCN := preload("res://src/UI/Timeline/FrameButton.tscn")
 const ANIMATION_TAG_TSCN := preload("res://src/UI/Timeline/AnimationTagUI.tscn")
-const LAYER_FX_SCENE_PATH := "res://src/UI/Timeline/LayerEffects/LayerEffectsSettings.tscn"
 ## Do not let [member min_cel_size] go below 22, as this is the size of the layer icons.
 const CEL_MIN_SIZE_HARD_LIMIT := 22
 const CEL_MIN_SIZE_OFFSET := 15
@@ -37,12 +36,6 @@ var min_cel_size := 36:
 var max_cel_size := 144
 var past_above_canvas := true
 var future_above_canvas := true
-var layer_effect_settings: AcceptDialog:
-	get:
-		if not is_instance_valid(layer_effect_settings):
-			layer_effect_settings = load(LAYER_FX_SCENE_PATH).instantiate()
-			add_child(layer_effect_settings)
-		return layer_effect_settings
 var global_layer_visibility := true
 var global_layer_lock := false
 var global_layer_expand := true
@@ -61,7 +54,6 @@ var global_layer_expand := true
 @onready var move_up_layer := %MoveUpLayer as Button
 @onready var move_down_layer := %MoveDownLayer as Button
 @onready var merge_down_layer := %MergeDownLayer as Button
-@onready var layer_fx := %LayerFX as Button
 @onready var keyframe_timeline_button := %KeyframeTimelineButton as Button
 @onready var blend_modes_button := %BlendModes as OptionButton
 @onready var opacity_slider := %OpacitySlider as ValueSlider
@@ -1560,7 +1552,6 @@ func _toggle_layer_buttons() -> void:
 			or below_layer is AudioLayer
 		)
 	)
-	Global.disable_button(layer_fx, layer is AudioLayer)
 
 
 func project_changed() -> void:
@@ -1691,11 +1682,6 @@ func project_cel_removed(frame: int, layer: int) -> void:
 	var cel_hbox := cel_vbox.get_child(cel_vbox.get_child_count() - 1 - layer)
 	cel_hbox.get_child(frame).queue_free()
 	cel_hbox.remove_child(cel_hbox.get_child(frame))
-
-
-func _on_layer_fx_pressed() -> void:
-	layer_effect_settings.popup_centered_clamped()
-	Global.dialog_open(true)
 
 
 func _on_cel_size_slider_value_changed(value: float) -> void:

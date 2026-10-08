@@ -9,7 +9,6 @@
 [ext_resource type="Texture2D" uid="uid://d3gx4phcox58s" path="res://assets/graphics/layers/clone.png" id="7"]
 [ext_resource type="Texture2D" uid="uid://d1oxrkwndy5fi" path="res://assets/graphics/timeline/move_arrow.png" id="8"]
 [ext_resource type="PackedScene" uid="uid://yjhp0ssng2mp" path="res://src/UI/Nodes/Sliders/ValueSlider.tscn" id="9"]
-[ext_resource type="Texture2D" uid="uid://dt6cysvv1w77u" path="res://assets/graphics/layers/fx.png" id="9_yphnd"]
 [ext_resource type="Texture2D" uid="uid://ct8wn8m6x4m54" path="res://assets/graphics/misc/value_arrow.svg" id="10"]
 [ext_resource type="Texture2D" uid="uid://dyrkhxxg3kum1" path="res://assets/graphics/timeline/cel_based_timeline_button.png" id="10_wrt62"]
 [ext_resource type="Script" uid="uid://ckaphkalax7bh" path="res://src/UI/Timeline/FrameScrollContainer.gd" id="11"]
@@ -378,26 +377,6 @@ grow_vertical = 2
 size_flags_horizontal = 0
 size_flags_vertical = 0
 texture = ExtResource("5")
-stretch_mode = 3
-
-[node name="LayerFX" type="Button" parent="TimelineContainer/TimelineButtons/LayerTools/MarginContainer/LayerSettingsContainer/LayerButtons" unique_id=2109449771 groups=["UIButtons"]]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(24, 24)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 4
-mouse_default_cursor_shape = 2
-
-[node name="TextureRect" type="TextureRect" parent="TimelineContainer/TimelineButtons/LayerTools/MarginContainer/LayerSettingsContainer/LayerButtons/LayerFX" unique_id=1060388687]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-size_flags_horizontal = 0
-size_flags_vertical = 0
-texture = ExtResource("9_yphnd")
 stretch_mode = 3
 
 [node name="KeyframeTimelineButton" type="Button" parent="TimelineContainer/TimelineButtons/LayerTools/MarginContainer/LayerSettingsContainer/LayerButtons" unique_id=1561368505 groups=["UIButtons"]]
@@ -1158,7 +1137,6 @@ color = Color(0, 0.741176, 1, 0.501961)
 [connection signal="pressed" from="TimelineContainer/TimelineButtons/LayerTools/MarginContainer/LayerSettingsContainer/LayerButtons/MoveDownLayer" to="." method="change_layer_order" binds= [false]]
 [connection signal="pressed" from="TimelineContainer/TimelineButtons/LayerTools/MarginContainer/LayerSettingsContainer/LayerButtons/CloneLayer" to="." method="_on_CloneLayer_pressed"]
 [connection signal="pressed" from="TimelineContainer/TimelineButtons/LayerTools/MarginContainer/LayerSettingsContainer/LayerButtons/MergeDownLayer" to="." method="_on_MergeDownLayer_pressed"]
-[connection signal="pressed" from="TimelineContainer/TimelineButtons/LayerTools/MarginContainer/LayerSettingsContainer/LayerButtons/LayerFX" to="." method="_on_layer_fx_pressed"]
 [connection signal="pressed" from="TimelineContainer/TimelineButtons/LayerTools/MarginContainer/LayerSettingsContainer/LayerButtons/KeyframeTimelineButton" to="." method="_on_keyframe_timeline_button_pressed"]
 [connection signal="item_selected" from="TimelineContainer/TimelineButtons/LayerTools/MarginContainer/LayerSettingsContainer/BlendModes" to="." method="_on_blend_modes_item_selected"]
 [connection signal="pressed" from="TimelineContainer/TimelineButtons/VBoxContainer/AnimationToolsScrollContainer/AnimationTools/MarginContainer/AnimationButtons/FrameButtons/AddFrame" to="." method="add_frame"]
