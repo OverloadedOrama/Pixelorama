@@ -129,9 +129,17 @@ func add_keyframe_undo_redo(
 	value: Variant = get_params(frame_index)[param_name]
 ) -> void:
 	var undo_redo := project.undo_redo
-	undo_redo.create_action("Add keyframe")
-	undo_redo.add_do_method(add_keyframe.bind(param_name, frame_index, project, value))
-	undo_redo.add_undo_method(delete_keyframe.bind(param_name, frame_index))
+	if animated_params.has(param_name) and animated_params[param_name].has(frame_index):
+		var old_data: Dictionary = animated_params[param_name][frame_index]
+		var new_data := old_data.duplicate_deep()
+		new_data["value"] = value
+		undo_redo.create_action("Replace keyframe")
+		undo_redo.add_do_method(set_keyframe_data.bind(param_name, frame_index, new_data))
+		undo_redo.add_undo_method(set_keyframe_data.bind(param_name, frame_index, old_data))
+	else:
+		undo_redo.create_action("Add keyframe")
+		undo_redo.add_do_method(add_keyframe.bind(param_name, frame_index, project, value))
+		undo_redo.add_undo_method(delete_keyframe.bind(param_name, frame_index))
 	undo_redo.add_do_method(Global.undo_or_redo.bind(false))
 	undo_redo.add_undo_method(Global.undo_or_redo.bind(true))
 	undo_redo.commit_action()
@@ -145,14 +153,10 @@ func add_keyframe(
 	trans := Tween.TRANS_LINEAR,
 	ease_type := Tween.EASE_IN
 ) -> void:
-	if not animated_params.has(param_name):
-		animated_params[param_name] = {}
 	var id := project.next_keyframe_id
-	animated_params[param_name][frame_index] = {
-		"id": id, "value": value, "trans": trans, "ease": ease_type
-	}
+	var data := {"id": id, "value": value, "trans": trans, "ease": ease_type}
+	set_keyframe_data(param_name, frame_index, data)
 	project.next_keyframe_id += 1
-	keyframe_set.emit(param_name)
 
 
 func set_keyframe_data(param_name: String, frame_index: int, data: Dictionary) -> void:
