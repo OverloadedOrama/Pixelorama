@@ -57,6 +57,7 @@ var effects: Array[LayerEffect] = [
 	),
 	LayerEffect.new("Index Map", load("res://src/Shaders/Effects/IndexMap.gdshader"), "Color"),
 ]
+var current_layer: BaseLayer
 ## A dictionary that maps each category to a [PopupMenu].
 var category_submenus: Dictionary[String, PopupMenu] = {}
 
@@ -77,6 +78,8 @@ func _ready() -> void:
 	Global.cel_switched.connect(_on_cel_switched)
 	OpenSave.shader_copied.connect(_load_shader_file)
 	effect_list_popup.index_pressed.connect(_on_effect_list_pressed.bind(effect_list_popup))
+	await get_tree().process_frame
+	_on_cel_switched()
 
 
 func _notification(what: int) -> void:
@@ -85,9 +88,12 @@ func _notification(what: int) -> void:
 
 
 func _on_cel_switched() -> void:
+	var layer := Global.current_project.layers[Global.current_project.current_layer]
+	if layer == current_layer:
+		return
+	current_layer = layer
 	for child in effect_container.get_children():
 		child.queue_free()
-	var layer := Global.current_project.layers[Global.current_project.current_layer]
 	enabled_button.button_pressed = layer.effects_enabled
 	for effect in layer.effects:
 		if is_instance_valid(effect.shader):
