@@ -1,13 +1,14 @@
-extends Button
+class_name LayerEffectFoldable
+extends FoldableContainer
 
 var layer: BaseLayer
 var parent_panel: LayerFXPanel
 
-@onready var panel := get_parent().get_parent()
 
-
-func _get_drag_data(_position: Vector2) -> Variant:
-	return ["LayerEffect", panel.get_index()]
+func _get_drag_data(pos: Vector2) -> Variant:
+	if pos.y > 35:  # Only allow dragging from the title of the container.
+		return null
+	return ["LayerEffect", get_index()]
 
 
 func _can_drop_data(pos: Vector2, data) -> bool:
@@ -18,9 +19,9 @@ func _can_drop_data(pos: Vector2, data) -> bool:
 		parent_panel.drag_highlight.visible = false
 		return false
 
-	var effect_container := panel.get_parent()
+	var effect_container := get_parent()
 	var scroll_container := effect_container.get_parent() as ScrollContainer
-	var panel_index := panel.get_index()
+	var panel_index := get_index()
 	# Ensure that the target and its neighbors remain visible.
 	scroll_container.ensure_control_visible(self)
 	if pos.y > size.y / 2.0 and panel_index + 1 < effect_container.get_child_count():
@@ -46,10 +47,10 @@ func _drop_data(_pos: Vector2, data) -> void:
 	var drop_index: int = data[1]
 	var to_index: int  # the index where the LOWEST moved layer effect should end up
 	if _get_region_rect(0, 0.5).has_point(get_global_mouse_position()):  # Top region
-		to_index = panel.get_index()
+		to_index = get_index()
 	else:  # Bottom region
-		to_index = panel.get_index() + 1
-	if drop_index < panel.get_index():
+		to_index = get_index() + 1
+	if drop_index < get_index():
 		to_index -= 1
 	parent_panel.move_effect(layer, drop_index, to_index)
 

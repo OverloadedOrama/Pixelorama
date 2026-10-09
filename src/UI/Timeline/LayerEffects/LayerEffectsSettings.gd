@@ -1,7 +1,6 @@
 class_name LayerFXPanel
 extends PanelContainer
 
-const LAYER_EFFECT_BUTTON = preload("res://src/UI/Timeline/LayerEffects/LayerEffectButton.gd")
 const DELETE_TEXTURE := preload("res://assets/graphics/misc/close.svg")
 
 var effects: Array[LayerEffect] = [
@@ -163,15 +162,12 @@ func _on_effect_list_pressed(menu_item_index: int, menu: PopupMenu) -> void:
 
 
 func _create_effect_node(layer: BaseLayer, effect: LayerEffect) -> Node:
-	var panel_container := PanelContainer.new()
-	var hbox := HBoxContainer.new()
+	var foldable_container := LayerEffectFoldable.new()
+	foldable_container.title = effect.name
 	var enable_checkbox := CheckButton.new()
 	enable_checkbox.button_pressed = effect.enabled
 	enable_checkbox.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	enable_checkbox.toggled.connect(_enable_effect.bind(effect))
-	var label := Label.new()
-	label.text = effect.name
-	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var delete_button := TextureButton.new()
 	delete_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	delete_button.texture_normal = DELETE_TEXTURE
@@ -179,16 +175,15 @@ func _create_effect_node(layer: BaseLayer, effect: LayerEffect) -> Node:
 	delete_button.add_to_group(&"UIButtons")
 	delete_button.modulate = Global.modulate_icon_color
 	delete_button.pressed.connect(_delete_effect.bind(effect))
-	hbox.add_child(enable_checkbox)
-	hbox.add_child(label)
+	foldable_container.add_title_bar_control(enable_checkbox)
 	if layer is PixelLayer:
 		var apply_button := Button.new()
 		apply_button.text = "Apply"
 		apply_button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		apply_button.pressed.connect(_apply_effect.bind(layer, effect))
-		hbox.add_child(apply_button)
-	hbox.add_child(delete_button)
-	var parameter_vbox := CollapsibleContainer.new()
+		foldable_container.add_title_bar_control(apply_button)
+	foldable_container.add_title_bar_control(delete_button)
+	var parameter_vbox := VBoxContainer.new()
 	ShaderLoader.create_ui_for_shader_uniforms(
 		effect.shader,
 		effect.params,
@@ -198,18 +193,11 @@ func _create_effect_node(layer: BaseLayer, effect: LayerEffect) -> Node:
 		_load_parameter_texture.bind(effect),
 		_on_keyframe_pressed.bind(effect)
 	)
-	var collapsible_button := parameter_vbox.get_button()
-	collapsible_button.set_script(LAYER_EFFECT_BUTTON)
-	collapsible_button.layer = layer
-	collapsible_button.parent_panel = self
-	collapsible_button.add_child(hbox)
-	hbox.anchor_left = 0.05
-	hbox.anchor_top = 0
-	hbox.anchor_right = 0.99
-	hbox.anchor_bottom = 1
-	panel_container.add_child(parameter_vbox)
-	parameter_vbox.set_visible_children(false)
-	return panel_container
+	foldable_container.layer = layer
+	foldable_container.parent_panel = self
+	foldable_container.add_child(parameter_vbox)
+	foldable_container.fold()
+	return foldable_container
 
 
 func _add_effect_node(layer: BaseLayer, effect: LayerEffect, to_index := -1) -> void:
@@ -217,8 +205,6 @@ func _add_effect_node(layer: BaseLayer, effect: LayerEffect, to_index := -1) -> 
 	effect_container.add_child(node)
 	if to_index != -1:
 		effect_container.move_child(node, to_index)
-	var collapsible_button: Button = node.get_child(0).get_button()
-	collapsible_button.custom_minimum_size.y = collapsible_button.size.y + 4
 
 
 func _remove_effect_node(child_index := -1) -> void:
