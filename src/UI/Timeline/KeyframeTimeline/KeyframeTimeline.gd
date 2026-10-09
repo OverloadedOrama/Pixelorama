@@ -9,11 +9,14 @@ static var selected_keyframes: Array[int]
 var current_layer: BaseLayer:
 	set(value):
 		if is_instance_valid(current_layer):
-			if current_layer.effects_added_removed.is_connected(_on_effects_added_removed):
-				current_layer.effects_added_removed.disconnect(_on_effects_added_removed)
+			if current_layer.effect_added.is_connected(_on_effects_added_removed):
+				current_layer.effect_added.disconnect(_on_effects_added_removed)
+			if current_layer.effect_removed.is_connected(_on_effects_added_removed):
+				current_layer.effect_removed.disconnect(_on_effects_added_removed)
 		current_layer = value
 		recreate_timeline()
-		current_layer.effects_added_removed.connect(_on_effects_added_removed)
+		current_layer.effect_added.connect(_on_effects_added_removed)
+		current_layer.effect_removed.connect(_on_effects_added_removed)
 		await get_tree().process_frame
 		await get_tree().process_frame
 		keyframe_timeline_cursor.update_position()
@@ -88,7 +91,7 @@ func _on_cel_switched() -> void:
 	unselect_keyframe()
 
 
-func _on_effects_added_removed() -> void:
+func _on_effects_added_removed(_effect: LayerEffect) -> void:
 	# Await is needed so that the params get added to the layer effect.
 	await get_tree().process_frame
 	recreate_timeline()

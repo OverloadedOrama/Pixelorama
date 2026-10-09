@@ -6,7 +6,8 @@ extends AnimatableObject
 signal name_changed  ## Emits when [member name] is changed.
 signal visibility_changed  ## Emits when [member visible] is changed.
 signal locked_changed  ## Emits when [member locked] is changed.
-signal effects_added_removed  ## Emits when an effect is added or removed to/from [member effects].
+signal effect_added(effect: LayerEffect)  ## Emits when an effect is added to [member effects].
+signal effect_removed(effect: LayerEffect)  ## Emits when an effect is removed from [member effects]
 signal ui_color_changed  ## Emits when [member ui_color] is changed.
 
 ## All currently supported layer blend modes between two layers. The upper layer
@@ -310,8 +311,22 @@ func display_effects(cel: BaseCel, image_override: Image = null) -> Image:
 	return image
 
 
-func emit_effects_added_removed() -> void:
-	effects_added_removed.emit()
+func add_effect(effect: LayerEffect, effect_position := -1) -> void:
+	if effect_position == -1:
+		effects.append(effect)
+	else:
+		effects.insert(effect_position, effect)
+	effect_added.emit(effect)
+
+
+func remove_effect(effect: LayerEffect) -> void:
+	effects.erase(effect)
+	effect_removed.emit(effect)
+
+
+func move_effect(layer_effect: LayerEffect, effect_position: int) -> void:
+	remove_effect(layer_effect)
+	add_effect(layer_effect, effect_position)
 
 
 ## Returns the final color of the layer button,

@@ -97,7 +97,7 @@ func _on_cel_switched() -> void:
 	enabled_button.button_pressed = layer.effects_enabled
 	for effect in layer.effects:
 		if is_instance_valid(effect.shader):
-			_create_effect_ui(layer, effect)
+			_add_effect_node(layer, effect)
 
 
 func _add_effect_to_list(i: int) -> void:
@@ -131,31 +131,27 @@ func _load_shader_file(file_path: String) -> void:
 
 func _on_effect_list_pressed(menu_item_index: int, menu: PopupMenu) -> void:
 	var index: int = menu.get_item_metadata(menu_item_index)
-	var layer := Global.current_project.layers[Global.current_project.current_layer]
+	var project := Global.current_project
+	var layer := project.layers[project.current_layer]
 	var effect := effects[index].duplicate()
 	effect.layer = layer
-	Global.current_project.undo_redo.create_action("Add layer effect")
-	Global.current_project.undo_redo.add_do_method(func(): layer.effects.append(effect))
-	Global.current_project.undo_redo.add_do_method(layer.emit_effects_added_removed)
+	project.undo_redo.create_action("Add layer effect")
+	project.undo_redo.add_do_method(layer.add_effect.bind(effect))
+	project.undo_redo.add_do_method(_add_effect_node.bind(layer, effect))
 	# we may be a different layer during redo
-	Global.current_project.undo_redo.add_do_property(
-		Global.canvas, "mandatory_update_layers", [layer.index]
-	)
-	Global.current_project.undo_redo.add_do_method(Global.canvas.queue_redraw)
-	Global.current_project.undo_redo.add_do_method(Global.undo_or_redo.bind(false))
-	Global.current_project.undo_redo.add_undo_method(func(): layer.effects.erase(effect))
-	Global.current_project.undo_redo.add_undo_method(layer.emit_effects_added_removed)
+	project.undo_redo.add_do_property(Global.canvas, "mandatory_update_layers", [layer.index])
+	project.undo_redo.add_do_method(Global.canvas.queue_redraw)
+	project.undo_redo.add_do_method(Global.undo_or_redo.bind(false))
+	project.undo_redo.add_undo_method(layer.remove_effect.bind(effect))
+	project.undo_redo.add_undo_method(_remove_effect_node)
 	# we may be a different layer during undo
-	Global.current_project.undo_redo.add_undo_property(
-		Global.canvas, "mandatory_update_layers", [layer.index]
-	)
-	Global.current_project.undo_redo.add_undo_method(Global.canvas.queue_redraw)
-	Global.current_project.undo_redo.add_undo_method(Global.undo_or_redo.bind(true))
-	Global.current_project.undo_redo.commit_action()
-	_create_effect_ui(layer, effect)
+	project.undo_redo.add_undo_property(Global.canvas, "mandatory_update_layers", [layer.index])
+	project.undo_redo.add_undo_method(Global.canvas.queue_redraw)
+	project.undo_redo.add_undo_method(Global.undo_or_redo.bind(true))
+	project.undo_redo.commit_action()
 
 
-func _create_effect_ui(layer: BaseLayer, effect: LayerEffect) -> void:
+func _create_effect_node(layer: BaseLayer, effect: LayerEffect) -> Node:
 	var panel_container := PanelContainer.new()
 	var hbox := HBoxContainer.new()
 	var enable_checkbox := CheckButton.new()
@@ -201,9 +197,26 @@ func _create_effect_ui(layer: BaseLayer, effect: LayerEffect) -> void:
 	hbox.anchor_right = 0.99
 	hbox.anchor_bottom = 1
 	panel_container.add_child(parameter_vbox)
-	effect_container.add_child(panel_container)
 	parameter_vbox.set_visible_children(false)
+	return panel_container
+
+
+func _add_effect_node(layer: BaseLayer, effect: LayerEffect, to_index := -1) -> void:
+	var node := _create_effect_node(layer, effect)
+	effect_container.add_child(node)
+	if to_index != -1:
+		effect_container.move_child(node, to_index)
+	var collapsible_button: Button = node.get_child(0).get_button()
 	collapsible_button.custom_minimum_size.y = collapsible_button.size.y + 4
+
+
+func _remove_effect_node(child_index := -1) -> void:
+	effect_container.get_child(child_index).queue_free()
+
+
+func _move_effect_node(from_index: int, to_index: int) -> void:
+	var drop_panel := effect_container.get_child(from_index)
+	effect_container.move_child(drop_panel, to_index)
 
 
 func _enable_effect(button_pressed: bool, effect: LayerEffect) -> void:
@@ -212,9 +225,19 @@ func _enable_effect(button_pressed: bool, effect: LayerEffect) -> void:
 
 
 func move_effect(layer: BaseLayer, from_index: int, to_index: int) -> void:
+	var project := layer.project
 	var layer_effect := layer.effects[from_index]
-	layer.effects.remove_at(from_index)
-	layer.effects.insert(to_index, layer_effect)
+
+	project.undo_redo.create_action("Re-arrange layer effect")
+	project.undo_redo.add_do_method(layer.move_effect.bind(layer_effect, to_index))
+	project.undo_redo.add_do_method(_move_effect_node.bind(from_index, to_index))
+	project.undo_redo.add_do_method(Global.canvas.queue_redraw)
+	project.undo_redo.add_do_method(Global.undo_or_redo.bind(false))
+	project.undo_redo.add_undo_method(layer.move_effect.bind(layer_effect, from_index))
+	project.undo_redo.add_undo_method(_move_effect_node.bind(to_index, from_index))
+	project.undo_redo.add_undo_method(Global.canvas.queue_redraw)
+	project.undo_redo.add_undo_method(Global.undo_or_redo.bind(true))
+	project.undo_redo.commit_action()
 
 
 func _delete_effect(effect: LayerEffect) -> void:
@@ -222,20 +245,19 @@ func _delete_effect(effect: LayerEffect) -> void:
 	var project := layer.project
 	var index := layer.effects.find(effect)
 	project.undo_redo.create_action("Delete layer effect")
-	project.undo_redo.add_do_method(func(): layer.effects.erase(effect))
-	project.undo_redo.add_do_method(layer.emit_effects_added_removed)
+	project.undo_redo.add_do_method(layer.remove_effect.bind(effect))
+	project.undo_redo.add_do_method(_remove_effect_node.bind(index))
 	# we may be a different layer during redo
 	project.undo_redo.add_do_property(Global.canvas, "mandatory_update_layers", [layer.index])
 	project.undo_redo.add_do_method(Global.canvas.queue_redraw)
 	project.undo_redo.add_do_method(Global.undo_or_redo.bind(false))
-	project.undo_redo.add_undo_method(func(): layer.effects.insert(index, effect))
-	project.undo_redo.add_undo_method(layer.emit_effects_added_removed)
+	project.undo_redo.add_undo_method(layer.add_effect.bind(effect, index))
+	project.undo_redo.add_undo_method(_add_effect_node.bind(layer, effect, index))
 	# we may be a different layer during undo
 	project.undo_redo.add_undo_property(Global.canvas, "mandatory_update_layers", [layer.index])
 	project.undo_redo.add_undo_method(Global.canvas.queue_redraw)
 	project.undo_redo.add_undo_method(Global.undo_or_redo.bind(true))
 	project.undo_redo.commit_action()
-	effect_container.get_child(index).queue_free()
 
 
 func _apply_effect(layer: BaseLayer, effect: LayerEffect) -> void:
@@ -288,20 +310,19 @@ func _apply_effect(layer: BaseLayer, effect: LayerEffect) -> void:
 	# we may be on a different layer during undo/redo
 	project.undo_redo.add_do_property(Global.canvas, "mandatory_update_layers", layers_to_update)
 	project.undo_redo.add_undo_property(Global.canvas, "mandatory_update_layers", layers_to_update)
-	project.undo_redo.add_do_method(func(): layer.effects.erase(effect))
-	project.undo_redo.add_do_method(layer.emit_effects_added_removed)
+	project.undo_redo.add_do_method(layer.remove_effect.bind(effect))
+	project.undo_redo.add_do_method(_remove_effect_node.bind(index))
 	# we may be a different layer during redo
 	project.undo_redo.add_do_property(Global.canvas, "mandatory_update_layers", [layer.index])
 	project.undo_redo.add_do_method(Global.canvas.queue_redraw)
 	project.undo_redo.add_do_method(Global.undo_or_redo.bind(false))
-	project.undo_redo.add_undo_method(func(): layer.effects.insert(index, effect))
-	project.undo_redo.add_undo_method(layer.emit_effects_added_removed)
+	project.undo_redo.add_undo_method(layer.add_effect.bind(effect, index))
+	project.undo_redo.add_undo_method(_add_effect_node.bind(layer, effect, index))
 	# we may be a different layer during undo
 	project.undo_redo.add_undo_property(Global.canvas, "mandatory_update_layers", [layer.index])
 	project.undo_redo.add_undo_method(Global.canvas.queue_redraw)
 	project.undo_redo.add_undo_method(Global.undo_or_redo.bind(true))
 	project.undo_redo.commit_action()
-	effect_container.get_child(index).queue_free()
 
 
 func _set_parameter(value, param: String, effect: LayerEffect) -> void:

@@ -51,19 +51,7 @@ func _drop_data(_pos: Vector2, data) -> void:
 		to_index = panel.get_index() + 1
 	if drop_index < panel.get_index():
 		to_index -= 1
-	Global.current_project.undo_redo.create_action("Re-arrange layer effect")
-	Global.current_project.undo_redo.add_do_method(
-		parent_panel.move_effect.bind(layer, drop_index, to_index)
-	)
-	Global.current_project.undo_redo.add_do_method(Global.canvas.queue_redraw)
-	Global.current_project.undo_redo.add_do_method(Global.undo_or_redo.bind(false))
-	Global.current_project.undo_redo.add_undo_method(
-		parent_panel.move_effect.bind(layer, to_index, drop_index)
-	)
-	Global.current_project.undo_redo.add_undo_method(Global.canvas.queue_redraw)
-	Global.current_project.undo_redo.add_undo_method(Global.undo_or_redo.bind(true))
-	Global.current_project.undo_redo.commit_action()
-	panel.get_parent().move_child(panel.get_parent().get_child(drop_index), to_index)
+	parent_panel.move_effect(layer, drop_index, to_index)
 
 
 func _get_region_rect(y_begin: float, y_end: float) -> Rect2:
