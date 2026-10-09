@@ -1680,6 +1680,8 @@ func set_value_to_node(node: Control, value) -> void:
 		node.set_value_no_signal(value)
 	elif node is ColorPickerButton:
 		node.color = value
+	elif node is BasisSliders:
+		node.value = value
 	elif node is LineEdit or node is TextEdit:
 		node.text = value
 

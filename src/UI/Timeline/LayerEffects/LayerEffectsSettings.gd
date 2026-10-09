@@ -103,7 +103,7 @@ func _on_cel_switched() -> void:
 		for j in range(0, effect_param_container.get_child_count()):
 			var hbox := effect_param_container.get_child(j)
 			var param_node := hbox.get_child(1)
-			if param_node is Container:
+			if param_node is Container and not param_node is BasisSliders:
 				param_node = param_node.get_child(0)
 			if param_node.name in effect.animated_params:
 				var value = effect.get_params(frame_index)[param_node.name]
