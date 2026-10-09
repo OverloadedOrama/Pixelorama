@@ -434,18 +434,7 @@ func _update_keyframe_property_ui(dict: Dictionary, keyframe_id: int) -> void:
 	var trans_type: int = dict.get("trans", Tween.TRANS_LINEAR)
 	var ease_type: Tween.EaseType = dict.get("ease", Tween.EASE_IN)
 	var property_value_node := properties_grid_container.get_child(1)
-	if property_value_node is CheckBox:
-		property_value_node.set_pressed_no_signal(value)
-	elif property_value_node is ValueSlider:
-		property_value_node.set_value_no_signal_update_display(value)
-	elif property_value_node is ValueSliderV2:
-		property_value_node.set_value_no_signal(value)
-	elif property_value_node is ValueSliderV3:
-		property_value_node.set_value_no_signal(value)
-	elif property_value_node is ColorPickerButton:
-		property_value_node.color = value
-	elif property_value_node is LineEdit or property_value_node is TextEdit:
-		property_value_node.text = value
+	Global.set_value_to_node(property_value_node, value)
 	if properties_grid_container.has_node(^"TransTypeOptions"):
 		var trans_type_options := (
 			properties_grid_container.get_node(^"TransTypeOptions") as OptionButton

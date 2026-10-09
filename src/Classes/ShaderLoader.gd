@@ -7,7 +7,7 @@ const BASIS_SLIDERS_TSCN := preload("res://src/UI/Nodes/Sliders/BasisSliders.tsc
 const GRADIENT_EDIT_TSCN := preload("res://src/UI/Nodes/GradientEdit.tscn")
 const NOISE_GENERATOR := preload("res://src/UI/Nodes/NoiseGeneratorDialog.tscn")
 const UNIFORMS_TO_IGNORE: Array[String] = [
-	"PXO_time", "PXO_frame_index", "PXO_layer_index", "source_texture0"
+	"PXO_time", "PXO_frame_index", "PXO_layer_index", "source_texture0", "selection"
 ]
 
 static var dither_matrices: Array[DitherMatrix] = [
@@ -120,6 +120,7 @@ static func create_ui_for_shader_uniforms(
 					params[u_name] = editor_node.selected
 				else:
 					params[u_name] = editor_node.value
+			editor_node.name = u_name
 			hbox.add_child(editor_node)
 			create_keyframe_button(u_name, hbox, on_keyframe_pressed)
 			parent_node.add_child(hbox)
@@ -142,6 +143,7 @@ static func create_ui_for_shader_uniforms(
 				slider.value = params[u_name]
 			else:
 				params[u_name] = slider.value
+			slider.name = u_name
 			var hbox := HBoxContainer.new()
 			hbox.add_child(label)
 			var vbox := VBoxContainer.new()
@@ -164,6 +166,7 @@ static func create_ui_for_shader_uniforms(
 					color_button.color = params[u_name]
 				else:
 					params[u_name] = color_button.color
+				color_button.name = u_name
 				color_button.color_changed.connect(value_changed.bind(u_name))
 				color_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 				color_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
@@ -186,6 +189,7 @@ static func create_ui_for_shader_uniforms(
 				sliders.value = params[u_name]
 			else:
 				params[u_name] = sliders.value
+			sliders.name = u_name
 			sliders.value_changed.connect(value_changed.bind(u_name))
 			var hbox := HBoxContainer.new()
 			hbox.add_child(label)
@@ -193,8 +197,6 @@ static func create_ui_for_shader_uniforms(
 			create_keyframe_button(u_name, hbox, on_keyframe_pressed)
 			parent_node.add_child(hbox)
 		elif u_type == "sampler2D":
-			if u_name == "selection":
-				continue
 			if u_name == "palette_texture":
 				var palette := Palettes.current_palette
 				var palette_texture := ImageTexture.create_from_image(palette.convert_to_image())
@@ -288,6 +290,7 @@ static func create_ui_for_shader_uniforms(
 						var dither_tex := dither_matrices[index].texture
 						value_changed.call(dither_tex, u_name)
 				)
+				option_button.slider.name = u_name
 				for matrix in dither_matrices:
 					option_button.add_item(matrix.name)
 				if params.has(u_name):
@@ -371,6 +374,7 @@ static func create_ui_for_shader_uniforms(
 				button.button_pressed = params[u_name]
 			else:
 				params[u_name] = button.button_pressed
+			button.name = u_name
 			button.toggled.connect(value_changed.bind(u_name))
 			button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
@@ -609,6 +613,7 @@ static func _create_gradient_texture_ui(
 			gradient_edit.set_gradient_texture_1d(texture)
 	else:
 		params[u_name] = gradient_edit.texture
+	gradient_edit.name = u_name
 	# This needs to be call_deferred because GradientTexture2D gets updated next frame.
 	# Without this, the texture is purple.
 	value_changed.call_deferred(gradient_edit.texture, u_name)
@@ -629,6 +634,7 @@ static func _create_curve_texture_ui(
 	else:
 		curve_edit.set_default_curve()
 		params[u_name] = CurveEdit.to_texture(curve_edit.curve)
+	curve_edit.name = u_name
 	curve_edit.value_changed.connect(
 		func(curve: Curve): value_changed.call(CurveEdit.to_texture(curve), u_name)
 	)

@@ -61,9 +61,9 @@ var current_layer: BaseLayer
 ## A dictionary that maps each category to a [PopupMenu].
 var category_submenus: Dictionary[String, PopupMenu] = {}
 
-@onready var enabled_button: CheckButton = $VBoxContainer/HBoxContainer/EnabledButton
-@onready var effect_list: MenuButton = $VBoxContainer/HBoxContainer/EffectList
-@onready var effect_container: VBoxContainer = $VBoxContainer/ScrollContainer/EffectContainer
+@onready var enabled_button: CheckButton = %EnabledButton
+@onready var effect_list: MenuButton = $MarginContainer/VBoxContainer/HBoxContainer/EffectList
+@onready var effect_container: VBoxContainer = %EffectContainer
 @onready var drag_highlight: ColorRect = $DragHighlight
 
 
@@ -89,15 +89,26 @@ func _notification(what: int) -> void:
 
 func _on_cel_switched() -> void:
 	var layer := Global.current_project.layers[Global.current_project.current_layer]
-	if layer == current_layer:
-		return
+	if layer != current_layer:
+		for child in effect_container.get_children():
+			child.queue_free()
+		enabled_button.button_pressed = layer.effects_enabled
+		for effect in layer.effects:
+			if is_instance_valid(effect.shader):
+				_add_effect_node(layer, effect)
 	current_layer = layer
-	for child in effect_container.get_children():
-		child.queue_free()
-	enabled_button.button_pressed = layer.effects_enabled
-	for effect in layer.effects:
-		if is_instance_valid(effect.shader):
-			_add_effect_node(layer, effect)
+	var frame_index := Global.current_project.current_frame
+	for i in layer.effects.size():
+		var effect := layer.effects[i]
+		var effect_param_container := effect_container.get_child(i).get_child(0)
+		for j in range(0, effect_param_container.get_child_count()):
+			var hbox := effect_param_container.get_child(j)
+			var param_node := hbox.get_child(1)
+			if param_node is Container:
+				param_node = param_node.get_child(0)
+			if param_node.name in effect.animated_params:
+				var value = effect.get_params(frame_index)[param_node.name]
+				Global.set_value_to_node(param_node, value)
 
 
 func _add_effect_to_list(i: int) -> void:
@@ -333,7 +344,7 @@ func _set_parameter(value, param: String, effect: LayerEffect) -> void:
 func _load_parameter_texture(path: String, param: String, effect: LayerEffect) -> void:
 	var image := Image.new()
 	image.load(path)
-	if !image:
+	if not image:
 		print("Error loading texture")
 		return
 	var image_tex := ImageTexture.create_from_image(image)

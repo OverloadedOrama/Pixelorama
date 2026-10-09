@@ -7,29 +7,34 @@ offset_right = 600.0
 offset_bottom = 400.0
 script = ExtResource("1_h6h7b")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=448097141]
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1675162099]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer" unique_id=448097141]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer" unique_id=1915915671]
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer" unique_id=1915915671]
 layout_mode = 2
 
-[node name="EnabledButton" type="CheckButton" parent="VBoxContainer/HBoxContainer" unique_id=897746385]
+[node name="EnabledButton" type="CheckButton" parent="MarginContainer/VBoxContainer/HBoxContainer" unique_id=897746385]
+unique_name_in_owner = true
 layout_mode = 2
 mouse_default_cursor_shape = 2
 text = "Enabled"
 
-[node name="EffectList" type="MenuButton" parent="VBoxContainer/HBoxContainer" unique_id=1311206621]
+[node name="EffectList" type="MenuButton" parent="MarginContainer/VBoxContainer/HBoxContainer" unique_id=1311206621]
 layout_mode = 2
 size_flags_horizontal = 10
 mouse_default_cursor_shape = 2
 text = "Add effect"
 
-[node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer" unique_id=1286174939]
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/VBoxContainer" unique_id=1286174939]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="EffectContainer" type="VBoxContainer" parent="VBoxContainer/ScrollContainer" unique_id=1684614019]
+[node name="EffectContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/ScrollContainer" unique_id=1684614019]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -40,4 +45,4 @@ layout_mode = 2
 mouse_filter = 2
 color = Color(0, 0.741176, 1, 0.501961)
 
-[connection signal="toggled" from="VBoxContainer/HBoxContainer/EnabledButton" to="." method="_on_enabled_button_toggled"]
+[connection signal="toggled" from="MarginContainer/VBoxContainer/HBoxContainer/EnabledButton" to="." method="_on_enabled_button_toggled"]
