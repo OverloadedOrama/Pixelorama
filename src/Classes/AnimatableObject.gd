@@ -4,7 +4,7 @@ extends RefCounted
 signal keyframe_set(property_name: String)
 signal keyframe_unset(property_name: String)
 
-const TRANS_CONSTANT := -1
+const TRANS_CONSTANT := 999
 
 ## These are the default values for the animation calculator to fall back on when a keyframe is
 ## not found.
