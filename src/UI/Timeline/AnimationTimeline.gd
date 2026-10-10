@@ -1362,11 +1362,19 @@ func _on_opacity_slider_value_changed(value: float) -> void:
 
 		project.undo_redo.commit_action()
 	else:
-		for idx_pair in Global.current_project.selected_cels:
-			var layer := Global.current_project.layers[idx_pair[1]]
+		for idx_pair in project.selected_cels:
+			var layer := project.layers[idx_pair[1]]
 			layer.opacity = new_opacity
 			Global.canvas.queue_redraw()
 			_update_layer_settings_ui()
+
+
+func _on_opacity_keyframe_button_pressed() -> void:
+	var project := Global.current_project
+	for idx_pair in project.selected_cels:
+		var frame_idx: int = idx_pair[0]
+		var layer := project.layers[idx_pair[1]]
+		layer.add_keyframe_undo_redo("opacity", frame_idx, project, layer.opacity)
 
 
 func _on_timeline_settings_close_requested() -> void:
@@ -1434,20 +1442,23 @@ func _cel_switched() -> void:
 	_toggle_frame_buttons()
 	_toggle_layer_buttons()
 	_fill_blend_modes_option_button()
-	_update_layer_settings_ui()
+	_update_layer_settings_ui(true)
 	var project := Global.current_project
 	frame_scroll_container.ensure_control_visible(frame_hbox.get_child(project.current_frame))
 	var layer_index := project.layers.size() - project.current_layer - 1
 	timeline_scroll.ensure_control_visible(layer_vbox.get_child(layer_index))
 
 
-func _update_layer_settings_ui() -> void:
+func _update_layer_settings_ui(animated_opacity := false) -> void:
 	var project := Global.current_project
 	var layer := project.layers[project.current_layer]
 	# Temporarily disconnect it in order to prevent layer opacity changing
 	# on different layers, or while undoing.
 	opacity_slider.value_changed.disconnect(_on_opacity_slider_value_changed)
-	opacity_slider.value = layer.opacity * 100
+	var opacity := layer.opacity
+	if animated_opacity:
+		opacity = layer.get_opacity(project.current_frame)
+	opacity_slider.value = opacity * 100
 	opacity_slider.value_changed.connect(_on_opacity_slider_value_changed)
 	var blend_mode_index := blend_modes_button.get_item_index(layer.blend_mode)
 	blend_modes_button.selected = blend_mode_index
@@ -1525,7 +1536,6 @@ func _toggle_layer_buttons() -> void:
 	var layer := project.layers[project.current_layer]
 	var child_count := layer.get_child_count(true)
 
-	opacity_slider.editable = not layer.has_keyframes("opacity")
 	Global.disable_button(
 		remove_layer, layer.is_locked_in_hierarchy() or project.layers.size() == child_count + 1
 	)

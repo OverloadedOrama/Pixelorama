@@ -483,6 +483,7 @@ static func create_keyframe_button(
 		keyframe_button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		keyframe_button.texture_normal = preload("uid://yhha3l44svgs")
 		keyframe_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+		keyframe_button.tooltip_text = "Animate property."
 		keyframe_button.pressed.connect(on_keyframe_pressed.bind(param_name))
 		parent.add_child(keyframe_button)
 
