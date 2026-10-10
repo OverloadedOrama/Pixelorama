@@ -130,6 +130,10 @@ func _ready() -> void:
 	# Makes sure that the frame and tag scroll bars are in the right place:
 	layer_vbox.emit_signal.call_deferred("resized")
 	drag_highlight.visibility_changed.connect(clear_highlight)
+	await get_tree().process_frame
+	var layer := Global.current_project.layers[Global.current_project.current_layer]
+	layer.keyframe_set.connect(_on_layer_keyframe_changed)
+	layer.keyframe_unset.connect(_on_layer_keyframe_changed)
 
 
 func _notification(what: int) -> void:
@@ -1423,23 +1427,27 @@ func _cel_switched() -> void:
 	for layer_button in layer_vbox.get_children():
 		layer_button.button_pressed = false  # Unpress all layer buttons
 
+	for connection in get_incoming_connections():
+		if connection.callable == _on_layer_keyframe_changed:
+			connection.signal.disconnect(_on_layer_keyframe_changed)
+
 	for cel in Global.current_project.selected_cels:  # Press selected buttons
-		var frame: int = cel[0]
-		var layer: int = cel[1]
-		if frame < frame_hbox.get_child_count():
-			var frame_button: BaseButton = frame_hbox.get_child(frame)
+		var frame_index: int = cel[0]
+		var layer_index: int = cel[1]
+		if frame_index < frame_hbox.get_child_count():
+			var frame_button: BaseButton = frame_hbox.get_child(frame_index)
 			frame_button.button_pressed = true  # Press selected frame buttons
 
 		var layer_vbox_child_count: int = layer_vbox.get_child_count()
-		if layer < layer_vbox_child_count:
-			var layer_button = layer_vbox.get_child(layer_vbox_child_count - 1 - layer)
+		if layer_index < layer_vbox_child_count:
+			var layer_button = layer_vbox.get_child(layer_vbox_child_count - 1 - layer_index)
 			layer_button.button_pressed = true  # Press selected layer buttons
 
 		var cel_vbox_child_count: int = cel_vbox.get_child_count()
-		if layer < cel_vbox_child_count:
-			var cel_hbox: Container = cel_vbox.get_child(cel_vbox_child_count - 1 - layer)
-			if frame < cel_hbox.get_child_count():
-				var cel_button: BaseButton = cel_hbox.get_child(frame)
+		if layer_index < cel_vbox_child_count:
+			var cel_hbox: Container = cel_vbox.get_child(cel_vbox_child_count - 1 - layer_index)
+			if frame_index < cel_hbox.get_child_count():
+				var cel_button: BaseButton = cel_hbox.get_child(frame_index)
 				cel_button.button_pressed = true  # Press selected cel buttons
 	_toggle_frame_buttons()
 	_toggle_layer_buttons()
@@ -1447,8 +1455,11 @@ func _cel_switched() -> void:
 	_update_layer_settings_ui(true)
 	var project := Global.current_project
 	frame_scroll_container.ensure_control_visible(frame_hbox.get_child(project.current_frame))
-	var layer_index := project.layers.size() - project.current_layer - 1
-	timeline_scroll.ensure_control_visible(layer_vbox.get_child(layer_index))
+	var layer_button_index := project.layers.size() - project.current_layer - 1
+	timeline_scroll.ensure_control_visible(layer_vbox.get_child(layer_button_index))
+	var layer := project.layers[project.current_layer]
+	layer.keyframe_set.connect(_on_layer_keyframe_changed)
+	layer.keyframe_unset.connect(_on_layer_keyframe_changed)
 
 
 func _update_layer_settings_ui(animated_opacity := false) -> void:
@@ -1501,6 +1512,12 @@ func update_cel_button_ui(layer_index: int) -> void:
 		cel_hbox.get_child(f).layer = layer_index
 		cel_hbox.get_child(f).frame = f
 		cel_hbox.get_child(f).button_setup()
+
+
+## Needed for the keyframe button to update visually with undo/redo.
+func _on_layer_keyframe_changed(param_name: String) -> void:
+	if param_name == "opacity":
+		_update_layer_settings_ui(true)
 
 
 func _on_animation_tags_changed() -> void:
