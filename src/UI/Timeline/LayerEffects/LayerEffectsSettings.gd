@@ -100,33 +100,33 @@ func _on_cel_switched() -> void:
 				_add_effect_node(layer, effect)
 
 	current_layer = layer
-	var frame_index := Global.current_project.current_frame
 
 	for i in layer.effects.size():
 		var effect := layer.effects[i]
 		effect.keyframe_set.connect(_on_keyframe_changed.bind(effect, i))
 		effect.keyframe_unset.connect(_on_keyframe_changed.bind(effect, i))
 		var effect_param_container := effect_container.get_child(i).get_child(0)
-		for j in range(0, effect_param_container.get_child_count()):
-			var hbox := effect_param_container.get_child(j)
-			var param_node := hbox.get_child(1)
-			if param_node is Container and not param_node is BasisSliders:
-				param_node = param_node.get_child(0)
-			var keyframe_button: Node
-			if hbox.get_child_count() > 2:
-				keyframe_button = hbox.get_child(2)
-			if param_node.name in effect.animated_params:
-				var value = effect.get_params(frame_index)[param_node.name]
-				Global.set_value_to_node(param_node, value)
-				effect.params[param_node.name] = value
-				if keyframe_button is TextureButton:
-					if effect.animated_params[param_node.name].size() > 0:
-						if effect.animated_params[param_node.name].has(frame_index):
-							keyframe_button.texture_normal = KeyframeButton.KEYFRAME_ICON
-						else:
-							keyframe_button.texture_normal = ShaderLoader.KEYFRAME_HOLLOW_ICON
-					else:
-						keyframe_button.texture_normal = ShaderLoader.KEYFRAME_SMALL_ICON
+		_set_proper_keyframe_texture(effect, effect_param_container)
+
+
+func _set_proper_keyframe_texture(effect: LayerEffect, effect_param_container: Control) -> void:
+	var frame_index := Global.current_project.current_frame
+	for j in range(0, effect_param_container.get_child_count()):
+		var hbox := effect_param_container.get_child(j)
+		var param_node := hbox.get_child(1)
+		if param_node is Container and not param_node is BasisSliders:
+			param_node = param_node.get_child(0)
+		var keyframe_button: Node
+		if hbox.get_child_count() > 2:
+			keyframe_button = hbox.get_child(2)
+		if param_node.name in effect.animated_params:
+			var value = effect.get_params(frame_index)[param_node.name]
+			Global.set_value_to_node(param_node, value)
+			effect.params[param_node.name] = value
+			if keyframe_button is TextureButton:
+				keyframe_button.texture_normal = ShaderLoader.get_proper_keyframe_texture(
+					effect, param_node.name
+				)
 
 
 func _add_effect_to_list(i: int) -> void:
@@ -216,6 +216,7 @@ func _create_effect_node(layer: BaseLayer, effect: LayerEffect) -> Node:
 	foldable_container.parent_panel = self
 	foldable_container.add_child(parameter_vbox)
 	foldable_container.fold()
+	_set_proper_keyframe_texture(effect, parameter_vbox)
 	return foldable_container
 
 
@@ -367,7 +368,6 @@ func _on_keyframe_pressed(param: String, effect: LayerEffect) -> void:
 
 ## Needed for the keyframe buttons to update visually with undo/redo.
 func _on_keyframe_changed(param_name: String, effect: LayerEffect, effect_index: int) -> void:
-	var frame_index := Global.current_project.current_frame
 	var effect_param_container := effect_container.get_child(effect_index).get_child(0)
 	for i in range(0, effect_param_container.get_child_count()):
 		var hbox := effect_param_container.get_child(i)
@@ -381,14 +381,9 @@ func _on_keyframe_changed(param_name: String, effect: LayerEffect, effect_index:
 		var keyframe_button = hbox.get_child(2)
 		if keyframe_button is not TextureButton:
 			continue
-		if param_node.name in effect.animated_params:
-			if effect.animated_params[param_node.name].size() > 0:
-				if effect.animated_params[param_node.name].has(frame_index):
-					keyframe_button.texture_normal = KeyframeButton.KEYFRAME_ICON
-				else:
-					keyframe_button.texture_normal = ShaderLoader.KEYFRAME_HOLLOW_ICON
-			else:
-				keyframe_button.texture_normal = ShaderLoader.KEYFRAME_SMALL_ICON
+		keyframe_button.texture_normal = ShaderLoader.get_proper_keyframe_texture(
+			effect, param_node.name
+		)
 
 
 func _on_enabled_button_toggled(button_pressed: bool) -> void:

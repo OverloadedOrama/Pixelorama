@@ -1472,13 +1472,9 @@ func _update_layer_settings_ui(animated_opacity := false) -> void:
 	if animated_opacity:
 		opacity = layer.get_opacity(project.current_frame)
 		layer.opacity = opacity
-		if layer.animated_params.has("opacity") and layer.animated_params["opacity"].size() > 0:
-			if layer.animated_params["opacity"].has(project.current_frame):
-				opacity_keyframe_button.texture_normal = KeyframeButton.KEYFRAME_ICON
-			else:
-				opacity_keyframe_button.texture_normal = ShaderLoader.KEYFRAME_HOLLOW_ICON
-		else:
-			opacity_keyframe_button.texture_normal = ShaderLoader.KEYFRAME_SMALL_ICON
+		opacity_keyframe_button.texture_normal = ShaderLoader.get_proper_keyframe_texture(
+			layer, "opacity"
+		)
 	opacity_slider.value = opacity * 100
 	opacity_slider.value_changed.connect(_on_opacity_slider_value_changed)
 	var blend_mode_index := blend_modes_button.get_item_index(layer.blend_mode)

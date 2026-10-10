@@ -496,6 +496,20 @@ static func create_keyframe_button(
 		parent.add_child(keyframe_button)
 
 
+static func get_proper_keyframe_texture(
+	animatable: AnimatableObject,
+	param_name: String,
+	frame_index := Global.current_project.current_frame
+) -> Texture2D:
+	if param_name in animatable.animated_params:
+		if animatable.animated_params[param_name].size() > 0:
+			if animatable.animated_params[param_name].has(frame_index):
+				return KeyframeButton.KEYFRAME_ICON
+			else:
+				return ShaderLoader.KEYFRAME_HOLLOW_ICON
+	return ShaderLoader.KEYFRAME_SMALL_ICON
+
+
 static func _vec2str_to_vector2(vec2: String) -> Vector2:
 	vec2 = vec2.replace("uvec2", "vec2")
 	vec2 = vec2.replace("ivec2", "vec2")
