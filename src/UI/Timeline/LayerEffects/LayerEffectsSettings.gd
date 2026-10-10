@@ -105,9 +105,21 @@ func _on_cel_switched() -> void:
 			var param_node := hbox.get_child(1)
 			if param_node is Container and not param_node is BasisSliders:
 				param_node = param_node.get_child(0)
+			var keyframe_button: Node
+			if hbox.get_child_count() > 2:
+				keyframe_button = hbox.get_child(2)
 			if param_node.name in effect.animated_params:
 				var value = effect.get_params(frame_index)[param_node.name]
 				Global.set_value_to_node(param_node, value)
+				effect.params[param_node.name] = value
+				if keyframe_button is TextureButton:
+					if effect.animated_params[param_node.name].size() > 0:
+						if effect.animated_params[param_node.name].has(frame_index):
+							keyframe_button.texture_normal = KeyframeButton.KEYFRAME_ICON
+						else:
+							keyframe_button.texture_normal = ShaderLoader.KEYFRAME_HOLLOW_ICON
+					else:
+						keyframe_button.texture_normal = ShaderLoader.KEYFRAME_SMALL_ICON
 
 
 func _add_effect_to_list(i: int) -> void:

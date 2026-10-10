@@ -57,6 +57,7 @@ var global_layer_expand := true
 @onready var keyframe_timeline_button := %KeyframeTimelineButton as Button
 @onready var blend_modes_button := %BlendModes as OptionButton
 @onready var opacity_slider := %OpacitySlider as ValueSlider
+@onready var opacity_keyframe_button := %OpacityKeyframeButton as TextureButton
 @onready var frame_scroll_container := %FrameScrollContainer as Control
 @onready var timeline_scroll := %TimelineScroll as ScrollContainer
 @onready var frame_scroll_bar := %FrameScrollBar as HScrollBar
@@ -1375,6 +1376,7 @@ func _on_opacity_keyframe_button_pressed() -> void:
 		var frame_idx: int = idx_pair[0]
 		var layer := project.layers[idx_pair[1]]
 		layer.add_keyframe_undo_redo("opacity", frame_idx, project, layer.opacity)
+	opacity_keyframe_button.texture_normal = KeyframeButton.KEYFRAME_ICON
 
 
 func _on_timeline_settings_close_requested() -> void:
@@ -1458,6 +1460,14 @@ func _update_layer_settings_ui(animated_opacity := false) -> void:
 	var opacity := layer.opacity
 	if animated_opacity:
 		opacity = layer.get_opacity(project.current_frame)
+		layer.opacity = opacity
+		if layer.animated_params.has("opacity") and layer.animated_params["opacity"].size() > 0:
+			if layer.animated_params["opacity"].has(project.current_frame):
+				opacity_keyframe_button.texture_normal = KeyframeButton.KEYFRAME_ICON
+			else:
+				opacity_keyframe_button.texture_normal = ShaderLoader.KEYFRAME_HOLLOW_ICON
+		else:
+			opacity_keyframe_button.texture_normal = ShaderLoader.KEYFRAME_SMALL_ICON
 	opacity_slider.value = opacity * 100
 	opacity_slider.value_changed.connect(_on_opacity_slider_value_changed)
 	var blend_mode_index := blend_modes_button.get_item_index(layer.blend_mode)

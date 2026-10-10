@@ -6,6 +6,9 @@ const VALUE_SLIDER_V3_TSCN := preload("res://src/UI/Nodes/Sliders/ValueSliderV3.
 const BASIS_SLIDERS_TSCN := preload("res://src/UI/Nodes/Sliders/BasisSliders.tscn")
 const GRADIENT_EDIT_TSCN := preload("res://src/UI/Nodes/GradientEdit.tscn")
 const NOISE_GENERATOR := preload("res://src/UI/Nodes/NoiseGeneratorDialog.tscn")
+const KEYFRAME_SMALL_ICON := preload("uid://vnvueq4spwm1")
+const KEYFRAME_HOLLOW_ICON := preload("uid://btgxcvqnlgcqo")
+
 const UNIFORMS_TO_IGNORE: Array[String] = [
 	"PXO_time", "PXO_frame_index", "PXO_layer_index", "source_texture0", "selection"
 ]
@@ -481,10 +484,15 @@ static func create_keyframe_button(
 	if on_keyframe_pressed.is_valid():
 		var keyframe_button := TextureButton.new()
 		keyframe_button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		keyframe_button.texture_normal = preload("uid://yhha3l44svgs")
+		keyframe_button.custom_minimum_size.x = 16
+		keyframe_button.texture_normal = KEYFRAME_SMALL_ICON
+		keyframe_button.stretch_mode = TextureButton.STRETCH_KEEP_ASPECT_CENTERED
 		keyframe_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 		keyframe_button.tooltip_text = "Animate property."
 		keyframe_button.pressed.connect(on_keyframe_pressed.bind(param_name))
+		keyframe_button.pressed.connect(
+			func(): keyframe_button.texture_normal = KeyframeButton.KEYFRAME_ICON
+		)
 		parent.add_child(keyframe_button)
 
 
