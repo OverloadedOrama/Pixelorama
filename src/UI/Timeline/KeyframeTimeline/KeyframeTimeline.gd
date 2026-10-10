@@ -77,6 +77,9 @@ func _input(event: InputEvent) -> void:
 					continue
 				key_button.position.x = key_button.frame_index * frame_ui_size
 		keyframe_timeline_cursor.update_position()
+	if event.is_action_pressed(&"delete"):
+		_on_keyframe_deleted()
+		get_viewport().set_input_as_handled()
 
 
 func _on_cel_switched() -> void:
@@ -464,6 +467,8 @@ func _on_keyframe_deleted(keyframe_id := -1) -> void:
 			if kfb.keyframe_id == keyframe_id:
 				keyframe_buttons = [kfb]
 				break
+	if keyframe_buttons.is_empty():
+		return
 	var undo_redo := Global.current_project.undo_redo
 	undo_redo.create_action("Delete keyframe")
 	for key_button in keyframe_buttons:
