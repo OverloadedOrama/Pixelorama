@@ -2,6 +2,7 @@ class_name Canvas
 extends Node2D
 
 const CURSOR_SPEED_RATE := 6.0
+const LAYER_MATERIAL_SHADER := preload("uid://c8loosmqd7onc")
 
 var current_pixel := Vector2.ZERO
 var sprite_changed_this_frame := false  ## For optimization purposes
@@ -34,8 +35,8 @@ var layer_metadata_texture := ImageTexture.new()
 
 
 func _ready() -> void:
-	material.set_shader_parameter("layers", layer_texture_array)
-	material.set_shader_parameter("metadata", layer_metadata_texture)
+	#material.set_shader_parameter("layers", layer_texture_array)
+	#material.set_shader_parameter("metadata", layer_metadata_texture)
 	Global.project_created.connect(camera_zoom)
 	Global.project_about_to_switch.connect(_on_project_about_to_switch)
 	Global.project_switched.connect(_on_project_switched)
@@ -57,8 +58,8 @@ func _draw() -> void:
 		scale_tmp.x = -1
 	draw_set_transform(position_tmp, rotation, scale_tmp)
 	# Placeholder so we can have a material here
-	var image_to_draw := project.empty_image_texture
-	draw_texture(image_to_draw, Vector2.ZERO)
+	#var image_to_draw := project.empty_image_texture
+	#draw_texture(image_to_draw, Vector2.ZERO)
 	draw_layers(project_changed)
 	project_changed = false
 	if Global.onion_skinning:
@@ -176,6 +177,31 @@ func draw_layers(force_recreate := false) -> void:
 		or layer_texture_array.get_height() != project.size.y
 		or force_recreate
 	)
+
+	var lr := $LayerRenderer as SubViewport
+	lr.size = project.size
+	for child in lr.get_children():
+		child.queue_free()
+	for i in project.ordered_layers.size():
+		var layer := project.layers[i]
+		var current_cel := project.frames[project.current_frame].cels[i]
+		var cel_image := Image.new()
+		cel_image.copy_from(current_cel.get_image())
+		#get_canvas_cel_image(current_cel, layer, cel_image)
+		var sprite_2d := Sprite2D.new()
+		var mat := ShaderMaterial.new()
+		mat.shader = LAYER_MATERIAL_SHADER
+		mat.set_shader_parameter(&"current_blend_mode", layer.blend_mode)
+		sprite_2d.material = mat
+		sprite_2d.self_modulate.a = current_cel.get_final_opacity(layer, false)
+		sprite_2d.centered = false
+		sprite_2d.texture = ImageTexture.create_from_image(cel_image)
+		sprite_2d.offset = current_cel.offset
+		lr.add_child(sprite_2d)
+		draw_texture(lr.get_texture(), Vector2i.ZERO)
+	return
+
+
 	if recreate_texture_array:
 		var textures: Array[Image] = []
 		textures.resize(project.layers.size())
