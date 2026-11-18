@@ -2,7 +2,6 @@
 
 [ext_resource type="PackedScene" uid="uid://byu3rtoipuvoc" path="res://src/UI/ToolsPanel/Tools.tscn" id="1"]
 [ext_resource type="PackedScene" uid="uid://c546tskdu53j1" path="res://src/UI/Canvas/CanvasPreview.tscn" id="2"]
-[ext_resource type="Script" uid="uid://dta2gofr682t4" path="res://src/UI/Tabs.gd" id="3"]
 [ext_resource type="Script" uid="uid://cqx80356eubav" path="res://src/UI/Canvas/Rulers/VerticalRuler.gd" id="4"]
 [ext_resource type="PackedScene" uid="uid://3pmb60gpst7b" path="res://src/UI/Nodes/TransparentChecker.tscn" id="5"]
 [ext_resource type="Script" uid="uid://bs5pld0j5yvsk" path="res://src/UI/Canvas/Rulers/HorizontalRuler.gd" id="6"]
@@ -234,17 +233,6 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 0
 
-[node name="TabsContainer" type="PanelContainer" parent="DockableContainer/Main Canvas" unique_id=799763109]
-layout_mode = 2
-
-[node name="TabBar" type="TabBar" parent="DockableContainer/Main Canvas/TabsContainer" unique_id=1423914850]
-auto_translate_mode = 2
-layout_mode = 2
-tab_close_display_policy = 2
-max_tab_width = 256
-drag_to_rearrange_enabled = true
-script = ExtResource("3")
-
 [node name="HorizontalRuler" type="Button" parent="DockableContainer/Main Canvas" unique_id=278517062 node_paths=PackedStringArray("viewport_container", "camera") groups=["CanvasRulers"]]
 custom_minimum_size = Vector2(0, 16)
 clip_contents = true
@@ -386,9 +374,6 @@ layout_mode = 2
 
 [connection signal="item_rect_changed" from="DockableContainer/Main Canvas" to="." method="_on_main_canvas_item_rect_changed"]
 [connection signal="visibility_changed" from="DockableContainer/Main Canvas" to="." method="_on_main_canvas_visibility_changed"]
-[connection signal="active_tab_rearranged" from="DockableContainer/Main Canvas/TabsContainer/TabBar" to="DockableContainer/Main Canvas/TabsContainer/TabBar" method="_on_active_tab_rearranged"]
-[connection signal="tab_changed" from="DockableContainer/Main Canvas/TabsContainer/TabBar" to="DockableContainer/Main Canvas/TabsContainer/TabBar" method="_on_Tabs_tab_changed"]
-[connection signal="tab_close_pressed" from="DockableContainer/Main Canvas/TabsContainer/TabBar" to="DockableContainer/Main Canvas/TabsContainer/TabBar" method="_on_tab_close_pressed"]
 [connection signal="mouse_entered" from="DockableContainer/Main Canvas/HorizontalRuler" to="DockableContainer/Main Canvas/HorizontalRuler" method="_on_HorizontalRuler_mouse_entered"]
 [connection signal="pressed" from="DockableContainer/Main Canvas/HorizontalRuler" to="DockableContainer/Main Canvas/HorizontalRuler" method="_on_HorizontalRuler_pressed"]
 [connection signal="pressed" from="DockableContainer/Main Canvas/ViewportandVerticalRuler/VerticalRuler" to="DockableContainer/Main Canvas/ViewportandVerticalRuler/VerticalRuler" method="_on_VerticalRuler_pressed"]
