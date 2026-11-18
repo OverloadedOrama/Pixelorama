@@ -57,7 +57,7 @@ action = &"reset_colors_default"
 events = [SubResource("InputEventAction_nptxe")]
 
 [node name="ColorPicker" type="PanelContainer" unique_id=1282553206]
-custom_minimum_size = Vector2(32, 80)
+custom_minimum_size = Vector2(32, 220)
 offset_right = 312.0
 offset_bottom = 358.0
 script = ExtResource("1_r8ot0")
