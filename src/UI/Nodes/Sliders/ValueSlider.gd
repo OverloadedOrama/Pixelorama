@@ -205,15 +205,17 @@ func _gui_input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 
 
-func _setup_nodes() -> void:  ## Only called once on _ready()
+## Only called once on _ready().
+func _setup_nodes() -> void:
 	focus_mode = Control.FOCUS_NONE
 	_line_edit.alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_line_edit.anchor_right = 1
-	_line_edit.anchor_bottom = 1
+	_line_edit.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_line_edit.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_line_edit.focus_mode = Control.FOCUS_ALL
-	_line_edit.add_theme_stylebox_override("read_only", StyleBoxEmpty.new())
-	_line_edit.add_theme_stylebox_override("normal", StyleBoxEmpty.new())
+	var line_edit_style_box := StyleBoxEmpty.new()
+	line_edit_style_box.content_margin_top = 1
+	_line_edit.add_theme_stylebox_override("read_only", line_edit_style_box)
+	_line_edit.add_theme_stylebox_override("normal", line_edit_style_box)
 	_line_edit.text_submitted.connect(_on_line_edit_text_entered)
 	_line_edit.focus_entered.connect(_on_line_edit_focus_entered)
 	_line_edit.focus_exited.connect(_confirm_text)
