@@ -246,6 +246,7 @@ func _setup_file_menu() -> void:
 		"Open...": "open_file",
 		"Open last project...": "open_last_project",
 		"Recent projects": "",
+		"SEPARATOR_1": "",
 		"Save...": "save_file",
 		"Save as...": "save_file_as",
 		"Export...": "export_file",
@@ -685,6 +686,9 @@ func _set_menu_shortcut(
 	icon: Texture2D = null
 ) -> void:
 	if action.is_empty():
+		if text.begins_with("SEPARATOR"):
+			menu.add_separator("", index)
+			return
 		if is_check:
 			menu.add_check_item(text, index)
 		else:
