@@ -4,6 +4,7 @@
 [ext_resource type="Script" uid="uid://dlxqc0hc51xu4" path="res://src/Main.gd" id="2"]
 [ext_resource type="PackedScene" uid="uid://bsgwar3l6qtgv" path="res://src/UI/TopMenuContainer/TopMenuContainer.tscn" id="3"]
 [ext_resource type="PackedScene" uid="uid://c8dsi6ggkqa7a" path="res://src/UI/UI.tscn" id="4"]
+[ext_resource type="Script" uid="uid://dta2gofr682t4" path="res://src/UI/Tabs.gd" id="4_7lugs"]
 [ext_resource type="PackedScene" uid="uid://d1jyt8wleg8ft" path="res://src/UI/Buttons/PatternsPopup.tscn" id="5"]
 [ext_resource type="PackedScene" uid="uid://c5x85ysdouh4t" path="res://src/UI/Buttons/BrushesPopup.tscn" id="6"]
 [ext_resource type="PackedScene" uid="uid://cltlo2whtiejd" path="res://src/UI/Dialogs/SaveSpriteHTML5.tscn" id="8"]
@@ -37,6 +38,21 @@ anchor_bottom = 1.0
 theme_override_constants/separation = 0
 
 [node name="TopMenuContainer" parent="MenuAndUI" unique_id=24159826 instance=ExtResource("3")]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="MenuAndUI" unique_id=75078473]
+layout_mode = 2
+
+[node name="TabBar" type="TabBar" parent="MenuAndUI/MarginContainer" unique_id=572594012]
+auto_translate_mode = 2
+layout_mode = 2
+tab_close_display_policy = 2
+max_tab_width = 256
+drag_to_rearrange_enabled = true
+script = ExtResource("4_7lugs")
+
+[node name="Spacer" type="Panel" parent="MenuAndUI" unique_id=176442395]
+custom_minimum_size = Vector2(0, 8)
 layout_mode = 2
 
 [node name="UI" parent="MenuAndUI" unique_id=1965471564 instance=ExtResource("4")]
@@ -110,6 +126,9 @@ visible = false
 [node name="SteamManager" type="Node" parent="." unique_id=2008731856]
 script = ExtResource("17_k1xhp")
 
+[connection signal="active_tab_rearranged" from="MenuAndUI/MarginContainer/TabBar" to="MenuAndUI/MarginContainer/TabBar" method="_on_active_tab_rearranged"]
+[connection signal="tab_changed" from="MenuAndUI/MarginContainer/TabBar" to="MenuAndUI/MarginContainer/TabBar" method="_on_Tabs_tab_changed"]
+[connection signal="tab_close_pressed" from="MenuAndUI/MarginContainer/TabBar" to="MenuAndUI/MarginContainer/TabBar" method="_on_tab_close_pressed"]
 [connection signal="files_selected" from="Dialogs/OpenSprite" to="." method="_on_OpenSprite_files_selected"]
 [connection signal="visibility_changed" from="Dialogs/OpenSprite" to="." method="_on_open_sprite_visibility_changed"]
 [connection signal="canceled" from="Dialogs/SaveSprite" to="." method="_on_save_sprite_canceled"]
