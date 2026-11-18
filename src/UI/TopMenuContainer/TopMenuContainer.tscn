@@ -61,7 +61,7 @@ flat = true
 
 [node name="TopLabels" type="HBoxContainer" parent="MarginContainer/HBoxContainer" unique_id=1935929971]
 layout_mode = 2
-size_flags_horizontal = 6
+size_flags_horizontal = 8
 theme_override_constants/separation = 20
 
 [node name="RotationSlider" type="TextureProgressBar" parent="MarginContainer/HBoxContainer/TopLabels" unique_id=204642904]
@@ -107,6 +107,7 @@ snap_step = 100.0
 
 [node name="CursorPosition" type="RichTextLabel" parent="MarginContainer/HBoxContainer/TopLabels" unique_id=81277763]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
 size_flags_vertical = 4
 text = "⛶ 64×64"
@@ -287,22 +288,6 @@ focus_mode = 0
 mouse_default_cursor_shape = 2
 toggle_mode = true
 text = "Alt"
-
-[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/HBoxContainer" unique_id=1819772476]
-layout_mode = 2
-size_flags_horizontal = 8
-alignment = 1
-
-[node name="CurrentFrame" type="Label" parent="MarginContainer/HBoxContainer/HBoxContainer" unique_id=1572105713]
-layout_mode = 2
-size_flags_vertical = 1
-text = "Current frame:"
-
-[node name="CurrentFrameMark" type="Label" parent="MarginContainer/HBoxContainer/HBoxContainer" unique_id=1844494753]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_vertical = 1
-text = "1/1"
 
 [node name="UndoHistoryDialog" type="AcceptDialog" parent="." unique_id=935198027]
 oversampling_override = 1.0

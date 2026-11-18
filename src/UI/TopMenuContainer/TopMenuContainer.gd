@@ -81,7 +81,6 @@ var backup_dialog := Dialog.new("res://src/UI/Dialogs/BackupRestoreDialog.tscn")
 @onready var layout_name_line_edit := %LayoutName as LineEdit
 @onready var layout_from_option_button := %LayoutFrom as OptionButton
 @onready var cursor_position_label := %CursorPosition as RichTextLabel
-@onready var current_frame_mark := %CurrentFrameMark as Label
 
 
 class Dialog:
@@ -116,7 +115,6 @@ func _ready() -> void:
 	Global.collapse_main_menu_changed.connect(handle_main_menu_collapse)
 	Global.project_about_to_switch.connect(_on_project_about_to_switch)
 	Global.project_switched.connect(_on_project_switched)
-	Global.cel_switched.connect(_update_current_frame_mark)
 	Global.on_cursor_position_text_changed.connect(_on_cursor_position_text_changed)
 	OpenSave.shader_copied.connect(_load_shader_file)
 	_setup_file_menu()
@@ -199,7 +197,6 @@ func _on_project_switched() -> void:
 	for j in Tiles.MODE.values():
 		tile_mode_submenu.set_item_checked(j, j == project.tiles.mode)
 	_check_color_mode_submenu_item(project)
-	_update_current_frame_mark()
 
 
 func _on_project_resized() -> void:
@@ -240,13 +237,6 @@ func _update_file_menu_buttons(project: Project) -> void:
 			file_menu.set_item_text(Global.FileMenu.EXPORT, tr("Export") + f_name)
 	else:
 		file_menu.set_item_text(Global.FileMenu.EXPORT, tr("Export"))
-
-
-func _update_current_frame_mark() -> void:
-	var project := Global.current_project
-	var current_frame := text_server.format_number(str(project.current_frame + 1))
-	var n_of_frames := text_server.format_number(str(project.frames.size()))
-	current_frame_mark.text = "%s/%s" % [current_frame, n_of_frames]
 
 
 func _setup_file_menu() -> void:
