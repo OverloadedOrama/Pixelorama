@@ -40,10 +40,11 @@ theme_override_constants/separation = 0
 [node name="TopMenuContainer" parent="MenuAndUI" unique_id=24159826 instance=ExtResource("3")]
 layout_mode = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="MenuAndUI" unique_id=75078473]
+[node name="TabsContainer" type="MarginContainer" parent="MenuAndUI" unique_id=75078473]
 layout_mode = 2
+theme_override_constants/margin_left = 12
 
-[node name="TabBar" type="TabBar" parent="MenuAndUI/MarginContainer" unique_id=572594012]
+[node name="TabBar" type="TabBar" parent="MenuAndUI/TabsContainer" unique_id=572594012]
 auto_translate_mode = 2
 layout_mode = 2
 tab_close_display_policy = 2
@@ -126,9 +127,9 @@ visible = false
 [node name="SteamManager" type="Node" parent="." unique_id=2008731856]
 script = ExtResource("17_k1xhp")
 
-[connection signal="active_tab_rearranged" from="MenuAndUI/MarginContainer/TabBar" to="MenuAndUI/MarginContainer/TabBar" method="_on_active_tab_rearranged"]
-[connection signal="tab_changed" from="MenuAndUI/MarginContainer/TabBar" to="MenuAndUI/MarginContainer/TabBar" method="_on_Tabs_tab_changed"]
-[connection signal="tab_close_pressed" from="MenuAndUI/MarginContainer/TabBar" to="MenuAndUI/MarginContainer/TabBar" method="_on_tab_close_pressed"]
+[connection signal="active_tab_rearranged" from="MenuAndUI/TabsContainer/TabBar" to="MenuAndUI/TabsContainer/TabBar" method="_on_active_tab_rearranged"]
+[connection signal="tab_changed" from="MenuAndUI/TabsContainer/TabBar" to="MenuAndUI/TabsContainer/TabBar" method="_on_Tabs_tab_changed"]
+[connection signal="tab_close_pressed" from="MenuAndUI/TabsContainer/TabBar" to="MenuAndUI/TabsContainer/TabBar" method="_on_tab_close_pressed"]
 [connection signal="files_selected" from="Dialogs/OpenSprite" to="." method="_on_OpenSprite_files_selected"]
 [connection signal="visibility_changed" from="Dialogs/OpenSprite" to="." method="_on_open_sprite_visibility_changed"]
 [connection signal="canceled" from="Dialogs/SaveSprite" to="." method="_on_save_sprite_canceled"]

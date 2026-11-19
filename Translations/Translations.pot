@@ -2507,9 +2507,6 @@ msgstr ""
 msgid "Move to view center"
 msgstr ""
 
-msgid "Current frame:"
-msgstr ""
-
 msgid "Animation mode:"
 msgstr ""
 
