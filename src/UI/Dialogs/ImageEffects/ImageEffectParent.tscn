@@ -5,7 +5,6 @@
 [ext_resource type="Script" uid="uid://cix6kinxmv8q2" path="res://src/Classes/ImageEffect.gd" id="3"]
 [ext_resource type="Texture2D" uid="uid://blrd4x0ma7b3h" path="res://assets/graphics/misc/animate.png" id="4"]
 [ext_resource type="Shader" uid="uid://c50kmfvf635kb" path="res://src/Shaders/TransparentChecker.gdshader" id="4_irxkv"]
-[ext_resource type="PackedScene" uid="uid://yjhp0ssng2mp" path="res://src/UI/Nodes/Sliders/ValueSlider.tscn" id="4_whox6"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_p71nj"]
 shader = ExtResource("4_irxkv")
@@ -21,14 +20,15 @@ shader_parameter/follow_scale = false
 
 [node name="ImageEffectParent" type="ConfirmationDialog" unique_id=829570751]
 canvas_item_default_texture_filter = 0
+oversampling_override = 1.0
 position = Vector2i(0, 36)
-size = Vector2i(362, 379)
+size = Vector2i(578, 379)
 script = ExtResource("3")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1773123238]
 offset_left = 8.0
 offset_top = 8.0
-offset_right = 354.0
+offset_right = 570.0
 offset_bottom = 330.0
 
 [node name="ShowAnimate" type="Button" parent="VBoxContainer" unique_id=1452855547]
@@ -67,43 +67,20 @@ layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 
-[node name="LiveSettings" type="VBoxContainer" parent="VBoxContainer" unique_id=2099258780]
-visible = false
-layout_mode = 2
-alignment = 1
-
-[node name="LiveCheckbox" type="CheckBox" parent="VBoxContainer/LiveSettings" unique_id=987338507]
-layout_mode = 2
-size_flags_horizontal = 4
-mouse_default_cursor_shape = 2
-text = "Live Preview"
-
-[node name="WaitTime" parent="VBoxContainer/LiveSettings" unique_id=2022496090 instance=ExtResource("4_whox6")]
-visible = false
-layout_mode = 2
-focus_mode = 0
-min_value = 1.0
-max_value = 1000.0
-value = 200.0
-editable = false
-prefix = "Preview delay:"
-suffix = "ms"
-
-[node name="WaitApply" type="Timer" parent="VBoxContainer/LiveSettings" unique_id=984927759]
-
 [node name="OptionsContainer" type="HBoxContainer" parent="VBoxContainer" unique_id=1370462275]
 layout_mode = 2
 
 [node name="SelectionCheckBox" type="CheckBox" parent="VBoxContainer/OptionsContainer" unique_id=1698253230]
+custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
-size_flags_horizontal = 3
 mouse_default_cursor_shape = 2
 button_pressed = true
 text = "Only affect selection"
 
 [node name="AffectOptionButton" type="OptionButton" parent="VBoxContainer/OptionsContainer" unique_id=1493894217]
+custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
-size_flags_horizontal = 3
+size_flags_horizontal = 10
 mouse_default_cursor_shape = 2
 selected = 0
 item_count = 4
@@ -127,7 +104,3 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 offset_right = 0.0
 offset_bottom = 0.0
-
-[connection signal="toggled" from="VBoxContainer/LiveSettings/LiveCheckbox" to="." method="_on_live_checkbox_toggled"]
-[connection signal="value_changed" from="VBoxContainer/LiveSettings/WaitTime" to="." method="_on_wait_time_value_changed"]
-[connection signal="timeout" from="VBoxContainer/LiveSettings/WaitApply" to="." method="_on_wait_apply_timeout"]

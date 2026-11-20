@@ -5,12 +5,12 @@
 [ext_resource type="Script" uid="uid://tfdhqto6j5j0" path="res://src/UI/Nodes/Sliders/ValueSlider.gd" id="3_2epr4"]
 
 [node name="BrightnessContrastDialog" unique_id=954387416 instance=ExtResource("1_5wfra")]
-oversampling_override = 1.0
 title = "Adjust Brightness/Contrast"
-size = Vector2i(362, 659)
+size = Vector2i(366, 659)
 script = ExtResource("2_msv0o")
 
 [node name="VBoxContainer" parent="." index="2" unique_id=1773123238]
+offset_right = 358.0
 offset_bottom = 610.0
 
 [node name="RedShift" type="TextureProgressBar" parent="VBoxContainer" index="2" unique_id=2116233543]
@@ -158,13 +158,14 @@ layout_mode = 2
 alignment = 1
 
 [node name="Label" type="Label" parent="VBoxContainer/TintColorContainer" index="0" unique_id=1180119593]
+custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
 text = "Tint color:"
 
 [node name="TintColor" type="ColorPickerButton" parent="VBoxContainer/TintColorContainer" index="1" unique_id=1882223003]
-custom_minimum_size = Vector2(32, 24)
+custom_minimum_size = Vector2(160, 24)
 layout_mode = 2
-size_flags_horizontal = 3
+size_flags_horizontal = 8
 color = Color(1, 1, 1, 1)
 
 [node name="TintSlider" type="TextureProgressBar" parent="VBoxContainer" index="12" unique_id=1493212009]

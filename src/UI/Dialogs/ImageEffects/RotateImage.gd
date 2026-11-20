@@ -36,7 +36,6 @@ func _about_to_popup() -> void:
 		_calculate_pivot()
 	has_been_confirmed = false
 	super._about_to_popup()
-	wait_apply_timer.wait_time = wait_time_slider.value / 1000.0
 
 
 func _calculate_pivot() -> void:
