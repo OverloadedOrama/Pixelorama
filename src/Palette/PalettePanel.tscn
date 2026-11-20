@@ -9,17 +9,17 @@
 [ext_resource type="Texture2D" uid="uid://des606sdhau2i" path="res://assets/graphics/layers/lock.png" id="5_unk2t"]
 [ext_resource type="Script" uid="uid://bxugfciwcodjx" path="res://src/Palette/PalettePanel.gd" id="8"]
 
-[sub_resource type="InputEventAction" id="InputEventAction_4n3yg"]
-action = &"edit_palette"
-
-[sub_resource type="Shortcut" id="Shortcut_jl8vt"]
-events = [SubResource("InputEventAction_4n3yg")]
-
 [sub_resource type="InputEventAction" id="InputEventAction_mdfjt"]
 action = &"new_palette"
 
 [sub_resource type="Shortcut" id="Shortcut_6f4gc"]
 events = [SubResource("InputEventAction_mdfjt")]
+
+[sub_resource type="InputEventAction" id="InputEventAction_4n3yg"]
+action = &"edit_palette"
+
+[sub_resource type="Shortcut" id="Shortcut_jl8vt"]
+events = [SubResource("InputEventAction_4n3yg")]
 
 [node name="PalettePanel" type="MarginContainer" unique_id=499798294]
 size_flags_horizontal = 3
@@ -143,25 +143,6 @@ clip_text = true
 fit_to_longest_item = false
 search_bar_enabled = true
 
-[node name="EditPalette" type="Button" parent="PaletteVBoxContainer/PaletteButtons" unique_id=2044011141 groups=["UIButtons"]]
-custom_minimum_size = Vector2(22, 24)
-layout_mode = 2
-tooltip_text = "Edit currently selected palette"
-mouse_default_cursor_shape = 2
-shortcut = SubResource("Shortcut_jl8vt")
-
-[node name="TextureRect" type="TextureRect" parent="PaletteVBoxContainer/PaletteButtons/EditPalette" unique_id=1462799397]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-size_flags_horizontal = 0
-size_flags_vertical = 0
-texture = ExtResource("2")
-stretch_mode = 3
-
 [node name="AddPalette" type="Button" parent="PaletteVBoxContainer/PaletteButtons" unique_id=10393364 groups=["UIButtons"]]
 custom_minimum_size = Vector2(22, 24)
 layout_mode = 2
@@ -179,6 +160,25 @@ grow_vertical = 2
 size_flags_horizontal = 0
 size_flags_vertical = 0
 texture = ExtResource("3")
+stretch_mode = 3
+
+[node name="EditPalette" type="Button" parent="PaletteVBoxContainer/PaletteButtons" unique_id=2044011141 groups=["UIButtons"]]
+custom_minimum_size = Vector2(22, 24)
+layout_mode = 2
+tooltip_text = "Edit currently selected palette"
+mouse_default_cursor_shape = 2
+shortcut = SubResource("Shortcut_jl8vt")
+
+[node name="TextureRect" type="TextureRect" parent="PaletteVBoxContainer/PaletteButtons/EditPalette" unique_id=1462799397]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+texture = ExtResource("2")
 stretch_mode = 3
 
 [node name="HSeparator" type="HSeparator" parent="PaletteVBoxContainer" unique_id=1598266660]
@@ -208,8 +208,8 @@ layout_mode = 2
 [connection signal="gui_input" from="PaletteVBoxContainer/PaletteButtons/DeleteColor" to="." method="_on_DeleteColor_gui_input"]
 [connection signal="toggled" from="PaletteVBoxContainer/PaletteButtons/LockGrid" to="." method="_on_lock_grid_toggled"]
 [connection signal="item_selected" from="PaletteVBoxContainer/PaletteButtons/PaletteSelect" to="." method="_on_PaletteSelect_item_selected"]
-[connection signal="pressed" from="PaletteVBoxContainer/PaletteButtons/EditPalette" to="." method="_on_EditPalette_pressed"]
 [connection signal="pressed" from="PaletteVBoxContainer/PaletteButtons/AddPalette" to="." method="_on_AddPalette_pressed"]
+[connection signal="pressed" from="PaletteVBoxContainer/PaletteButtons/EditPalette" to="." method="_on_EditPalette_pressed"]
 [connection signal="swatch_double_clicked" from="PaletteVBoxContainer/ScrollContainer/PaletteGrid" to="." method="_on_PaletteGrid_swatch_double_clicked"]
 [connection signal="swatch_dropped" from="PaletteVBoxContainer/ScrollContainer/PaletteGrid" to="." method="_on_PaletteGrid_swatch_dropped"]
 [connection signal="swatch_pressed" from="PaletteVBoxContainer/ScrollContainer/PaletteGrid" to="." method="_on_PaletteGrid_swatch_pressed"]
