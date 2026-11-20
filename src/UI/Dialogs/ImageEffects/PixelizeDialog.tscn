@@ -15,13 +15,14 @@ visible = false
 layout_mode = 2
 
 [node name="Label" type="Label" parent="VBoxContainer/HBoxContainer" index="0" unique_id=702272864]
+custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
-size_flags_horizontal = 3
 text = "Pixel size:"
 
 [node name="PixelSize" parent="VBoxContainer/HBoxContainer" index="1" unique_id=230166917 instance=ExtResource("3_s7ey1")]
+custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
-size_flags_horizontal = 3
+size_flags_horizontal = 10
 value = Vector2(1, 1)
 min_value = Vector2(1, 1)
 max_value = Vector2(255, 255)

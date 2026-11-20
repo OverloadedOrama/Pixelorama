@@ -5,15 +5,14 @@
 [ext_resource type="Script" uid="uid://tfdhqto6j5j0" path="res://src/UI/Nodes/Sliders/ValueSlider.gd" id="3_xnhln"]
 
 [node name="FlatToIsometric" unique_id=829570751 instance=ExtResource("1_hcjfg")]
-oversampling_override = 1.0
-size = Vector2i(362, 400)
-visible = true
+size = Vector2i(366, 400)
+visible = false
 script = ExtResource("2_w8h5d")
 
 [node name="VBoxContainer" parent="." index="2" unique_id=1773123238]
 offset_bottom = 351.0
 
-[node name="Origin" type="TextureProgressBar" parent="VBoxContainer" index="3" unique_id=1485075028]
+[node name="Origin" type="TextureProgressBar" parent="VBoxContainer" index="2" unique_id=1485075028]
 custom_minimum_size = Vector2(32, 24)
 layout_mode = 2
 mouse_default_cursor_shape = 2
@@ -30,7 +29,7 @@ stretch_margin_bottom = 3
 script = ExtResource("3_xnhln")
 prefix = "Origin:"
 
-[node name="IsoStep" type="TextureProgressBar" parent="VBoxContainer" index="4" unique_id=751131232]
+[node name="IsoStep" type="TextureProgressBar" parent="VBoxContainer" index="3" unique_id=751131232]
 custom_minimum_size = Vector2(32, 24)
 layout_mode = 2
 mouse_default_cursor_shape = 2
@@ -46,7 +45,7 @@ stretch_margin_bottom = 3
 script = ExtResource("3_xnhln")
 prefix = "Isometric step:"
 
-[node name="Deadzone" type="TextureProgressBar" parent="VBoxContainer" index="5" unique_id=2054244353]
+[node name="Deadzone" type="TextureProgressBar" parent="VBoxContainer" index="4" unique_id=2054244353]
 custom_minimum_size = Vector2(32, 24)
 layout_mode = 2
 mouse_default_cursor_shape = 2

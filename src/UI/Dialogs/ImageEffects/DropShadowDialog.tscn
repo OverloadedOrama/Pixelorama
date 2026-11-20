@@ -6,10 +6,11 @@
 
 [node name="DropShadowDialog" unique_id=250138760 instance=ExtResource("1")]
 title = "Drop Shadow"
-size = Vector2i(362, 413)
+size = Vector2i(366, 413)
 script = ExtResource("2")
 
 [node name="VBoxContainer" parent="." index="2" unique_id=1773123238]
+offset_right = 358.0
 offset_bottom = 364.0
 
 [node name="TransparentChecker" parent="VBoxContainer/AspectRatioContainer/Preview" parent_id_path=PackedInt32Array(1653862649) index="0" unique_id=770515729]
@@ -25,12 +26,14 @@ theme_override_constants/v_separation = 4
 columns = 2
 
 [node name="Label" type="Label" parent="VBoxContainer/ShadowOptions" index="0" unique_id=940057965]
+custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
-size_flags_horizontal = 3
 text = "Offset:"
 
 [node name="OffsetSliders" parent="VBoxContainer/ShadowOptions" index="1" unique_id=1917938954 instance=ExtResource("3")]
+custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
+size_flags_horizontal = 10
 value = Vector2(5, 5)
 min_value = Vector2(-64, -64)
 max_value = Vector2(64, 64)
@@ -41,14 +44,14 @@ suffix_x = "px"
 suffix_y = "px"
 
 [node name="ShadowColorLabel" type="Label" parent="VBoxContainer/ShadowOptions" index="2" unique_id=321114749]
+custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
-size_flags_horizontal = 3
 text = "Shadow color:"
 
 [node name="ShadowColor" type="ColorPickerButton" parent="VBoxContainer/ShadowOptions" index="3" unique_id=1983034729]
-custom_minimum_size = Vector2(64, 20)
+custom_minimum_size = Vector2(160, 20)
 layout_mode = 2
-size_flags_horizontal = 3
+size_flags_horizontal = 10
 color = Color(0.0823529, 0.0823529, 0.0823529, 0.627451)
 
 [node name="AnimatePanel" parent="AnimateDialog" parent_id_path=PackedInt32Array(44308645) index="0" unique_id=912775852]

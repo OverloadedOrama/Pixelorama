@@ -5,12 +5,12 @@
 [ext_resource type="PackedScene" uid="uid://yjhp0ssng2mp" path="res://src/UI/Nodes/Sliders/ValueSlider.tscn" id="3"]
 
 [node name="HSVDialog" unique_id=1520656639 instance=ExtResource("2")]
-oversampling_override = 1.0
 title = "Adjust Hue/Saturation/Value"
-size = Vector2i(362, 435)
+size = Vector2i(366, 435)
 script = ExtResource("1")
 
 [node name="VBoxContainer" parent="." index="2" unique_id=1773123238]
+offset_right = 358.0
 offset_bottom = 386.0
 
 [node name="HueSlider" parent="VBoxContainer" index="2" unique_id=161711944 instance=ExtResource("3")]

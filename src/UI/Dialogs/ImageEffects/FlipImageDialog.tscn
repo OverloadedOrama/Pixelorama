@@ -7,26 +7,24 @@
 title = "Mirror Image"
 script = ExtResource("1")
 
-[node name="VBoxContainer" parent="." index="2" unique_id=1773123238]
-offset_bottom = 288.0
-
-[node name="ShowAnimate" parent="VBoxContainer" index="0" unique_id=1452855547]
+[node name="ShowAnimate" parent="VBoxContainer" parent_id_path=PackedInt32Array(1773123238) index="0" unique_id=1452855547]
 visible = false
 
-[node name="FlipOptions" type="GridContainer" parent="VBoxContainer" index="2" unique_id=588459611]
+[node name="FlipOptions" type="GridContainer" parent="VBoxContainer" parent_id_path=PackedInt32Array(1773123238) index="2" unique_id=588459611]
 layout_mode = 2
 columns = 2
 
 [node name="FlipHorizontal" type="CheckBox" parent="VBoxContainer/FlipOptions" index="0" unique_id=715877864]
+custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
-size_flags_horizontal = 3
 mouse_default_cursor_shape = 2
 button_pressed = true
 text = "Horizontal"
 
 [node name="FlipVertical" type="CheckBox" parent="VBoxContainer/FlipOptions" index="1" unique_id=1564867989]
+custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
-size_flags_horizontal = 3
+size_flags_horizontal = 10
 mouse_default_cursor_shape = 2
 text = "Vertical"
 

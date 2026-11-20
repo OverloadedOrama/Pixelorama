@@ -741,6 +741,7 @@ expand_margin_bottom = 4.0
 resource_name = "Dark"
 default_font = ExtResource("7_sx5bd")
 default_font_size = 16
+AcceptDialog/constants/buttons_min_width = 100
 AcceptDialog/styles/panel = SubResource("StyleBoxFlat_755mo")
 BoxContainer/constants/separation = 4
 Button/colors/font_color = Color(0.776471, 0.776471, 0.776471, 1)

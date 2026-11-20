@@ -8,11 +8,8 @@
 title = "Gradient Map"
 script = ExtResource("3")
 
-[node name="VBoxContainer" parent="." index="2" unique_id=1773123238]
-offset_bottom = 342.0
-
-[node name="ShowAnimate" parent="VBoxContainer" index="0" unique_id=1452855547]
+[node name="ShowAnimate" parent="VBoxContainer" parent_id_path=PackedInt32Array(1773123238) index="0" unique_id=1452855547]
 visible = false
 
-[node name="GradientEdit" parent="VBoxContainer" index="2" unique_id=1789971382 instance=ExtResource("2")]
+[node name="GradientEdit" parent="VBoxContainer" parent_id_path=PackedInt32Array(1773123238) index="2" unique_id=1789971382 instance=ExtResource("2")]
 layout_mode = 2

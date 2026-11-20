@@ -7,11 +7,11 @@
 
 [node name="GaussianBlur" unique_id=1069552875 instance=ExtResource("1_cuu40")]
 title = "Gaussian Blur"
-size = Vector2i(427, 437)
+size = Vector2i(380, 437)
 script = ExtResource("2_37xhl")
 
 [node name="VBoxContainer" parent="." index="2" unique_id=1773123238]
-offset_right = 419.0
+offset_right = 372.0
 offset_bottom = 388.0
 
 [node name="ShowAnimate" parent="VBoxContainer" index="0" unique_id=1452855547]
@@ -22,14 +22,16 @@ layout_mode = 2
 columns = 2
 
 [node name="BlurTypeLabel" type="Label" parent="VBoxContainer/BlurOptions" index="0" unique_id=544826844]
+custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
-size_flags_horizontal = 3
 text = "Blur type:"
 
 [node name="BlurType" type="OptionButton" parent="VBoxContainer/BlurOptions" index="1" unique_id=1318279768]
+custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
-size_flags_horizontal = 3
+size_flags_horizontal = 10
 selected = 0
+fit_to_longest_item = false
 item_count = 4
 popup/item_0/text = "Xor's Gaussian Blur"
 popup/item_0/id = 0
@@ -41,12 +43,14 @@ popup/item_3/text = "NoDev's Multi-Pass Gaussian Blur"
 popup/item_3/id = 3
 
 [node name="BlurAmountLabel" type="Label" parent="VBoxContainer/BlurOptions" index="2" unique_id=362417502]
+custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
-size_flags_horizontal = 3
 text = "Blur amount:"
 
 [node name="BlurAmount" type="TextureProgressBar" parent="VBoxContainer/BlurOptions" index="3" unique_id=2099666068]
+custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
+size_flags_horizontal = 10
 mouse_default_cursor_shape = 2
 theme_type_variation = &"ValueSlider"
 value = 16.0
@@ -58,12 +62,14 @@ stretch_margin_bottom = 3
 script = ExtResource("3_237k2")
 
 [node name="BlurRadiusLabel" type="Label" parent="VBoxContainer/BlurOptions" index="4" unique_id=301480874]
+custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
-size_flags_horizontal = 3
 text = "Blur radius:"
 
 [node name="BlurRadius" type="TextureProgressBar" parent="VBoxContainer/BlurOptions" index="5" unique_id=1950433215]
+custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
+size_flags_horizontal = 10
 mouse_default_cursor_shape = 2
 theme_type_variation = &"ValueSlider"
 value = 1.0
@@ -75,12 +81,14 @@ stretch_margin_bottom = 3
 script = ExtResource("3_237k2")
 
 [node name="BlurDirectionLabel" type="Label" parent="VBoxContainer/BlurOptions" index="6" unique_id=1896444221]
+custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
-size_flags_horizontal = 3
 text = "Blur direction:"
 
 [node name="BlurDirection" parent="VBoxContainer/BlurOptions" index="7" unique_id=1190281163 instance=ExtResource("4_yprgi")]
+custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
+size_flags_horizontal = 10
 value = Vector2(1, 1)
 
 [connection signal="item_selected" from="VBoxContainer/BlurOptions/BlurType" to="." method="_on_blur_type_item_selected"]
