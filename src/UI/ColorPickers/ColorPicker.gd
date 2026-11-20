@@ -30,7 +30,10 @@ var _skip_color_picker_update := false
 @onready var left_color_rect := %LeftColorRect as ColorRect
 @onready var right_color_rect := %RightColorRect as ColorRect
 @onready var average_color := %AverageColor as ColorRect
+@onready var hide_picker_button: Button = %HidePickerButton
 @onready var expand_button: Button = $ScrollContainer/VerticalContainer/ExpandButton
+@onready var color_picker_popup_panel: PopupPanel = $ColorPickerPopupPanel
+@onready var color_picker_popup: ColorPicker = $ColorPickerPopupPanel/ColorPickerPopup
 
 @onready
 var _mm_change_hue := Keychain.actions[&"mm_color_change_hue"] as Keychain.MouseMovementInputAction
@@ -73,18 +76,13 @@ func _ready() -> void:
 	# We are hiding the color preview rectangle, adding the hex LineEdit, the
 	# left/right color buttons and the color switch, default and average buttons.
 	var sampler_cont := picker_vbox_container.get_child(1, true) as HBoxContainer
+	sampler_cont.alignment = BoxContainer.ALIGNMENT_CENTER
 	# The color preview rectangle that we're hiding.
 	var color_texture_rect := sampler_cont.get_child(1, true) as TextureRect
 	color_texture_rect.visible = false
 	var shape_menu_button := sampler_cont.get_child(2, true) as MenuButton
 	var shape_popup_menu := shape_menu_button.get_popup()
 	shape_popup_menu.id_pressed.connect(_on_shape_popup_menu_id_pressed)
-	# The HBoxContainer where we get the hex LineEdit node from, and moving it to sampler_cont
-	var hex_cont := picker_vbox_container.get_child(4, true) as Container
-	var hex_edit := hex_cont.get_child(2, true)
-	hex_cont.remove_child(hex_edit)
-	sampler_cont.add_child(hex_edit)
-	sampler_cont.move_child(hex_edit, 1)
 	# Move the color buttons (left, right, switch, default, average) on the sampler container
 	color_buttons.get_parent().remove_child(color_buttons)
 	sampler_cont.add_child(color_buttons)
@@ -258,6 +256,7 @@ func _on_expand_button_toggled(toggled_on: bool) -> void:
 		expand_button.icon = VALUE_ARROW
 	color_picker.color_modes_visible = toggled_on
 	color_picker.sliders_visible = toggled_on
+	color_picker.hex_visible = toggled_on
 	color_picker.presets_visible = toggled_on
 	if is_instance_valid(swatches_button):
 		swatches_button.visible = false
@@ -287,3 +286,36 @@ func _on_copy_average_gui_input(event: InputEvent) -> void:
 		Tools.assign_color(average_color.color, MOUSE_BUTTON_LEFT)
 	elif event.is_action_released(&"right_mouse"):
 		Tools.assign_color(average_color.color, MOUSE_BUTTON_RIGHT)
+
+
+func _on_hide_picker_button_toggled(toggled_on: bool) -> void:
+	if toggled_on:
+		custom_minimum_size.y = 220
+	else:
+		custom_minimum_size.y = 50
+		expand_button.button_pressed = false
+	shapes_container.visible = toggled_on
+	expand_button.visible = toggled_on
+
+
+func _on_color_button_gui_input(event: InputEvent, source: Control) -> void:
+	if hide_picker_button.button_pressed:
+		return
+	if event is not InputEventMouseButton:
+		return
+	if event.button_index == MOUSE_BUTTON_LEFT and event.double_click:
+		color_picker_popup.color = Tools._slots[Tools.picking_color_for].color
+		color_picker_popup.color_mode = color_picker.color_mode
+		color_picker_popup.picker_shape = color_picker.picker_shape
+		var rect := source.get_global_rect()
+		rect.position.x -= 300
+		color_picker_popup_panel.popup_on_parent(rect)
+		expand_button.button_pressed = false
+
+
+func _on_color_picker_popup_color_changed(color: Color) -> void:
+	_on_color_picker_color_changed(color)
+	color_picker.color = color
+	color_picker.color_mode = color_picker_popup.color_mode
+	color_picker.picker_shape = color_picker_popup.picker_shape
+	_on_shape_popup_menu_id_pressed(color_picker.picker_shape)
