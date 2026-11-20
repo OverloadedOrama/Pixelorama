@@ -5,7 +5,11 @@
 
 [node name="PalettizeDialog" unique_id=5934067 instance=ExtResource("1_cux3a")]
 title = "Palettize"
+size = Vector2i(658, 257)
 script = ExtResource("2_4517g")
 
-[node name="ShowAnimate" parent="VBoxContainer" parent_id_path=PackedInt32Array(1773123238) index="0" unique_id=1452855547]
+[node name="HSplitContainer" parent="." index="2" unique_id=318277213]
+offset_bottom = 208.0
+
+[node name="ShowAnimate" parent="HSplitContainer/VBoxContainer" parent_id_path=PackedInt32Array(1773123238) index="0" unique_id=1452855547]
 visible = false

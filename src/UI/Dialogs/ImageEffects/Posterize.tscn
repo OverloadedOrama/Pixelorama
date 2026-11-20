@@ -6,17 +6,17 @@
 
 [node name="Posterize" unique_id=589852486 instance=ExtResource("1")]
 title = "Posterize"
-size = Vector2i(366, 348)
+size = Vector2i(578, 257)
 script = ExtResource("3")
 
-[node name="VBoxContainer" parent="." index="2" unique_id=1773123238]
-offset_right = 358.0
-offset_bottom = 299.0
+[node name="HSplitContainer" parent="." index="2" unique_id=318277213]
+offset_right = 570.0
+offset_bottom = 208.0
 
-[node name="ShowAnimate" parent="VBoxContainer" index="0" unique_id=1452855547]
+[node name="ShowAnimate" parent="HSplitContainer/VBoxContainer" parent_id_path=PackedInt32Array(1773123238) index="0" unique_id=1452855547]
 visible = false
 
-[node name="LevelsSlider" type="TextureProgressBar" parent="VBoxContainer" index="2" unique_id=774982548]
+[node name="LevelsSlider" type="TextureProgressBar" parent="HSplitContainer/VBoxContainer" parent_id_path=PackedInt32Array(1773123238) index="1" unique_id=774982548]
 custom_minimum_size = Vector2(0, 24)
 layout_mode = 2
 mouse_default_cursor_shape = 2
@@ -34,7 +34,7 @@ script = ExtResource("2")
 prefix = "Posterize levels:"
 snap_by_default = true
 
-[node name="DitherSlider" type="TextureProgressBar" parent="VBoxContainer" index="3" unique_id=734547818]
+[node name="DitherSlider" type="TextureProgressBar" parent="HSplitContainer/VBoxContainer" parent_id_path=PackedInt32Array(1773123238) index="2" unique_id=734547818]
 custom_minimum_size = Vector2(0, 24)
 layout_mode = 2
 mouse_default_cursor_shape = 2
@@ -50,5 +50,5 @@ script = ExtResource("2")
 prefix = "Dither intensity:"
 snap_step = 0.1
 
-[connection signal="value_changed" from="VBoxContainer/LevelsSlider" to="." method="_on_LevelsSlider_value_changed"]
-[connection signal="value_changed" from="VBoxContainer/DitherSlider" to="." method="_on_DitherSlider_value_changed"]
+[connection signal="value_changed" from="HSplitContainer/VBoxContainer/LevelsSlider" to="." method="_on_LevelsSlider_value_changed"]
+[connection signal="value_changed" from="HSplitContainer/VBoxContainer/DitherSlider" to="." method="_on_DitherSlider_value_changed"]

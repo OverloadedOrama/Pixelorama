@@ -14,7 +14,7 @@ shader_parameter/color1 = Color(0.7, 0.7, 0.7, 1)
 shader_parameter/color2 = Color(1, 1, 1, 1)
 shader_parameter/offset = Vector2(0, 0)
 shader_parameter/scale = Vector2(0, 0)
-shader_parameter/rect_size = Vector2(200, 200)
+shader_parameter/rect_size = Vector2(264, 264)
 shader_parameter/follow_movement = false
 shader_parameter/follow_scale = false
 
@@ -22,16 +22,40 @@ shader_parameter/follow_scale = false
 canvas_item_default_texture_filter = 0
 oversampling_override = 1.0
 position = Vector2i(0, 36)
-size = Vector2i(578, 379)
+size = Vector2i(658, 321)
 script = ExtResource("3")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1773123238]
+[node name="HSplitContainer" type="HSplitContainer" parent="." unique_id=318277213]
 offset_left = 8.0
 offset_top = 8.0
-offset_right = 570.0
-offset_bottom = 330.0
+offset_right = 650.0
+offset_bottom = 272.0
+split_offsets = PackedInt32Array(300)
+split_offset = 300
 
-[node name="ShowAnimate" type="Button" parent="VBoxContainer" unique_id=1452855547]
+[node name="AspectRatioContainer" type="AspectRatioContainer" parent="HSplitContainer" unique_id=370669710]
+layout_mode = 2
+size_flags_vertical = 3
+alignment_horizontal = 0
+alignment_vertical = 0
+
+[node name="Preview" type="TextureRect" parent="HSplitContainer/AspectRatioContainer" unique_id=1653862649]
+custom_minimum_size = Vector2(200, 200)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 4
+
+[node name="TransparentChecker" parent="HSplitContainer/AspectRatioContainer/Preview" unique_id=770515729 instance=ExtResource("2")]
+show_behind_parent = true
+material = SubResource("ShaderMaterial_p71nj")
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HSplitContainer" unique_id=1773123238]
+layout_mode = 2
+
+[node name="ShowAnimate" type="Button" parent="HSplitContainer/VBoxContainer" unique_id=1452855547]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(20, 20)
 layout_mode = 2
@@ -39,7 +63,7 @@ size_flags_horizontal = 8
 mouse_default_cursor_shape = 2
 toggle_mode = true
 
-[node name="TextureRect" type="TextureRect" parent="VBoxContainer/ShowAnimate" unique_id=1396582359]
+[node name="TextureRect" type="TextureRect" parent="HSplitContainer/VBoxContainer/ShowAnimate" unique_id=1396582359]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -50,34 +74,17 @@ texture = ExtResource("4")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="AspectRatioContainer" type="AspectRatioContainer" parent="VBoxContainer" unique_id=370669710]
-layout_mode = 2
-size_flags_vertical = 3
-
-[node name="Preview" type="TextureRect" parent="VBoxContainer/AspectRatioContainer" unique_id=1653862649]
-custom_minimum_size = Vector2(200, 200)
-layout_mode = 2
-expand_mode = 1
-stretch_mode = 4
-
-[node name="TransparentChecker" parent="VBoxContainer/AspectRatioContainer/Preview" unique_id=770515729 instance=ExtResource("2")]
-show_behind_parent = true
-material = SubResource("ShaderMaterial_p71nj")
-layout_mode = 0
-anchor_right = 1.0
-anchor_bottom = 1.0
-
-[node name="OptionsContainer" type="HBoxContainer" parent="VBoxContainer" unique_id=1370462275]
+[node name="OptionsContainer" type="HBoxContainer" parent="HSplitContainer/VBoxContainer" unique_id=1370462275]
 layout_mode = 2
 
-[node name="SelectionCheckBox" type="CheckBox" parent="VBoxContainer/OptionsContainer" unique_id=1698253230]
+[node name="SelectionCheckBox" type="CheckBox" parent="HSplitContainer/VBoxContainer/OptionsContainer" unique_id=1698253230]
 custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
 mouse_default_cursor_shape = 2
 button_pressed = true
 text = "Only affect selection"
 
-[node name="AffectOptionButton" type="OptionButton" parent="VBoxContainer/OptionsContainer" unique_id=1493894217]
+[node name="AffectOptionButton" type="OptionButton" parent="HSplitContainer/VBoxContainer/OptionsContainer" unique_id=1493894217]
 custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
 size_flags_horizontal = 10

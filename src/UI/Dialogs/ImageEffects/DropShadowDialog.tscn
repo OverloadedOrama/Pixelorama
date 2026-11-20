@@ -6,31 +6,31 @@
 
 [node name="DropShadowDialog" unique_id=250138760 instance=ExtResource("1")]
 title = "Drop Shadow"
-size = Vector2i(366, 413)
+size = Vector2i(578, 257)
 script = ExtResource("2")
 
-[node name="VBoxContainer" parent="." index="2" unique_id=1773123238]
-offset_right = 358.0
-offset_bottom = 364.0
+[node name="HSplitContainer" parent="." index="2" unique_id=318277213]
+offset_right = 570.0
+offset_bottom = 208.0
 
-[node name="TransparentChecker" parent="VBoxContainer/AspectRatioContainer/Preview" parent_id_path=PackedInt32Array(1653862649) index="0" unique_id=770515729]
+[node name="TransparentChecker" parent="HSplitContainer/AspectRatioContainer/Preview" parent_id_path=PackedInt32Array(1653862649) index="0" unique_id=770515729]
 layout_mode = 1
 anchors_preset = 15
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="ShadowOptions" type="GridContainer" parent="VBoxContainer" index="2" unique_id=1110206776]
+[node name="ShadowOptions" type="GridContainer" parent="HSplitContainer/VBoxContainer" parent_id_path=PackedInt32Array(1773123238) index="1" unique_id=1110206776]
 layout_mode = 2
 theme_override_constants/h_separation = 4
 theme_override_constants/v_separation = 4
 columns = 2
 
-[node name="Label" type="Label" parent="VBoxContainer/ShadowOptions" index="0" unique_id=940057965]
+[node name="Label" type="Label" parent="HSplitContainer/VBoxContainer/ShadowOptions" index="0" unique_id=940057965]
 custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
 text = "Offset:"
 
-[node name="OffsetSliders" parent="VBoxContainer/ShadowOptions" index="1" unique_id=1917938954 instance=ExtResource("3")]
+[node name="OffsetSliders" parent="HSplitContainer/VBoxContainer/ShadowOptions" index="1" unique_id=1917938954 instance=ExtResource("3")]
 custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
 size_flags_horizontal = 10
@@ -43,12 +43,12 @@ show_ratio = true
 suffix_x = "px"
 suffix_y = "px"
 
-[node name="ShadowColorLabel" type="Label" parent="VBoxContainer/ShadowOptions" index="2" unique_id=321114749]
+[node name="ShadowColorLabel" type="Label" parent="HSplitContainer/VBoxContainer/ShadowOptions" index="2" unique_id=321114749]
 custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
 text = "Shadow color:"
 
-[node name="ShadowColor" type="ColorPickerButton" parent="VBoxContainer/ShadowOptions" index="3" unique_id=1983034729]
+[node name="ShadowColor" type="ColorPickerButton" parent="HSplitContainer/VBoxContainer/ShadowOptions" index="3" unique_id=1983034729]
 custom_minimum_size = Vector2(160, 20)
 layout_mode = 2
 size_flags_horizontal = 10
@@ -58,5 +58,5 @@ color = Color(0.0823529, 0.0823529, 0.0823529, 0.627451)
 grow_horizontal = 2
 grow_vertical = 2
 
-[connection signal="value_changed" from="VBoxContainer/ShadowOptions/OffsetSliders" to="." method="_on_OffsetSliders_value_changed"]
-[connection signal="color_changed" from="VBoxContainer/ShadowOptions/ShadowColor" to="." method="_on_ShadowColor_color_changed"]
+[connection signal="value_changed" from="HSplitContainer/VBoxContainer/ShadowOptions/OffsetSliders" to="." method="_on_OffsetSliders_value_changed"]
+[connection signal="color_changed" from="HSplitContainer/VBoxContainer/ShadowOptions/ShadowColor" to="." method="_on_ShadowColor_color_changed"]

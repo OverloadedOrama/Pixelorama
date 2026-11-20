@@ -5,7 +5,8 @@ var color := Color.BLACK
 var shader_inc := load("res://src/Shaders/Effects/DropShadow.gdshaderinc")
 var shader: Shader
 
-@onready var shadow_color := $VBoxContainer/ShadowOptions/ShadowColor as ColorPickerButton
+@onready
+var shadow_color := $HSplitContainer/VBoxContainer/ShadowOptions/ShadowColor as ColorPickerButton
 
 
 func _ready() -> void:
@@ -19,10 +20,10 @@ func _ready() -> void:
 
 	# set as in enum
 	animate_panel.add_float_property(
-		"Offset X", $VBoxContainer/ShadowOptions/OffsetSliders.find_child("X")
+		"Offset X", $HSplitContainer/VBoxContainer/ShadowOptions/OffsetSliders.find_child("X")
 	)
 	animate_panel.add_float_property(
-		"Offset Y", $VBoxContainer/ShadowOptions/OffsetSliders.find_child("Y")
+		"Offset Y", $HSplitContainer/VBoxContainer/ShadowOptions/OffsetSliders.find_child("Y")
 	)
 
 

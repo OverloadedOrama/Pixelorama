@@ -5,8 +5,10 @@ enum Animate { OFFSET_X, OFFSET_Y, ZOOM }
 var shader: Shader
 var wrap_around := false
 
-@onready var offset_sliders := $VBoxContainer/OffsetOptions/OffsetSliders as ValueSliderV2
-@onready var scale_value := $VBoxContainer/OffsetOptions/ScaleValueSlider as ValueSlider
+@onready
+var offset_sliders := $HSplitContainer/VBoxContainer/OffsetOptions/OffsetSliders as ValueSliderV2
+@onready
+var scale_value := $HSplitContainer/VBoxContainer/OffsetOptions/ScaleValueSlider as ValueSlider
 
 
 func _ready() -> void:

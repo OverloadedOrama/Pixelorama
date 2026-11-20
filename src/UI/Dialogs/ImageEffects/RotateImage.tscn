@@ -7,37 +7,38 @@
 
 [node name="RotateImage" unique_id=1593018906 instance=ExtResource("2")]
 title = "Rotate Image"
-size = Vector2i(578, 465)
-visible = false
+size = Vector2i(578, 261)
 script = ExtResource("1")
 
-[node name="VBoxContainer" parent="." index="2" unique_id=1773123238]
-offset_bottom = 416.0
+[node name="HSplitContainer" parent="." index="2" unique_id=318277213]
+offset_right = 570.0
+offset_bottom = 212.0
 
-[node name="Indicator" type="Control" parent="VBoxContainer/AspectRatioContainer" parent_id_path=PackedInt32Array(370669710) index="1" unique_id=643288853]
+[node name="Indicator" type="Control" parent="HSplitContainer/AspectRatioContainer" parent_id_path=PackedInt32Array(370669710) index="1" unique_id=643288853]
 layout_mode = 2
 mouse_default_cursor_shape = 2
 
-[node name="HBoxContainer2" type="HBoxContainer" parent="VBoxContainer" index="2" unique_id=909437778]
+[node name="HBoxContainer2" type="HBoxContainer" parent="HSplitContainer/VBoxContainer" parent_id_path=PackedInt32Array(1773123238) index="1" unique_id=909437778]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="VBoxContainer/HBoxContainer2" index="0" unique_id=838322794]
+[node name="Label" type="Label" parent="HSplitContainer/VBoxContainer/HBoxContainer2" index="0" unique_id=838322794]
 layout_mode = 2
 text = "Type:"
 
-[node name="TypeOptionButton" type="OptionButton" parent="VBoxContainer/HBoxContainer2" index="1" unique_id=602054086]
+[node name="TypeOptionButton" type="OptionButton" parent="HSplitContainer/VBoxContainer/HBoxContainer2" index="1" unique_id=602054086]
+custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
-size_flags_horizontal = 3
+size_flags_horizontal = 10
 size_flags_vertical = 3
 mouse_default_cursor_shape = 2
 
-[node name="HSeparator" type="HSeparator" parent="VBoxContainer" index="3" unique_id=2011523910]
+[node name="HSeparator" type="HSeparator" parent="HSplitContainer/VBoxContainer" parent_id_path=PackedInt32Array(1773123238) index="2" unique_id=2011523910]
 layout_mode = 2
 
-[node name="PivotOptions" type="HBoxContainer" parent="VBoxContainer" index="4" unique_id=1913954814]
+[node name="PivotOptions" type="HBoxContainer" parent="HSplitContainer/VBoxContainer" parent_id_path=PackedInt32Array(1773123238) index="3" unique_id=1913954814]
 layout_mode = 2
 
-[node name="Pivot" parent="VBoxContainer/PivotOptions" index="0" unique_id=100844535 instance=ExtResource("4")]
+[node name="Pivot" parent="HSplitContainer/VBoxContainer/PivotOptions" index="0" unique_id=100844535 instance=ExtResource("4")]
 layout_mode = 2
 size_flags_horizontal = 3
 step = 0.5
@@ -47,74 +48,74 @@ grid_columns = 2
 prefix_x = "Pivot x:"
 prefix_y = "Pivot y:"
 
-[node name="Centre" type="Button" parent="VBoxContainer/PivotOptions" index="1" unique_id=1413246239]
+[node name="Centre" type="Button" parent="HSplitContainer/VBoxContainer/PivotOptions" index="1" unique_id=1413246239]
 layout_mode = 2
 tooltip_text = "Places the pivot at the center of the image, or at the center of the selection, if it is present."
 mouse_default_cursor_shape = 2
 text = "Center"
 
-[node name="HSeparator2" type="HSeparator" parent="VBoxContainer" index="5" unique_id=1056076966]
+[node name="HSeparator2" type="HSeparator" parent="HSplitContainer/VBoxContainer" parent_id_path=PackedInt32Array(1773123238) index="4" unique_id=1056076966]
 layout_mode = 2
 
-[node name="AngleSlider" parent="VBoxContainer" index="6" unique_id=1217211706 instance=ExtResource("3")]
+[node name="AngleSlider" parent="HSplitContainer/VBoxContainer" parent_id_path=PackedInt32Array(1773123238) index="5" unique_id=1217211706 instance=ExtResource("3")]
 layout_mode = 2
 max_value = 359.0
 prefix = "Angle:"
 suffix = "°"
 snap_step = 45.0
 
-[node name="QuickRotations" type="HBoxContainer" parent="VBoxContainer" index="7" unique_id=1813377076]
+[node name="QuickRotations" type="HBoxContainer" parent="HSplitContainer/VBoxContainer" parent_id_path=PackedInt32Array(1773123238) index="6" unique_id=1813377076]
 layout_mode = 2
 alignment = 1
 
-[node name="Deduct90" type="Button" parent="VBoxContainer/QuickRotations" index="0" unique_id=1480244106]
+[node name="Deduct90" type="Button" parent="HSplitContainer/VBoxContainer/QuickRotations" index="0" unique_id=1480244106]
 layout_mode = 2
 size_flags_horizontal = 3
 mouse_default_cursor_shape = 2
 text = "-90"
 
-[node name="Deduct45" type="Button" parent="VBoxContainer/QuickRotations" index="1" unique_id=196832450]
+[node name="Deduct45" type="Button" parent="HSplitContainer/VBoxContainer/QuickRotations" index="1" unique_id=196832450]
 layout_mode = 2
 size_flags_horizontal = 3
 mouse_default_cursor_shape = 2
 text = "-45"
 
-[node name="Zero" type="Button" parent="VBoxContainer/QuickRotations" index="2" unique_id=2018794978]
+[node name="Zero" type="Button" parent="HSplitContainer/VBoxContainer/QuickRotations" index="2" unique_id=2018794978]
 layout_mode = 2
 size_flags_horizontal = 3
 mouse_default_cursor_shape = 2
 text = "0"
 
-[node name="Add45" type="Button" parent="VBoxContainer/QuickRotations" index="3" unique_id=2109237226]
+[node name="Add45" type="Button" parent="HSplitContainer/VBoxContainer/QuickRotations" index="3" unique_id=2109237226]
 layout_mode = 2
 size_flags_horizontal = 3
 mouse_default_cursor_shape = 2
 text = "+45"
 
-[node name="Add90" type="Button" parent="VBoxContainer/QuickRotations" index="4" unique_id=383994964]
+[node name="Add90" type="Button" parent="HSplitContainer/VBoxContainer/QuickRotations" index="4" unique_id=383994964]
 layout_mode = 2
 size_flags_horizontal = 3
 mouse_default_cursor_shape = 2
 text = "+90"
 
-[node name="SmearOptions" type="VBoxContainer" parent="VBoxContainer" index="8" unique_id=1635541587]
+[node name="SmearOptions" type="VBoxContainer" parent="HSplitContainer/VBoxContainer" parent_id_path=PackedInt32Array(1773123238) index="7" unique_id=1635541587]
 visible = false
 layout_mode = 2
 
-[node name="HSeparator" type="HSeparator" parent="VBoxContainer/SmearOptions" index="0" unique_id=104607265]
+[node name="HSeparator" type="HSeparator" parent="HSplitContainer/VBoxContainer/SmearOptions" index="0" unique_id=104607265]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="VBoxContainer/SmearOptions" index="1" unique_id=822159134]
+[node name="Label" type="Label" parent="HSplitContainer/VBoxContainer/SmearOptions" index="1" unique_id=822159134]
 layout_mode = 2
 text = "Smear options:"
 
-[node name="ToleranceSlider" parent="VBoxContainer/SmearOptions" index="2" unique_id=958208090 instance=ExtResource("3")]
+[node name="ToleranceSlider" parent="HSplitContainer/VBoxContainer/SmearOptions" index="2" unique_id=958208090 instance=ExtResource("3")]
 layout_mode = 2
 max_value = 255.0
 value = 100.0
 prefix = "Tolerance:"
 
-[node name="InitialAngleSlider" parent="VBoxContainer/SmearOptions" index="3" unique_id=1191393342 instance=ExtResource("3")]
+[node name="InitialAngleSlider" parent="HSplitContainer/VBoxContainer/SmearOptions" index="3" unique_id=1191393342 instance=ExtResource("3")]
 layout_mode = 2
 max_value = 359.0
 value = 359.0
@@ -122,19 +123,19 @@ prefix = "Initial angle:"
 suffix = "°"
 snap_step = 45.0
 
-[node name="HSeparator3" type="HSeparator" parent="VBoxContainer" index="9" unique_id=1669692737]
+[node name="HSeparator3" type="HSeparator" parent="HSplitContainer/VBoxContainer" parent_id_path=PackedInt32Array(1773123238) index="8" unique_id=1669692737]
 layout_mode = 2
 
-[connection signal="draw" from="VBoxContainer/AspectRatioContainer/Indicator" to="." method="_on_Indicator_draw"]
-[connection signal="gui_input" from="VBoxContainer/AspectRatioContainer/Indicator" to="." method="_on_Indicator_gui_input"]
-[connection signal="item_selected" from="VBoxContainer/HBoxContainer2/TypeOptionButton" to="." method="_on_TypeOptionButton_item_selected"]
-[connection signal="value_changed" from="VBoxContainer/PivotOptions/Pivot" to="." method="_on_Pivot_value_changed"]
-[connection signal="pressed" from="VBoxContainer/PivotOptions/Centre" to="." method="_on_Centre_pressed"]
-[connection signal="value_changed" from="VBoxContainer/AngleSlider" to="." method="_on_AngleSlider_value_changed"]
-[connection signal="pressed" from="VBoxContainer/QuickRotations/Deduct90" to="." method="_on_quick_change_angle_pressed" binds= [-90]]
-[connection signal="pressed" from="VBoxContainer/QuickRotations/Deduct45" to="." method="_on_quick_change_angle_pressed" binds= [-45]]
-[connection signal="pressed" from="VBoxContainer/QuickRotations/Zero" to="." method="_on_quick_change_angle_pressed" binds= [0]]
-[connection signal="pressed" from="VBoxContainer/QuickRotations/Add45" to="." method="_on_quick_change_angle_pressed" binds= [45]]
-[connection signal="pressed" from="VBoxContainer/QuickRotations/Add90" to="." method="_on_quick_change_angle_pressed" binds= [90]]
-[connection signal="value_changed" from="VBoxContainer/SmearOptions/ToleranceSlider" to="." method="_on_ToleranceSlider_value_changed"]
-[connection signal="value_changed" from="VBoxContainer/SmearOptions/InitialAngleSlider" to="." method="_on_InitialAngleSlider_value_changed"]
+[connection signal="draw" from="HSplitContainer/AspectRatioContainer/Indicator" to="." method="_on_Indicator_draw"]
+[connection signal="gui_input" from="HSplitContainer/AspectRatioContainer/Indicator" to="." method="_on_Indicator_gui_input"]
+[connection signal="item_selected" from="HSplitContainer/VBoxContainer/HBoxContainer2/TypeOptionButton" to="." method="_on_TypeOptionButton_item_selected"]
+[connection signal="value_changed" from="HSplitContainer/VBoxContainer/PivotOptions/Pivot" to="." method="_on_Pivot_value_changed"]
+[connection signal="pressed" from="HSplitContainer/VBoxContainer/PivotOptions/Centre" to="." method="_on_Centre_pressed"]
+[connection signal="value_changed" from="HSplitContainer/VBoxContainer/AngleSlider" to="." method="_on_AngleSlider_value_changed"]
+[connection signal="pressed" from="HSplitContainer/VBoxContainer/QuickRotations/Deduct90" to="." method="_on_quick_change_angle_pressed" binds= [-90]]
+[connection signal="pressed" from="HSplitContainer/VBoxContainer/QuickRotations/Deduct45" to="." method="_on_quick_change_angle_pressed" binds= [-45]]
+[connection signal="pressed" from="HSplitContainer/VBoxContainer/QuickRotations/Zero" to="." method="_on_quick_change_angle_pressed" binds= [0]]
+[connection signal="pressed" from="HSplitContainer/VBoxContainer/QuickRotations/Add45" to="." method="_on_quick_change_angle_pressed" binds= [45]]
+[connection signal="pressed" from="HSplitContainer/VBoxContainer/QuickRotations/Add90" to="." method="_on_quick_change_angle_pressed" binds= [90]]
+[connection signal="value_changed" from="HSplitContainer/VBoxContainer/SmearOptions/ToleranceSlider" to="." method="_on_ToleranceSlider_value_changed"]
+[connection signal="value_changed" from="HSplitContainer/VBoxContainer/SmearOptions/InitialAngleSlider" to="." method="_on_InitialAngleSlider_value_changed"]

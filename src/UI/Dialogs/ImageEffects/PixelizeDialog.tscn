@@ -6,20 +6,24 @@
 
 [node name="PixelizeDialog" unique_id=487000211 instance=ExtResource("1_eiotn")]
 title = "Pixelize"
+size = Vector2i(658, 257)
 script = ExtResource("2_x5pd6")
 
-[node name="ShowAnimate" parent="VBoxContainer" parent_id_path=PackedInt32Array(1773123238) index="0" unique_id=1452855547]
+[node name="HSplitContainer" parent="." index="2" unique_id=318277213]
+offset_bottom = 208.0
+
+[node name="ShowAnimate" parent="HSplitContainer/VBoxContainer" parent_id_path=PackedInt32Array(1773123238) index="0" unique_id=1452855547]
 visible = false
 
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer" parent_id_path=PackedInt32Array(1773123238) index="2" unique_id=866473369]
+[node name="HBoxContainer" type="HBoxContainer" parent="HSplitContainer/VBoxContainer" parent_id_path=PackedInt32Array(1773123238) index="1" unique_id=866473369]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="VBoxContainer/HBoxContainer" index="0" unique_id=702272864]
+[node name="Label" type="Label" parent="HSplitContainer/VBoxContainer/HBoxContainer" index="0" unique_id=702272864]
 custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
 text = "Pixel size:"
 
-[node name="PixelSize" parent="VBoxContainer/HBoxContainer" index="1" unique_id=230166917 instance=ExtResource("3_s7ey1")]
+[node name="PixelSize" parent="HSplitContainer/VBoxContainer/HBoxContainer" index="1" unique_id=230166917 instance=ExtResource("3_s7ey1")]
 custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
 size_flags_horizontal = 10
@@ -29,4 +33,4 @@ max_value = Vector2(255, 255)
 allow_greater = true
 show_ratio = true
 
-[connection signal="value_changed" from="VBoxContainer/HBoxContainer/PixelSize" to="." method="_on_pixel_size_value_changed"]
+[connection signal="value_changed" from="HSplitContainer/VBoxContainer/HBoxContainer/PixelSize" to="." method="_on_pixel_size_value_changed"]

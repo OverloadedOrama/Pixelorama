@@ -1,7 +1,7 @@
 extends ImageEffect
 
-@onready var flip_h := $VBoxContainer/FlipOptions/FlipHorizontal as CheckBox
-@onready var flip_v := $VBoxContainer/FlipOptions/FlipVertical as CheckBox
+@onready var flip_h := $HSplitContainer/VBoxContainer/FlipOptions/FlipHorizontal as CheckBox
+@onready var flip_v := $HSplitContainer/VBoxContainer/FlipOptions/FlipVertical as CheckBox
 
 
 func commit_action(cel: Image, project := Global.current_project) -> void:

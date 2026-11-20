@@ -6,11 +6,12 @@ enum Animate { ANGLE, INIT_ANGLE }
 var pivot := Vector2.INF
 var drag_pivot := false
 
-@onready var type_option_button: OptionButton = $VBoxContainer/HBoxContainer2/TypeOptionButton
-@onready var pivot_indicator: Control = $VBoxContainer/AspectRatioContainer/Indicator
-@onready var pivot_sliders := $VBoxContainer/PivotOptions/Pivot as ValueSliderV2
-@onready var angle_slider: ValueSlider = $VBoxContainer/AngleSlider
-@onready var smear_options: Container = $VBoxContainer/SmearOptions
+@onready
+var type_option_button: OptionButton = $HSplitContainer/VBoxContainer/HBoxContainer2/TypeOptionButton
+@onready var pivot_indicator: Control = $HSplitContainer/AspectRatioContainer/Indicator
+@onready var pivot_sliders := $HSplitContainer/VBoxContainer/PivotOptions/Pivot as ValueSliderV2
+@onready var angle_slider: ValueSlider = $HSplitContainer/VBoxContainer/AngleSlider
+@onready var smear_options: Container = $HSplitContainer/VBoxContainer/SmearOptions
 @onready var init_angle_slider: ValueSlider = smear_options.get_node("InitialAngleSlider")
 @onready var tolerance_slider: ValueSlider = smear_options.get_node("ToleranceSlider")
 

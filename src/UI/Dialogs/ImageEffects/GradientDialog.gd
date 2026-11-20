@@ -7,8 +7,8 @@ var shader_inc := load("res://src/Shaders/Effects/Gradient.gdshaderinc")
 var shader: Shader
 var selected_dither_matrix := ShaderLoader.dither_matrices[0]
 
-@onready var options_cont: Container = $VBoxContainer/ScrollContainer/GradientOptions
-@onready var gradient_edit: GradientEditNode = $VBoxContainer/GradientEdit
+@onready var options_cont: Container = $HSplitContainer/VBoxContainer/ScrollContainer/GradientOptions
+@onready var gradient_edit: GradientEditNode = $HSplitContainer/VBoxContainer/GradientEdit
 @onready var shape_option_button: OptionButton = $"%ShapeOptionButton"
 @onready var dithering_option_button: OptionButton = $"%DitheringOptionButton"
 @onready var repeat_option_button: OptionButton = $"%RepeatOptionButton"

@@ -18,7 +18,8 @@ func commit_action(cel: Image, project := Global.current_project) -> void:
 		var selection := project.selection_map.return_cropped_copy(project, project.size)
 		selection_tex = ImageTexture.create_from_image(selection)
 
-	var params := {"selection": selection_tex, "gradient_map": $VBoxContainer/GradientEdit.texture}
+	var gradient_texture = $HSplitContainer/VBoxContainer/GradientEdit.texture
+	var params := {"selection": selection_tex, "gradient_map": gradient_texture}
 
 	if !has_been_confirmed:
 		for param in params:
