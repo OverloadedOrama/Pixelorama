@@ -3,9 +3,9 @@ extends ImageEffect
 var shader_inc := load("res://src/Shaders/Effects/FlatToIsometric.gdshaderinc")
 var shader: Shader
 
-@onready var origin: ValueSlider = $VBoxContainer/Origin
-@onready var iso_step: ValueSlider = $VBoxContainer/IsoStep
-@onready var deadzone: ValueSlider = $VBoxContainer/Deadzone
+@onready var origin: ValueSlider = $HSplitContainer/VBoxContainer/Origin
+@onready var iso_step: ValueSlider = $HSplitContainer/VBoxContainer/IsoStep
+@onready var deadzone: ValueSlider = $HSplitContainer/VBoxContainer/Deadzone
 
 
 func _ready() -> void:

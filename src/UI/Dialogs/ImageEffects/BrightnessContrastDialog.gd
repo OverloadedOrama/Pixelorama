@@ -16,7 +16,7 @@ enum Animate {
 var shader_inc := load("res://src/Shaders/Effects/BrightnessContrast.gdshaderinc")
 var shader: Shader
 
-@onready var overflow_check_box := $VBoxContainer/OverflowCheckBox as CheckBox
+@onready var overflow_check_box := $HSplitContainer/VBoxContainer/OverflowCheckBox as CheckBox
 
 
 func _ready() -> void:
@@ -25,16 +25,20 @@ func _ready() -> void:
 	var sm := ShaderMaterial.new()
 	sm.shader = ShaderLoader.generate_canvas_item_shader(shader_inc)
 	preview.set_material(sm)
-	animate_panel.add_float_property("Red shift", $VBoxContainer/RedShift)
-	animate_panel.add_float_property("Green shift", $VBoxContainer/GreenShift)
-	animate_panel.add_float_property("Blue shift", $VBoxContainer/BlueShift)
-	animate_panel.add_float_property("Brightness", $VBoxContainer/BrightnessSlider)
-	animate_panel.add_float_property("Contrast", $VBoxContainer/ContrastSlider)
-	animate_panel.add_float_property("Saturation", $VBoxContainer/SaturationSlider)
-	animate_panel.add_float_property("Red contribution", $VBoxContainer/RedSlider)
-	animate_panel.add_float_property("Green contribution", $VBoxContainer/GreenSlider)
-	animate_panel.add_float_property("Blue contribution", $VBoxContainer/BlueSlider)
-	animate_panel.add_float_property("Tint effect factor", $VBoxContainer/TintSlider)
+	animate_panel.add_float_property("Red shift", $HSplitContainer/VBoxContainer/RedShift)
+	animate_panel.add_float_property("Green shift", $HSplitContainer/VBoxContainer/GreenShift)
+	animate_panel.add_float_property("Blue shift", $HSplitContainer/VBoxContainer/BlueShift)
+	animate_panel.add_float_property("Brightness", $HSplitContainer/VBoxContainer/BrightnessSlider)
+	animate_panel.add_float_property("Contrast", $HSplitContainer/VBoxContainer/ContrastSlider)
+	animate_panel.add_float_property("Saturation", $HSplitContainer/VBoxContainer/SaturationSlider)
+	animate_panel.add_float_property("Red contribution", $HSplitContainer/VBoxContainer/RedSlider)
+	animate_panel.add_float_property(
+		"Green contribution", $HSplitContainer/VBoxContainer/GreenSlider
+	)
+	animate_panel.add_float_property("Blue contribution", $HSplitContainer/VBoxContainer/BlueSlider)
+	animate_panel.add_float_property(
+		"Tint effect factor", $HSplitContainer/VBoxContainer/TintSlider
+	)
 
 
 func commit_action(cel: Image, project := Global.current_project) -> void:
@@ -47,7 +51,7 @@ func commit_action(cel: Image, project := Global.current_project) -> void:
 	var red := animate_panel.get_animated_value(commit_idx, Animate.RED) / 100.0
 	var green := animate_panel.get_animated_value(commit_idx, Animate.GREEN) / 100.0
 	var blue := animate_panel.get_animated_value(commit_idx, Animate.BLUE) / 100.0
-	var tint_color: Color = $VBoxContainer/TintColorContainer/TintColor.color
+	var tint_color: Color = $HSplitContainer/VBoxContainer/TintColorContainer/TintColor.color
 	var tint_effect_factor := (
 		animate_panel.get_animated_value(commit_idx, Animate.TINT_EFFECT_FACTOR) / 100.0
 	)

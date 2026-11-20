@@ -6,10 +6,14 @@
 
 [node name="GradientMapDialog" unique_id=1676743834 instance=ExtResource("1")]
 title = "Gradient Map"
+size = Vector2i(658, 257)
 script = ExtResource("3")
 
-[node name="ShowAnimate" parent="VBoxContainer" parent_id_path=PackedInt32Array(1773123238) index="0" unique_id=1452855547]
+[node name="HSplitContainer" parent="." index="2" unique_id=318277213]
+offset_bottom = 208.0
+
+[node name="ShowAnimate" parent="HSplitContainer/VBoxContainer" parent_id_path=PackedInt32Array(1773123238) index="0" unique_id=1452855547]
 visible = false
 
-[node name="GradientEdit" parent="VBoxContainer" parent_id_path=PackedInt32Array(1773123238) index="2" unique_id=1789971382 instance=ExtResource("2")]
+[node name="GradientEdit" parent="HSplitContainer/VBoxContainer" parent_id_path=PackedInt32Array(1773123238) index="1" unique_id=1789971382 instance=ExtResource("2")]
 layout_mode = 2

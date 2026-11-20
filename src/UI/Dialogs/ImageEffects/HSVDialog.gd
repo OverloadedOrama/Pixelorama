@@ -5,10 +5,10 @@ enum Animate { HUE, SATURATION, VALUE }
 var shader_inc := load("res://src/Shaders/Effects/HSV.gdshaderinc")
 var shader: Shader
 
-@onready var hue_slider := $VBoxContainer/HueSlider as ValueSlider
-@onready var sat_slider := $VBoxContainer/SaturationSlider as ValueSlider
-@onready var val_slider := $VBoxContainer/ValueSlider as ValueSlider
-@onready var overflow_check_box := $VBoxContainer/OverflowCheckBox as CheckBox
+@onready var hue_slider := $HSplitContainer/VBoxContainer/HueSlider as ValueSlider
+@onready var sat_slider := $HSplitContainer/VBoxContainer/SaturationSlider as ValueSlider
+@onready var val_slider := $HSplitContainer/VBoxContainer/ValueSlider as ValueSlider
+@onready var overflow_check_box := $HSplitContainer/VBoxContainer/OverflowCheckBox as CheckBox
 
 
 func _ready() -> void:

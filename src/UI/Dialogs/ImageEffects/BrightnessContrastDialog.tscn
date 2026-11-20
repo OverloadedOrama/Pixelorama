@@ -6,14 +6,14 @@
 
 [node name="BrightnessContrastDialog" unique_id=954387416 instance=ExtResource("1_5wfra")]
 title = "Adjust Brightness/Contrast"
-size = Vector2i(366, 659)
+size = Vector2i(578, 455)
 script = ExtResource("2_msv0o")
 
-[node name="VBoxContainer" parent="." index="2" unique_id=1773123238]
-offset_right = 358.0
-offset_bottom = 610.0
+[node name="HSplitContainer" parent="." index="2" unique_id=318277213]
+offset_right = 570.0
+offset_bottom = 406.0
 
-[node name="RedShift" type="TextureProgressBar" parent="VBoxContainer" index="2" unique_id=2116233543]
+[node name="RedShift" type="TextureProgressBar" parent="HSplitContainer/VBoxContainer" parent_id_path=PackedInt32Array(1773123238) index="1" unique_id=2116233543]
 custom_minimum_size = Vector2(32, 24)
 layout_mode = 2
 mouse_default_cursor_shape = 2
@@ -29,7 +29,7 @@ stretch_margin_bottom = 3
 script = ExtResource("3_2epr4")
 prefix = "Red shift:"
 
-[node name="GreenShift" type="TextureProgressBar" parent="VBoxContainer" index="3" unique_id=1436100762]
+[node name="GreenShift" type="TextureProgressBar" parent="HSplitContainer/VBoxContainer" parent_id_path=PackedInt32Array(1773123238) index="2" unique_id=1436100762]
 custom_minimum_size = Vector2(32, 24)
 layout_mode = 2
 mouse_default_cursor_shape = 2
@@ -45,7 +45,7 @@ stretch_margin_bottom = 3
 script = ExtResource("3_2epr4")
 prefix = "Green shift:"
 
-[node name="BlueShift" type="TextureProgressBar" parent="VBoxContainer" index="4" unique_id=2079536811]
+[node name="BlueShift" type="TextureProgressBar" parent="HSplitContainer/VBoxContainer" parent_id_path=PackedInt32Array(1773123238) index="3" unique_id=2079536811]
 custom_minimum_size = Vector2(32, 24)
 layout_mode = 2
 mouse_default_cursor_shape = 2
@@ -61,7 +61,7 @@ stretch_margin_bottom = 3
 script = ExtResource("3_2epr4")
 prefix = "Blue shift:"
 
-[node name="BrightnessSlider" type="TextureProgressBar" parent="VBoxContainer" index="5" unique_id=738643021]
+[node name="BrightnessSlider" type="TextureProgressBar" parent="HSplitContainer/VBoxContainer" parent_id_path=PackedInt32Array(1773123238) index="4" unique_id=738643021]
 custom_minimum_size = Vector2(32, 24)
 layout_mode = 2
 mouse_default_cursor_shape = 2
@@ -75,7 +75,7 @@ stretch_margin_bottom = 3
 script = ExtResource("3_2epr4")
 prefix = "Brightness:"
 
-[node name="ContrastSlider" type="TextureProgressBar" parent="VBoxContainer" index="6" unique_id=719668350]
+[node name="ContrastSlider" type="TextureProgressBar" parent="HSplitContainer/VBoxContainer" parent_id_path=PackedInt32Array(1773123238) index="5" unique_id=719668350]
 custom_minimum_size = Vector2(32, 24)
 layout_mode = 2
 mouse_default_cursor_shape = 2
@@ -90,7 +90,7 @@ stretch_margin_bottom = 3
 script = ExtResource("3_2epr4")
 prefix = "Contrast:"
 
-[node name="SaturationSlider" type="TextureProgressBar" parent="VBoxContainer" index="7" unique_id=450016837]
+[node name="SaturationSlider" type="TextureProgressBar" parent="HSplitContainer/VBoxContainer" parent_id_path=PackedInt32Array(1773123238) index="6" unique_id=450016837]
 custom_minimum_size = Vector2(32, 24)
 layout_mode = 2
 mouse_default_cursor_shape = 2
@@ -105,7 +105,7 @@ stretch_margin_bottom = 3
 script = ExtResource("3_2epr4")
 prefix = "Saturation:"
 
-[node name="RedSlider" type="TextureProgressBar" parent="VBoxContainer" index="8" unique_id=1115794383]
+[node name="RedSlider" type="TextureProgressBar" parent="HSplitContainer/VBoxContainer" parent_id_path=PackedInt32Array(1773123238) index="7" unique_id=1115794383]
 custom_minimum_size = Vector2(32, 24)
 layout_mode = 2
 mouse_default_cursor_shape = 2
@@ -121,7 +121,7 @@ script = ExtResource("3_2epr4")
 prefix = "Red value:"
 suffix = "%"
 
-[node name="GreenSlider" type="TextureProgressBar" parent="VBoxContainer" index="9" unique_id=1456343987]
+[node name="GreenSlider" type="TextureProgressBar" parent="HSplitContainer/VBoxContainer" parent_id_path=PackedInt32Array(1773123238) index="8" unique_id=1456343987]
 custom_minimum_size = Vector2(32, 24)
 layout_mode = 2
 mouse_default_cursor_shape = 2
@@ -137,7 +137,7 @@ script = ExtResource("3_2epr4")
 prefix = "Green value:"
 suffix = "%"
 
-[node name="BlueSlider" type="TextureProgressBar" parent="VBoxContainer" index="10" unique_id=2082911472]
+[node name="BlueSlider" type="TextureProgressBar" parent="HSplitContainer/VBoxContainer" parent_id_path=PackedInt32Array(1773123238) index="9" unique_id=2082911472]
 custom_minimum_size = Vector2(32, 24)
 layout_mode = 2
 mouse_default_cursor_shape = 2
@@ -153,22 +153,21 @@ script = ExtResource("3_2epr4")
 prefix = "Blue value:"
 suffix = "%"
 
-[node name="TintColorContainer" type="HBoxContainer" parent="VBoxContainer" index="11" unique_id=975945355]
+[node name="TintColorContainer" type="HBoxContainer" parent="HSplitContainer/VBoxContainer" parent_id_path=PackedInt32Array(1773123238) index="10" unique_id=975945355]
 layout_mode = 2
-alignment = 1
 
-[node name="Label" type="Label" parent="VBoxContainer/TintColorContainer" index="0" unique_id=1180119593]
+[node name="Label" type="Label" parent="HSplitContainer/VBoxContainer/TintColorContainer" index="0" unique_id=1180119593]
 custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
 text = "Tint color:"
 
-[node name="TintColor" type="ColorPickerButton" parent="VBoxContainer/TintColorContainer" index="1" unique_id=1882223003]
+[node name="TintColor" type="ColorPickerButton" parent="HSplitContainer/VBoxContainer/TintColorContainer" index="1" unique_id=1882223003]
 custom_minimum_size = Vector2(160, 24)
 layout_mode = 2
-size_flags_horizontal = 8
+size_flags_horizontal = 10
 color = Color(1, 1, 1, 1)
 
-[node name="TintSlider" type="TextureProgressBar" parent="VBoxContainer" index="12" unique_id=1493212009]
+[node name="TintSlider" type="TextureProgressBar" parent="HSplitContainer/VBoxContainer" parent_id_path=PackedInt32Array(1773123238) index="11" unique_id=1493212009]
 custom_minimum_size = Vector2(32, 24)
 layout_mode = 2
 mouse_default_cursor_shape = 2
@@ -181,19 +180,19 @@ stretch_margin_bottom = 3
 script = ExtResource("3_2epr4")
 prefix = "Tint effect factor:"
 
-[node name="OverflowCheckBox" type="CheckBox" parent="VBoxContainer" index="13" unique_id=901992428]
+[node name="OverflowCheckBox" type="CheckBox" parent="HSplitContainer/VBoxContainer" parent_id_path=PackedInt32Array(1773123238) index="12" unique_id=901992428]
 layout_mode = 2
 text = "Wrap overflowing values"
 
-[connection signal="value_changed" from="VBoxContainer/RedShift" to="." method="_on_red_shift_value_changed"]
-[connection signal="value_changed" from="VBoxContainer/GreenShift" to="." method="_on_green_shift_value_changed"]
-[connection signal="value_changed" from="VBoxContainer/BlueShift" to="." method="_on_blue_shift_value_changed"]
-[connection signal="value_changed" from="VBoxContainer/BrightnessSlider" to="." method="_on_brightness_slider_value_changed"]
-[connection signal="value_changed" from="VBoxContainer/ContrastSlider" to="." method="_on_contrast_slider_value_changed"]
-[connection signal="value_changed" from="VBoxContainer/SaturationSlider" to="." method="_on_saturation_slider_value_changed"]
-[connection signal="value_changed" from="VBoxContainer/RedSlider" to="." method="_on_red_slider_value_changed"]
-[connection signal="value_changed" from="VBoxContainer/GreenSlider" to="." method="_on_green_slider_value_changed"]
-[connection signal="value_changed" from="VBoxContainer/BlueSlider" to="." method="_on_blue_slider_value_changed"]
-[connection signal="color_changed" from="VBoxContainer/TintColorContainer/TintColor" to="." method="_on_tint_color_color_changed"]
-[connection signal="value_changed" from="VBoxContainer/TintSlider" to="." method="_on_tint_slider_value_changed"]
-[connection signal="toggled" from="VBoxContainer/OverflowCheckBox" to="." method="_on_overflow_check_box_toggled"]
+[connection signal="value_changed" from="HSplitContainer/VBoxContainer/RedShift" to="." method="_on_red_shift_value_changed"]
+[connection signal="value_changed" from="HSplitContainer/VBoxContainer/GreenShift" to="." method="_on_green_shift_value_changed"]
+[connection signal="value_changed" from="HSplitContainer/VBoxContainer/BlueShift" to="." method="_on_blue_shift_value_changed"]
+[connection signal="value_changed" from="HSplitContainer/VBoxContainer/BrightnessSlider" to="." method="_on_brightness_slider_value_changed"]
+[connection signal="value_changed" from="HSplitContainer/VBoxContainer/ContrastSlider" to="." method="_on_contrast_slider_value_changed"]
+[connection signal="value_changed" from="HSplitContainer/VBoxContainer/SaturationSlider" to="." method="_on_saturation_slider_value_changed"]
+[connection signal="value_changed" from="HSplitContainer/VBoxContainer/RedSlider" to="." method="_on_red_slider_value_changed"]
+[connection signal="value_changed" from="HSplitContainer/VBoxContainer/GreenSlider" to="." method="_on_green_slider_value_changed"]
+[connection signal="value_changed" from="HSplitContainer/VBoxContainer/BlueSlider" to="." method="_on_blue_slider_value_changed"]
+[connection signal="color_changed" from="HSplitContainer/VBoxContainer/TintColorContainer/TintColor" to="." method="_on_tint_color_color_changed"]
+[connection signal="value_changed" from="HSplitContainer/VBoxContainer/TintSlider" to="." method="_on_tint_slider_value_changed"]
+[connection signal="toggled" from="HSplitContainer/VBoxContainer/OverflowCheckBox" to="." method="_on_overflow_check_box_toggled"]

@@ -29,7 +29,7 @@ func _ready() -> void:
 	if affect_option_button:
 		affect_option_button.item_selected.connect(_on_AffectOptionButton_item_selected)
 	if animate_panel:
-		$"%ShowAnimate".pressed.connect(display_animate_dialog)
+		%ShowAnimate.pressed.connect(display_animate_dialog)
 
 
 func _about_to_popup() -> void:
@@ -156,11 +156,11 @@ func commit_action(_cel: Image, _project := Global.current_project) -> void:
 
 
 func set_nodes() -> void:
-	aspect_ratio_container = $VBoxContainer/AspectRatioContainer
-	preview = $VBoxContainer/AspectRatioContainer/Preview
-	selection_checkbox = $VBoxContainer/OptionsContainer/SelectionCheckBox
-	affect_option_button = $VBoxContainer/OptionsContainer/AffectOptionButton
-	animate_panel = $"%AnimatePanel"
+	aspect_ratio_container = $HSplitContainer/AspectRatioContainer
+	preview = $HSplitContainer/AspectRatioContainer/Preview
+	selection_checkbox = $HSplitContainer/VBoxContainer/OptionsContainer/SelectionCheckBox
+	affect_option_button = $HSplitContainer/VBoxContainer/OptionsContainer/AffectOptionButton
+	animate_panel = %AnimatePanel
 	if is_instance_valid(animate_panel):
 		animate_panel.image_effect_node = self
 

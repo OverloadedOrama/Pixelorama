@@ -7,7 +7,7 @@ var shader: Shader
 
 var curves: Array[Curve]
 @onready var channel_option_button := %ChannelOptionButton as OptionButton
-@onready var curve_edit := $VBoxContainer/CurveEdit as CurveEdit
+@onready var curve_edit := $HSplitContainer/VBoxContainer/CurveEdit as CurveEdit
 
 
 func _ready() -> void:

@@ -7,23 +7,23 @@
 
 [node name="OffsetScaleImage" unique_id=1104561061 instance=ExtResource("1_7hdx0")]
 title = "Offset & Scale Image"
-size = Vector2i(366, 491)
+size = Vector2i(578, 257)
 script = ExtResource("2_wtcan")
 
-[node name="VBoxContainer" parent="." index="2" unique_id=1773123238]
-offset_right = 358.0
-offset_bottom = 442.0
+[node name="HSplitContainer" parent="." index="2" unique_id=318277213]
+offset_right = 570.0
+offset_bottom = 208.0
 
-[node name="OffsetOptions" type="GridContainer" parent="VBoxContainer" index="2" unique_id=283181723]
+[node name="OffsetOptions" type="GridContainer" parent="HSplitContainer/VBoxContainer" parent_id_path=PackedInt32Array(1773123238) index="1" unique_id=283181723]
 layout_mode = 2
 columns = 2
 
-[node name="OffsetLabel" type="Label" parent="VBoxContainer/OffsetOptions" index="0" unique_id=1818331786]
+[node name="OffsetLabel" type="Label" parent="HSplitContainer/VBoxContainer/OffsetOptions" index="0" unique_id=1818331786]
 custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
 text = "Offset:"
 
-[node name="OffsetSliders" parent="VBoxContainer/OffsetOptions" index="1" unique_id=492803524 instance=ExtResource("3_nls83")]
+[node name="OffsetSliders" parent="HSplitContainer/VBoxContainer/OffsetOptions" index="1" unique_id=492803524 instance=ExtResource("3_nls83")]
 custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
 size_flags_horizontal = 10
@@ -35,12 +35,12 @@ show_ratio = true
 suffix_x = "px"
 suffix_y = "px"
 
-[node name="ScaleLabel" type="Label" parent="VBoxContainer/OffsetOptions" index="2" unique_id=36083011]
+[node name="ScaleLabel" type="Label" parent="HSplitContainer/VBoxContainer/OffsetOptions" index="2" unique_id=36083011]
 custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
 text = "Scale:"
 
-[node name="ScaleValueSlider" parent="VBoxContainer/OffsetOptions" index="3" unique_id=24022254 instance=ExtResource("4_30qvy")]
+[node name="ScaleValueSlider" parent="HSplitContainer/VBoxContainer/OffsetOptions" index="3" unique_id=24022254 instance=ExtResource("4_30qvy")]
 custom_minimum_size = Vector2(160, 24)
 layout_mode = 2
 size_flags_horizontal = 10
@@ -50,18 +50,18 @@ value = 100.0
 allow_greater = true
 suffix = "%"
 
-[node name="WrapLabel" type="Label" parent="VBoxContainer/OffsetOptions" index="4" unique_id=76156915]
+[node name="WrapLabel" type="Label" parent="HSplitContainer/VBoxContainer/OffsetOptions" index="4" unique_id=76156915]
 custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
 text = "Wrap around:"
 
-[node name="WrapCheckBox" type="CheckBox" parent="VBoxContainer/OffsetOptions" index="5" unique_id=243611518]
+[node name="WrapCheckBox" type="CheckBox" parent="HSplitContainer/VBoxContainer/OffsetOptions" index="5" unique_id=243611518]
 custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
 size_flags_horizontal = 10
 mouse_default_cursor_shape = 2
 text = "On"
 
-[connection signal="value_changed" from="VBoxContainer/OffsetOptions/OffsetSliders" to="." method="_on_OffsetSliders_value_changed"]
-[connection signal="value_changed" from="VBoxContainer/OffsetOptions/ScaleValueSlider" to="." method="_on_ZoomValueSlider_value_changed"]
-[connection signal="toggled" from="VBoxContainer/OffsetOptions/WrapCheckBox" to="." method="_on_WrapCheckBox_toggled"]
+[connection signal="value_changed" from="HSplitContainer/VBoxContainer/OffsetOptions/OffsetSliders" to="." method="_on_OffsetSliders_value_changed"]
+[connection signal="value_changed" from="HSplitContainer/VBoxContainer/OffsetOptions/ScaleValueSlider" to="." method="_on_ZoomValueSlider_value_changed"]
+[connection signal="toggled" from="HSplitContainer/VBoxContainer/OffsetOptions/WrapCheckBox" to="." method="_on_WrapCheckBox_toggled"]

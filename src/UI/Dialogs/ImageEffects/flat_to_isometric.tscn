@@ -5,14 +5,14 @@
 [ext_resource type="Script" uid="uid://tfdhqto6j5j0" path="res://src/UI/Nodes/Sliders/ValueSlider.gd" id="3_xnhln"]
 
 [node name="FlatToIsometric" unique_id=829570751 instance=ExtResource("1_hcjfg")]
-size = Vector2i(366, 400)
-visible = false
+size = Vector2i(578, 257)
 script = ExtResource("2_w8h5d")
 
-[node name="VBoxContainer" parent="." index="2" unique_id=1773123238]
-offset_bottom = 351.0
+[node name="HSplitContainer" parent="." index="2" unique_id=318277213]
+offset_right = 570.0
+offset_bottom = 208.0
 
-[node name="Origin" type="TextureProgressBar" parent="VBoxContainer" index="2" unique_id=1485075028]
+[node name="Origin" type="TextureProgressBar" parent="HSplitContainer/VBoxContainer" parent_id_path=PackedInt32Array(1773123238) index="1" unique_id=1485075028]
 custom_minimum_size = Vector2(32, 24)
 layout_mode = 2
 mouse_default_cursor_shape = 2
@@ -29,7 +29,7 @@ stretch_margin_bottom = 3
 script = ExtResource("3_xnhln")
 prefix = "Origin:"
 
-[node name="IsoStep" type="TextureProgressBar" parent="VBoxContainer" index="3" unique_id=751131232]
+[node name="IsoStep" type="TextureProgressBar" parent="HSplitContainer/VBoxContainer" parent_id_path=PackedInt32Array(1773123238) index="2" unique_id=751131232]
 custom_minimum_size = Vector2(32, 24)
 layout_mode = 2
 mouse_default_cursor_shape = 2
@@ -45,7 +45,7 @@ stretch_margin_bottom = 3
 script = ExtResource("3_xnhln")
 prefix = "Isometric step:"
 
-[node name="Deadzone" type="TextureProgressBar" parent="VBoxContainer" index="4" unique_id=2054244353]
+[node name="Deadzone" type="TextureProgressBar" parent="HSplitContainer/VBoxContainer" parent_id_path=PackedInt32Array(1773123238) index="3" unique_id=2054244353]
 custom_minimum_size = Vector2(32, 24)
 layout_mode = 2
 mouse_default_cursor_shape = 2
@@ -62,6 +62,6 @@ script = ExtResource("3_xnhln")
 prefix = "Deadzone:"
 
 [connection signal="about_to_popup" from="." to="." method="_on_about_to_popup"]
-[connection signal="value_changed" from="VBoxContainer/Origin" to="." method="_on_origin_value_changed"]
-[connection signal="value_changed" from="VBoxContainer/IsoStep" to="." method="_on_iso_step_value_changed"]
-[connection signal="value_changed" from="VBoxContainer/Deadzone" to="." method="_on_deadzone_value_changed"]
+[connection signal="value_changed" from="HSplitContainer/VBoxContainer/Origin" to="." method="_on_origin_value_changed"]
+[connection signal="value_changed" from="HSplitContainer/VBoxContainer/IsoStep" to="." method="_on_iso_step_value_changed"]
+[connection signal="value_changed" from="HSplitContainer/VBoxContainer/Deadzone" to="." method="_on_deadzone_value_changed"]

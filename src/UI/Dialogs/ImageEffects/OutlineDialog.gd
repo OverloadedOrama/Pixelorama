@@ -9,7 +9,8 @@ var inside_image := false
 var shader_inc := load("res://src/Shaders/Effects/OutlineInline.gdshaderinc")
 var shader: Shader
 
-@onready var outline_color := $VBoxContainer/OutlineOptions/OutlineColor as ColorPickerButton
+@onready
+var outline_color := $HSplitContainer/VBoxContainer/OutlineOptions/OutlineColor as ColorPickerButton
 
 
 func _ready() -> void:
@@ -21,7 +22,9 @@ func _ready() -> void:
 	outline_color.get_picker().presets_visible = false
 	color = outline_color.color
 	# Set in the order of the Animate enum
-	animate_panel.add_float_property("Thickness", $VBoxContainer/OutlineOptions/ThickValue)
+	animate_panel.add_float_property(
+		"Thickness", $HSplitContainer/VBoxContainer/OutlineOptions/ThickValue
+	)
 
 
 func commit_action(cel: Image, project := Global.current_project) -> void:
