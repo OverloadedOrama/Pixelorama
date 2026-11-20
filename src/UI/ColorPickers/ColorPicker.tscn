@@ -79,6 +79,7 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/sv_width = 32
 theme_override_constants/sv_height = 32
+edit_intensity = false
 can_add_swatches = false
 color_modes_visible = false
 sliders_visible = false
@@ -223,6 +224,13 @@ offset_right = 13.0
 offset_bottom = 13.0
 mouse_filter = 2
 
+[node name="HidePickerButton" type="Button" parent="ScrollContainer/VerticalContainer/ColorButtons" unique_id=1273793545]
+unique_name_in_owner = true
+layout_mode = 2
+toggle_mode = true
+button_pressed = true
+text = "H"
+
 [node name="ExpandButton" type="Button" parent="ScrollContainer/VerticalContainer" unique_id=729249263]
 layout_mode = 2
 focus_mode = 0
@@ -233,11 +241,26 @@ icon = ExtResource("5_hhe4d")
 flat = true
 alignment = 0
 
+[node name="ColorPickerPopupPanel" type="PopupPanel" parent="." unique_id=1649302497]
+
+[node name="ColorPickerPopup" type="ColorPicker" parent="ColorPickerPopupPanel" unique_id=2088734687]
+offset_left = 4.0
+offset_top = 4.0
+offset_right = 161.0
+offset_bottom = 331.0
+edit_intensity = false
+can_add_swatches = false
+presets_visible = false
+
 [connection signal="color_changed" from="ScrollContainer/VerticalContainer/ColorPicker" to="." method="_on_color_picker_color_changed"]
+[connection signal="gui_input" from="ScrollContainer/VerticalContainer/ColorButtons/LeftColorButton" to="." method="_on_color_button_gui_input" flags=18]
 [connection signal="toggled" from="ScrollContainer/VerticalContainer/ColorButtons/LeftColorButton" to="." method="_on_left_color_button_toggled"]
 [connection signal="pressed" from="ScrollContainer/VerticalContainer/ColorButtons/ColorSwitch" to="." method="_on_ColorSwitch_pressed"]
+[connection signal="gui_input" from="ScrollContainer/VerticalContainer/ColorButtons/RightColorButton" to="." method="_on_color_button_gui_input" flags=18]
 [connection signal="button_down" from="ScrollContainer/VerticalContainer/ColorButtons/ColorButtonsVertical/CopyAverage" to="." method="_on_CopyAverage_button_down"]
 [connection signal="button_up" from="ScrollContainer/VerticalContainer/ColorButtons/ColorButtonsVertical/CopyAverage" to="." method="_on_CopyAverage_button_up"]
 [connection signal="gui_input" from="ScrollContainer/VerticalContainer/ColorButtons/ColorButtonsVertical/CopyAverage" to="." method="_on_copy_average_gui_input"]
 [connection signal="pressed" from="ScrollContainer/VerticalContainer/ColorButtons/ColorButtonsVertical/ColorDefaults" to="." method="_on_ColorDefaults_pressed"]
+[connection signal="toggled" from="ScrollContainer/VerticalContainer/ColorButtons/HidePickerButton" to="." method="_on_hide_picker_button_toggled"]
 [connection signal="toggled" from="ScrollContainer/VerticalContainer/ExpandButton" to="." method="_on_expand_button_toggled"]
+[connection signal="color_changed" from="ColorPickerPopupPanel/ColorPickerPopup" to="." method="_on_color_picker_popup_color_changed"]
